@@ -14,28 +14,24 @@ interface RouteConfig {
 
 export const roleSpecificRoutes: Record<ValidRole, RouteConfig[]> = {
 	admin: [
-		// Define admin routes here. Example:
-		// { path: "dashboard", element: <AdminDashboardPage />, isIndex: true },
-		{ path: "products", element: <AdminProducts />, isIndex: true },
-		{ path: "quotation-requests", element: <AdminQuotations /> },
-		{ path: "policies", element: <AdminPolicies /> },
-		{ path: "settings/*", element: <Settings /> },
+		// Super admin dashboard routes go here in the future
 	],
 	customer: [
 		// Define customer routes here. Example:
 		// { path: "profile", element: <CustomerProfilePage />, isIndex: true },
 	],
 	insurer: [
-		// Define insurer routes here. Example:
-		// { path: "home", element: <InsurerHome />, isIndex: true },
-		// { path: "listings", element: <InsurerListings /> },
+		{ path: "products", element: <AdminProducts />, isIndex: true },
+		{ path: "quotation-requests", element: <AdminQuotations /> },
+		{ path: "policies", element: <AdminPolicies /> },
+		{ path: "settings/*", element: <Settings /> },
 	],
 };
 
 export const defaultRoleRedirects: Record<ValidRole, string> = {
-	admin: "/admin/products",
+	admin: "/admin", // For future super admin
 	customer: "/customer/home",
-	insurer: "/insurer/home",
+	insurer: "/insurer/products",
 };
 
 // All unauthenticated users would be redirected to the login page by default

@@ -1,6 +1,7 @@
 import { defaultRoleRedirects } from "@/config/paths";
 import { VALID_ROLES, type ValidRole } from "@/config/roles";
-import { useAuth } from "@/context/AuthContext";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/redux/store";
 import { Navigate, useLocation } from "react-router-dom";
 import { DashboardLayout } from "./DashboardLayout";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
@@ -8,7 +9,12 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 export function RoleLayout() {
 	const location = useLocation();
 	const role = location.pathname.split("/")[1];
-	const { isAuthenticated, user, isLoading } = useAuth();
+	const { isAuthenticated, user } = useSelector(
+		(state: RootState) => state.auth,
+	);
+	// If you have a loading state in Redux, you can use it here
+	// const isLoading = useSelector((state: RootState) => state.auth.isLoading);
+	const isLoading = false; // Set to false if you don't have a loading state
 
 	// Display a loading spinner while authentication is in progress
 	if (isLoading) {
@@ -16,7 +22,6 @@ export function RoleLayout() {
 	}
 
 	// If not authenticated, redirect to login page
-	// We check for user role after authentication
 	if (!isAuthenticated) {
 		return <Navigate to="/login" replace />;
 	}

@@ -1,37 +1,57 @@
 import { LoginForm } from "@/components/auth/LoginForm";
 import { defaultRoleRedirects } from "@/config/routes";
-import { useAuth } from "@/context/AuthContext";
-import { fetchUser } from "@/services/authService";
-import type { User } from "@/types/auth";
+import { useLoginMutation } from "@/redux/api/authApi";
+import { setCredentials } from "@/redux/slices/authSlice";
+import { useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/redux/store";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
+type DataError = { data?: { message?: string } };
+
 export default function LoginPage() {
-	const [username, setUsername] = useState("");
+	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
-	const [isLoading, setIsLoading] = useState(false);
+	const [login, { isLoading }] = useLoginMutation();
+	const dispatch = useDispatch();
 	const navigate = useNavigate();
-	const { login } = useAuth();
+	const user = useSelector((state: RootState) => state.auth.user);
 
 	useEffect(() => {
 		document.title = "SecureGuard | Login";
-	}, []);
+		if (user) {
+			const redirectPath = defaultRoleRedirects[user.role];
+			navigate(redirectPath);
+		}
+	}, [user, navigate]);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-		setIsLoading(true);
 		try {
-			await login({ username, password });
+			const result = await login({ email, password }).unwrap();
+			dispatch(
+				setCredentials({
+					user: { ...result.user, role: "insurer" },
+					token: result.access_token,
+				}),
+			);
 			toast.success("Login successful!");
-			// Redirect based on role or a default path after login
-			const loggedInUser = (await fetchUser()) as User; // Fetch user to get their actual role
-			const redirectPath = defaultRoleRedirects[loggedInUser.role];
-			navigate(redirectPath);
+			// Redirect will happen via useEffect
 		} catch (error: unknown) {
-			toast.error(`Login failed: ${(error as Error).message}`);
-		} finally {
-			setIsLoading(false);
+			let message = "Unknown error";
+			if (
+				typeof error === "object" &&
+				error !== null &&
+				"data" in error &&
+				typeof (error as DataError).data?.message === "string"
+			) {
+				message = (error as DataError).data?.message || "Unknown error";
+			} else if (error instanceof Error) {
+				message = error.message;
+			}
+			toast.error(`Login failed: ${message}`);
 		}
 	};
 
@@ -62,8 +82,8 @@ export default function LoginPage() {
 				<div className="flex flex-1 items-center justify-center">
 					<div className="w-full max-w-xs">
 						<LoginForm
-							username={username}
-							setUsername={setUsername}
+							email={email}
+							setEmail={setEmail}
 							password={password}
 							setPassword={setPassword}
 							onSubmit={handleSubmit}

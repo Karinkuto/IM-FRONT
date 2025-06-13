@@ -5,8 +5,8 @@ import { cn } from "@/lib/utils";
 import type React from "react";
 
 interface LoginFormProps extends React.ComponentPropsWithoutRef<"form"> {
-	username: string;
-	setUsername: (value: string) => void;
+	email: string;
+	setEmail: (value: string) => void;
 	password: string;
 	setPassword: (value: string) => void;
 	onSubmit: (e: React.FormEvent) => void;
@@ -15,8 +15,8 @@ interface LoginFormProps extends React.ComponentPropsWithoutRef<"form"> {
 
 export function LoginForm({
 	className,
-	username,
-	setUsername,
+	email,
+	setEmail,
 	password,
 	setPassword,
 	onSubmit,
@@ -37,15 +37,15 @@ export function LoginForm({
 			</div>
 			<div className="grid gap-6">
 				<div className="grid gap-3">
-					<Label htmlFor="username">Username</Label>
+					<Label htmlFor="email">Email</Label>
 					<Input
-						id="username"
-						name="username"
-						type="text"
+						id="email"
+						name="email"
+						type="email"
 						autoComplete="username"
 						required
-						value={username}
-						onChange={(e) => setUsername(e.target.value)}
+						value={email}
+						onChange={(e) => setEmail(e.target.value)}
 						className="mt-1 block w-full"
 					/>
 				</div>

@@ -1,7 +1,9 @@
 import { InsurerNav } from "@/components/shared/InsurerNav";
 import { ModeToggle } from "@/components/shared/mode-toggle";
 import { footerNavigation, navigationData } from "@/config/navigation";
-import { useAuth } from "@/context/AuthContext";
+import { useSelector, useDispatch } from "react-redux";
+import { logout } from "@/redux/slices/authSlice";
+import type { RootState } from "@/redux/store";
 import type { InsurerProfile } from "@/types/insurer";
 import { useCallback, useEffect, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
@@ -37,9 +39,10 @@ import type { ValidRole } from "@/config/roles";
 
 interface AppSidebarProps {
 	role: ValidRole;
-	logout: ReturnType<typeof useAuth>["logout"];
-	currentPath: string; // Add currentPath to props
-	userProfile: UserProfile | null; // Add userProfile to props
+	logout: () => void;
+	currentPath: string;
+	userProfile: UserProfile | null;
+	user: RootState["auth"]["user"];
 }
 
 function AppSidebar({
@@ -47,15 +50,13 @@ function AppSidebar({
 	user,
 	logout,
 	currentPath,
-	userProfile, // Destructure userProfile
-}: AppSidebarProps & { user: ReturnType<typeof useAuth>["user"] }) {
+	userProfile,
+}: AppSidebarProps) {
 	const navigate = useNavigate();
-
 	const navSections = navigationData[role] || [];
-	// currentPath is now passed as a prop
 
 	const handleLogout = async () => {
-		await logout();
+		logout();
 		navigate("/login");
 	};
 
@@ -64,7 +65,6 @@ function AppSidebar({
 			<SidebarHeader className="p-4">
 				<div className="flex items-center gap-3">
 					<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-						{/* You can replace this with an actual SVG logo if you have one */}
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
 							viewBox="0 0 24 24"
@@ -169,10 +169,12 @@ export interface DashboardLayoutProps {
 }
 
 export function DashboardLayout({ role }: DashboardLayoutProps) {
-	const { user, logout } = useAuth();
+	const user = useSelector((state: RootState) => state.auth.user);
+	const dispatch = useDispatch();
 	const location = useLocation();
 	const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 	const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+	const navigate = useNavigate();
 
 	useEffect(() => {
 		const fetchProfile = async () => {
@@ -230,7 +232,7 @@ export function DashboardLayout({ role }: DashboardLayoutProps) {
 			<AppSidebar
 				role={role}
 				user={user}
-				logout={logout}
+				logout={() => dispatch(logout())}
 				currentPath={location.pathname}
 				userProfile={userProfile}
 			/>

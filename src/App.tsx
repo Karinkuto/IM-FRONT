@@ -7,7 +7,6 @@ import {
 	defaultRoleRedirects,
 	roleSpecificRoutes,
 } from "./config/routes.tsx";
-import { AuthProvider } from "./context/AuthContext";
 import { RoleLayout } from "./layouts/RoleLayout";
 import LoginPage from "./pages/Auth/LoginPage";
 import { Toaster } from "@/components/ui/sonner";
@@ -15,47 +14,45 @@ import { Toaster } from "@/components/ui/sonner";
 export default function App() {
 	return (
 		<ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-			<AuthProvider>
-				<ErrorBoundary>
-					<BrowserRouter>
-						<Routes>
-							<Route
-								path="/"
-								element={<Navigate to={defaultAppRedirect} replace />}
-							/>
-							<Route path="/login" element={<LoginPage />} />
+			<ErrorBoundary>
+				<BrowserRouter>
+					<Routes>
+						<Route
+							path="/"
+							element={<Navigate to={defaultAppRedirect} replace />}
+						/>
+						<Route path="/login" element={<LoginPage />} />
 
-							{VALID_ROLES.map((role) => {
-								const routesForRole = roleSpecificRoutes[role];
-								const defaultRouteForRole =
-									routesForRole.find((r) => r.isIndex)?.path ||
-									defaultRoleRedirects[role];
+						{VALID_ROLES.map((role) => {
+							const routesForRole = roleSpecificRoutes[role];
+							const defaultRouteForRole =
+								routesForRole.find((r) => r.isIndex)?.path ||
+								defaultRoleRedirects[role];
 
-								return (
-									<Route key={role} path={`/${role}`} element={<RoleLayout />}>
+							return (
+								<Route key={role} path={`/${role}`} element={<RoleLayout />}>
+									<Route
+										index
+										element={<Navigate to={defaultRouteForRole} replace />}
+									/>
+									{routesForRole.map((routeConfig) => (
 										<Route
-											index
-											element={<Navigate to={defaultRouteForRole} replace />}
+											key={routeConfig.path}
+											path={routeConfig.path}
+											element={routeConfig.element}
 										/>
-										{routesForRole.map((routeConfig) => (
-											<Route
-												key={routeConfig.path}
-												path={routeConfig.path}
-												element={routeConfig.element}
-											/>
-										))}
-										<Route
-											path="*"
-											element={<Navigate to={`/${role}`} replace />}
-										/>
-									</Route>
-								);
-							})}
-						</Routes>
-					</BrowserRouter>
-				</ErrorBoundary>
-				<Toaster />
-			</AuthProvider>
+									))}
+									<Route
+										path="*"
+										element={<Navigate to={`/${role}`} replace />}
+									/>
+								</Route>
+							);
+						})}
+					</Routes>
+				</BrowserRouter>
+			</ErrorBoundary>
+			<Toaster />
 		</ThemeProvider>
 	);
 }
