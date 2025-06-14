@@ -20,6 +20,7 @@ import {
 	SidebarMenuItem,
 	SidebarProvider,
 	SidebarRail,
+	SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { footerNavigation, navigationData } from "@/config/navigation";
 import type { ValidRole } from "@/config/roles";
@@ -33,13 +34,11 @@ interface AppSidebarProps {
 	role: ValidRole;
 	logout: () => void;
 	currentPath: string;
-	user: RootState["auth"]["user"];
 	footerContent?: ReactNode;
 }
 
 function AppSidebar({
 	role,
-	user,
 	logout,
 	currentPath,
 	footerContent,
@@ -55,22 +54,24 @@ function AppSidebar({
 	return (
 		<Sidebar variant="inset">
 			<SidebarHeader className="p-4">
-				<div className="flex items-center gap-3">
-					<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							viewBox="0 0 24 24"
-							fill="currentColor"
-							className="h-6 w-6"
-							aria-hidden="true"
-						>
-							<path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-						</svg>
-					</div>
-					<div>
-						<div className="font-semibold text-lg">Tila</div>
-						<div className="text-xs text-muted-foreground">
-							Insurance Platform
+				<div className="flex items-center justify-between w-full">
+					<div className="flex items-center gap-3">
+						<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								viewBox="0 0 24 24"
+								fill="currentColor"
+								className="h-6 w-6"
+								aria-hidden="true"
+							>
+								<path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+							</svg>
+						</div>
+						<div className="flex flex-col">
+							<div className="font-semibold text-lg">Tila</div>
+							<div className="text-xs text-muted-foreground">
+								Insurance Platform
+							</div>
 						</div>
 					</div>
 				</div>
@@ -102,7 +103,7 @@ function AppSidebar({
 					</SidebarGroup>
 				))}
 			</SidebarContent>
-			<SidebarFooter className="p-4 mt-auto">
+			<SidebarFooter className="p-4 mt-auto flex flex-col gap-8">
 				<SidebarMenu>
 					{footerNavigation.map((item) => (
 						<SidebarMenuItem key={item.link}>
@@ -159,28 +160,30 @@ export function SharedDashboardLayout({
 		<SidebarProvider defaultOpen={true}>
 			<AppSidebar
 				role={role}
-				user={user}
 				logout={() => dispatch(logout())}
 				currentPath={location.pathname}
 				footerContent={footerContent}
 			/>
 			<SidebarInset>
-				<div className="flex h-16 items-center justify-between px-6">
-					<Breadcrumb>
-						<BreadcrumbList>
-							<BreadcrumbItem>
-								<BreadcrumbPage>Dashboard</BreadcrumbPage>
-							</BreadcrumbItem>
-							{breadcrumbPageContent !== "Home" && (
-								<>
-									<BreadcrumbSeparatorUI />
-									<BreadcrumbItem>
-										<BreadcrumbPage>{breadcrumbPageContent}</BreadcrumbPage>
-									</BreadcrumbItem>
-								</>
-							)}
-						</BreadcrumbList>
-					</Breadcrumb>
+				<div className="flex h-16 items-center justify-between px-6 w-full">
+					<div className="flex items-center gap-4">
+						<SidebarTrigger className="-ml-2" />
+						<Breadcrumb>
+							<BreadcrumbList>
+								<BreadcrumbItem>
+									<BreadcrumbPage>Dashboard</BreadcrumbPage>
+								</BreadcrumbItem>
+								{breadcrumbPageContent !== "Home" && (
+									<>
+										<BreadcrumbSeparatorUI />
+										<BreadcrumbItem>
+											<BreadcrumbPage>{breadcrumbPageContent}</BreadcrumbPage>
+										</BreadcrumbItem>
+									</>
+								)}
+							</BreadcrumbList>
+						</Breadcrumb>
+					</div>
 					<ModeToggle />
 				</div>
 				<div className="container mx-auto px-6 py-8">

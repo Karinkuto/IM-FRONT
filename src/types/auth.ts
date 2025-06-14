@@ -2,6 +2,7 @@
 export type UserRole = "admin" | "customer" | "insurer";
 
 export type User = {
+  temporary_password: any;
   id: number;
   email?: string | null;
   phone_number?: string | null;

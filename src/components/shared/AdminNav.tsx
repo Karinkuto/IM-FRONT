@@ -4,22 +4,27 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Badge } from "@/components/ui/badge";
 import type { User } from "@/types/auth";
+import { useNavigate } from "react-router-dom";
 
 interface AdminNavProps {
 	user: User;
 }
 
 export function AdminNav({ user }: AdminNavProps) {
+	const navigate = useNavigate();
+
 	const userInitials = user.name
-		? user.name.substring(0, 2).toUpperCase()
+		? user.name
+			.split(" ")
+			.map((n) => n[0])
+			.join("")
+			.toUpperCase()
+			.slice(0, 2)
 		: "AD";
 
 	const handleProfileClick = () => {
-		// Assuming there will be an admin profile settings page later
-		// For now, it could navigate to /admin/settings or just be a placeholder
-		console.log("Admin profile click");
+		navigate("/admin/settings?tab=profile");
 	};
 
 	return (
@@ -29,21 +34,28 @@ export function AdminNav({ user }: AdminNavProps) {
 					size="lg"
 					className="hover:bg-transparent dark:hover:bg-transparent cursor-pointer"
 					onClick={handleProfileClick}
-					aria-label="View admin profile settings"
+					aria-label="View profile settings"
 				>
 					<Avatar className="h-10 w-10 rounded-md">
-						<AvatarImage src="/avatars/01.png" alt="@shadcn" />
-						<AvatarFallback className="rounded-md bg-black text-white">
-							{userInitials}
-						</AvatarFallback>
+						{user.avatar ? (
+							<AvatarImage
+								src={user.avatar}
+								alt={user.name || "Admin"}
+								className="object-cover"
+							/>
+						) : (
+							<AvatarFallback className="rounded-md bg-black text-white">
+								{userInitials}
+							</AvatarFallback>
+						)}
 					</Avatar>
-					<div className="grid flex-1 text-left text-sm leading-tight gap-y-1">
+					<div className="grid flex-1 text-left text-sm leading-tight">
 						<span className="truncate font-medium text-primary">
-							{user.email}
+							{user.name || user.email}
 						</span>
-						<Badge variant="secondary" className="w-fit">
-							{user.role}
-						</Badge>
+						<span className="truncate text-xs text-muted-foreground capitalize">
+							{user.role?.toLowerCase() || 'admin'}
+						</span>
 					</div>
 				</SidebarMenuButton>
 			</SidebarMenuItem>

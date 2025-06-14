@@ -6,6 +6,11 @@ import type { User } from "@/types/auth";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { useRegisterMutation } from "@/redux/api/authApi";
+import { CreateUserDialog } from "@/components/admin-components/users/CreateUserDialog";
+// Remove unused dispatch import
 
 const columns: ColumnDef<User>[] = [
   {
@@ -52,25 +57,34 @@ const columns: ColumnDef<User>[] = [
 ];
 
 export default function UserManagementPage() {
-  const { data: users = [], isLoading, error } = useGetAllUsersQuery();
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const { data: users = [], isLoading, isError, error, refetch } = useGetAllUsersQuery();
+  const [registerUser] = useRegisterMutation();
+  // Dispatch can be added here when needed for future features
+
+  const handleCreateUser = async (values: { email: string }) => {
+    try {
+      // Always create an insurer user with auto-generated password
+      await registerUser({
+        email: values.email,
+        role: 'insurer'
+      }).unwrap();
+      
+      toast.success("Insurer user created successfully");
+      refetch();
+      return true;
+    } catch (error) {
+      const errorMessage = error?.data?.message || "Failed to create insurer user";
+      toast.error(errorMessage);
+      return false;
+    }
+  };
 
   if (isLoading) {
     return <LoadingSpinner />;
   }
 
-  if (error) {
-    return (
-      <div className="text-destructive">
-        Failed to load users: {"error" in error ? error.error : "Unknown error"}
-      </div>
-    );
-  }
-
-  if (isLoading) {
-    return <LoadingSpinner />;
-  }
-
-  if (error) {
+  if (isError) {
     return (
       <div className="flex justify-center items-center h-full min-h-[calc(100vh-80px)] text-red-500">
         <p className="text-lg font-medium">
@@ -82,22 +96,28 @@ export default function UserManagementPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-start">
-        <div>
-          <h1 className="text-2xl font-bold">User Management</h1>
-          <p className="text-muted-foreground text-sm">
-            View and manage all system users and their permissions
-          </p>
-        </div>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Add User
-        </Button>
+      <div>
+        <h1 className="text-2xl font-bold">User Management</h1>
+        <p className="text-muted-foreground text-sm">
+          View and manage all system users and their permissions
+        </p>
       </div>
       
       <DataTable
         columns={columns}
         data={users}
+        toolbarActionsPrefix={
+          <Button onClick={() => setIsCreateDialogOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Add User
+          </Button>
+        }
+      />
+      
+      <CreateUserDialog
+        isOpen={isCreateDialogOpen}
+        onOpenChange={setIsCreateDialogOpen}
+        onUserCreate={handleCreateUser}
       />
     </div>
   );
