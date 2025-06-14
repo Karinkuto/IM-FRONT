@@ -1,9 +1,9 @@
-import { useState, useCallback, useEffect } from "react";
-import { ProfilePreview } from "../page-sections/profile/ProfilePreview";
-import { ProfileForm } from "../page-sections/profile/ProfileForm";
-import { toast } from "sonner";
-import { profileService, type UserProfile } from "@/services/profileService";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { type UserProfile, profileService } from "@/services/profileService";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
+import { ProfileForm } from "../page-sections/profile/ProfileForm";
+import { ProfilePreview } from "../page-sections/profile/ProfilePreview";
 
 export default function ProfilePage() {
 	const [userData, setUserData] = useState<UserProfile | null>(null);

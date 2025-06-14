@@ -1,6 +1,12 @@
+import type { RootState } from "@/redux/store";
 import type { BaseQueryFn } from "@reduxjs/toolkit/query";
-import type { AxiosRequestConfig, AxiosError } from "axios";
-import api from "./axios";
+import axios from "axios";
+import type { AxiosError, AxiosRequestConfig } from "axios";
+
+const api = axios.create({
+	baseURL: import.meta.env.VITE_BACKEND_URL,
+	withCredentials: true,
+});
 
 export const axiosBaseQuery =
 	(): BaseQueryFn<
@@ -12,9 +18,17 @@ export const axiosBaseQuery =
 			headers?: AxiosRequestConfig["headers"];
 		},
 		unknown,
-		unknown
+		unknown,
+		{ arg?: unknown; baseQueryApi: { getState: () => RootState } }
 	> =>
-	async ({ url, method, data, params, headers }) => {
+	async ({ url, method, data, params, headers }, { getState }) => {
+		const state = getState();
+		const token = state.auth.token;
+		if (token) {
+			headers = headers || {};
+			headers.Authorization = `Bearer ${token}`;
+		}
+
 		try {
 			const result = await api({ url, method, data, params, headers });
 			return { data: result.data };

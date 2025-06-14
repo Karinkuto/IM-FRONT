@@ -1,3 +1,6 @@
+import { Button } from "@/components/ui/button";
+import { CheckIcon } from "lucide-react";
+import { AnimatePresence, type Variants, motion } from "motion/react";
 import React, {
 	useState,
 	Children,
@@ -6,9 +9,6 @@ import React, {
 	type HTMLAttributes,
 	type ReactNode,
 } from "react";
-import { AnimatePresence, motion, type Variants } from "motion/react";
-import { Button } from "@/components/ui/button";
-import { CheckIcon } from "lucide-react";
 
 interface StepperProps extends HTMLAttributes<HTMLDivElement> {
 	children: ReactNode;

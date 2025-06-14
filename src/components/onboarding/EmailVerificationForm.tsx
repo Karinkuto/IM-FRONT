@@ -1,8 +1,3 @@
-import React, { useImperativeHandle, useState } from "react";
-import { useForm } from "react-hook-form";
-import type { UseFormReturn } from "react-hook-form";
-import * as z from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import {
 	Form,
@@ -15,10 +10,15 @@ import {
 import {
 	InputOTP,
 	InputOTPGroup,
-	InputOTPSlot,
 	InputOTPSeparator,
+	InputOTPSlot,
 } from "@/components/ui/input-otp";
+import { zodResolver } from "@hookform/resolvers/zod";
+import React, { useImperativeHandle, useState } from "react";
+import { useForm } from "react-hook-form";
+import type { UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";
+import * as z from "zod";
 
 const otpVerificationSchema = z.object({
 	otp_code: z

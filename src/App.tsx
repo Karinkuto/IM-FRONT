@@ -1,5 +1,6 @@
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ThemeProvider } from "@/components/shared/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { VALID_ROLES } from "./config/roles";
 import {
@@ -9,7 +10,6 @@ import {
 } from "./config/routes.tsx";
 import { RoleLayout } from "./layouts/RoleLayout";
 import LoginPage from "./pages/Auth/LoginPage";
-import { Toaster } from "@/components/ui/sonner";
 
 export default function App() {
 	return (

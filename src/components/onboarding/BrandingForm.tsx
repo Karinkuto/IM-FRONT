@@ -1,20 +1,20 @@
-import React, { useImperativeHandle } from "react";
-import { useForm } from "react-hook-form";
-import type { UseFormReturn } from "react-hook-form";
-import * as z from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+import AvatarUploader from "@/components/avatar-uploader"; // New import
 // import { AlertCircleIcon, ImageUpIcon, XIcon } from "lucide-react"; // Removed as useFileUpload is no longer needed
 // import { useFileUpload } from "@/hooks/use-file-upload"; // Removed as useFileUpload is no longer needed
 import {
 	Form,
 	FormControl,
+	FormDescription,
 	FormField,
 	FormItem,
 	FormLabel,
-	FormDescription,
 	FormMessage,
 } from "@/components/ui/form";
-import AvatarUploader from "@/components/avatar-uploader"; // New import
+import { zodResolver } from "@hookform/resolvers/zod";
+import React, { useImperativeHandle } from "react";
+import { useForm } from "react-hook-form";
+import type { UseFormReturn } from "react-hook-form";
+import * as z from "zod";
 
 const brandingSchema = z.object({
 	logo_url: z.union([z.instanceof(Blob), z.string()]).nullable(), // Allows Blob, string, or null

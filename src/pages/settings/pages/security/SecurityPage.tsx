@@ -1,6 +1,6 @@
-import { useState, useCallback } from "react";
-import { SecurityForm } from "../page-sections/security/SecurityForm";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
+import { SecurityForm } from "../page-sections/security/SecurityForm";
 
 export default function SecurityPage() {
 	const [isSubmitting, setIsSubmitting] = useState(false);

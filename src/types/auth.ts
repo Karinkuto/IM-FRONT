@@ -1,10 +1,20 @@
-import type { InsurerProfile } from "./insurer";
+
+export type UserRole = "admin" | "customer" | "insurer";
 
 export type User = {
-	role: "admin" | "customer" | "insurer";
-	id: string;
-	name: string;
-	email?: string;
+  id: number;
+  email?: string | null;
+  phone_number?: string | null;
+  fin?: string | null;
+  verified: boolean;
+  roles: Array<{
+    id: number;
+    name: UserRole;
+    created_at: string;
+    updated_at: string;
+  }>;
+  // For backward compatibility
+  role?: UserRole;
 };
 
 export type AuthContextType = {

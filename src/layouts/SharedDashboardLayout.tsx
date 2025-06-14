@@ -1,16 +1,4 @@
-import { InsurerNav } from "@/components/shared/InsurerNav";
 import { ModeToggle } from "@/components/shared/mode-toggle";
-import { footerNavigation, navigationData } from "@/config/navigation";
-import { useSelector, useDispatch } from "react-redux";
-import { logout } from "@/redux/slices/authSlice";
-import type { RootState } from "@/redux/store";
-import type { InsurerProfile } from "@/types/insurer";
-import { useCallback, useEffect, useState } from "react";
-import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { profileService, type UserProfile } from "@/services/profileService";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { InsurerOnboardingStepper } from "@/components/admin-components/products/InsurerOnboardingStepper";
-
 import {
 	Breadcrumb,
 	BreadcrumbItem,
@@ -32,17 +20,21 @@ import {
 	SidebarMenuItem,
 	SidebarProvider,
 	SidebarRail,
-	SidebarSeparator,
-	SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { footerNavigation, navigationData } from "@/config/navigation";
 import type { ValidRole } from "@/config/roles";
+import { logout } from "@/redux/slices/authSlice";
+import type { RootState } from "@/redux/store";
+import type { ReactNode } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 
 interface AppSidebarProps {
 	role: ValidRole;
 	logout: () => void;
 	currentPath: string;
-	userProfile: UserProfile | null;
 	user: RootState["auth"]["user"];
+	footerContent?: ReactNode;
 }
 
 function AppSidebar({
@@ -50,7 +42,7 @@ function AppSidebar({
 	user,
 	logout,
 	currentPath,
-	userProfile,
+	footerContent,
 }: AppSidebarProps) {
 	const navigate = useNavigate();
 	const navSections = navigationData[role] || [];
@@ -136,95 +128,31 @@ function AppSidebar({
 						</SidebarMenuItem>
 					))}
 				</SidebarMenu>
-				<SidebarSeparator className="my-4" />{" "}
-				{/* Added separator for visual distinction */}
-				{userProfile && (
-					<InsurerNav
-						user={
-							{
-								id: userProfile.id || "",
-								role: "insurer",
-								companyName: userProfile.companyName || "User Name",
-								email: userProfile.email || "user@example.com",
-								description: userProfile.description || "",
-								contactEmail: userProfile.contactEmail || "",
-								contactPhone: userProfile.contactPhone || "",
-								logo_url:
-									userProfile.logo_url instanceof Blob
-										? URL.createObjectURL(userProfile.logo_url)
-										: userProfile.logo_url,
-								profile_complete: true,
-							} as InsurerProfile
-						}
-					/>
-				)}
+				{footerContent}
 			</SidebarFooter>
 			<SidebarRail />
 		</Sidebar>
 	);
 }
 
-export interface DashboardLayoutProps {
+interface SharedDashboardLayoutProps {
 	role: ValidRole;
+	breadcrumbPageContent: string;
+	footerContent?: ReactNode; // Optional prop for role-specific footer content
 }
 
-export function DashboardLayout({ role }: DashboardLayoutProps) {
+export function SharedDashboardLayout({
+	role,
+	breadcrumbPageContent,
+	footerContent,
+}: SharedDashboardLayoutProps) {
 	const user = useSelector((state: RootState) => state.auth.user);
 	const dispatch = useDispatch();
 	const location = useLocation();
-	const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-	const [isLoadingProfile, setIsLoadingProfile] = useState(true);
-	const navigate = useNavigate();
 
-	useEffect(() => {
-		const fetchProfile = async () => {
-			try {
-				const data = await profileService.fetchProfile();
-				setUserProfile(data);
-			} catch (error) {
-				console.error(
-					"Failed to fetch user profile in DashboardLayout:",
-					error,
-				);
-			} finally {
-				setIsLoadingProfile(false);
-			}
-		};
-		fetchProfile();
-	}, []);
-
-	const handleOnboardingComplete = useCallback((profile: InsurerProfile) => {
-		// Update the userProfile state to reflect the completed onboarding
-		setUserProfile((prev) =>
-			prev ? { ...prev, ...profile, profile_complete: true } : profile,
-		);
-		// Optionally navigate away from /admin to the home route if needed,
-		// but for now, we'll let it stay on the current route
-	}, []);
-
-	const pathSegments = location.pathname.split("/").filter(Boolean);
-	let breadcrumbPageContent = "Home";
-
-	// Check if the path is a quotation details page (e.g., /admin/quotation-requests/123)
-	const isQuotationDetailsPage =
-		pathSegments.length >= 3 &&
-		pathSegments[1] === "quotation-requests" &&
-		!Number.isNaN(Number.parseInt(pathSegments[2]));
-
-	if (location.pathname === "/admin/settings/profile") {
-		breadcrumbPageContent = "Profile Settings";
-	} else if (location.pathname === "/admin/settings/security") {
-		breadcrumbPageContent = "Security Settings";
-	} else if (isQuotationDetailsPage) {
-		breadcrumbPageContent = `Quotation Request #${pathSegments[2]}`;
-	} else if (pathSegments.length > 1) {
-		breadcrumbPageContent = pathSegments[pathSegments.length - 1]
-			.replace(/-/g, " ")
-			.replace(/\b\w/g, (char) => char.toUpperCase());
-	}
-
-	if (isLoadingProfile || !userProfile) {
-		return <LoadingSpinner />;
+	if (!user) {
+		// Should theoretically be handled by RoleLayout, but as a fallback
+		return null; // Or a loading spinner, depending on desired behavior
 	}
 
 	return (
@@ -234,7 +162,7 @@ export function DashboardLayout({ role }: DashboardLayoutProps) {
 				user={user}
 				logout={() => dispatch(logout())}
 				currentPath={location.pathname}
-				userProfile={userProfile}
+				footerContent={footerContent}
 			/>
 			<SidebarInset>
 				<div className="flex h-16 items-center justify-between px-6">
@@ -259,11 +187,6 @@ export function DashboardLayout({ role }: DashboardLayoutProps) {
 					<Outlet />
 				</div>
 			</SidebarInset>
-			{userProfile && !userProfile.profile_complete && (
-				<InsurerOnboardingStepper
-					onOnboardingComplete={handleOnboardingComplete}
-				/>
-			)}
 		</SidebarProvider>
 	);
 }

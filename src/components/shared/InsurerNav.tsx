@@ -1,4 +1,3 @@
-import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
 	SidebarMenu,
@@ -6,6 +5,7 @@ import {
 	SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import type { InsurerProfile } from "@/types/insurer";
+import { useNavigate } from "react-router-dom";
 
 interface InsurerNavProps {
 	user: InsurerProfile;

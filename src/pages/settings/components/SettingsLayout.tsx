@@ -1,7 +1,7 @@
-import type { ReactNode } from "react";
-import { NavLink, Outlet } from "react-router-dom";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import type { ReactNode } from "react";
+import { NavLink, Outlet } from "react-router-dom";
 
 export type SettingsTab = "profile" | "security";
 
@@ -11,10 +11,6 @@ export interface TabType {
 	to: string;
 	icon: ReactNode;
 }
-
-
-
-
 
 interface SettingsLayoutProps {
 	children?: ReactNode;

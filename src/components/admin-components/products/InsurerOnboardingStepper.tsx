@@ -1,15 +1,15 @@
-import Stepper, { Step } from "@/components/shared/Stepper";
-import { useRef, useState, useCallback, useEffect } from "react";
-import type React from "react";
 import { ApiConfigurationForm } from "@/components/onboarding/ApiConfigurationForm";
 import { BrandingForm } from "@/components/onboarding/BrandingForm";
 import { CompanyInformationForm } from "@/components/onboarding/CompanyInformationForm";
 import { ContactDetailsForm } from "@/components/onboarding/ContactDetailsForm";
 import { PasswordResetForm } from "@/components/onboarding/PasswordResetForm";
+import Stepper, { Step } from "@/components/shared/Stepper";
+import { type UserProfile, profileService } from "@/services/profileService";
 import type { InsurerProfile } from "@/types/insurer";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type React from "react";
 import type { UseFormReturn } from "react-hook-form";
 import * as z from "zod";
-import { profileService, type UserProfile } from "@/services/profileService";
 
 const passwordResetSchema = z
 	.object({

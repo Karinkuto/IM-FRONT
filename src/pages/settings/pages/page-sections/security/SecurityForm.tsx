@@ -1,11 +1,11 @@
-import type { ChangeEvent } from "react";
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Check, KeyRound, Lock } from "lucide-react";
+import type { ChangeEvent } from "react";
+import { useState } from "react";
 import { SettingsSection } from "../../../components/SettingsSection";
-import { Card, CardContent } from "@/components/ui/card";
-import { Lock, KeyRound, Check } from "lucide-react";
 
 interface SecurityFormProps {
 	onSubmit: (data: {

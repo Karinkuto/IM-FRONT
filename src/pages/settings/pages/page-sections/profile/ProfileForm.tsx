@@ -1,13 +1,13 @@
-import type { ChangeEvent } from "react";
-import { useState, useCallback } from "react";
+import AvatarUploader from "@/components/avatar-uploader";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Building2, Mail, Phone, Text } from "lucide-react";
+import type { ChangeEvent } from "react";
+import { useCallback, useState } from "react";
 import { SettingsSection } from "../../../components/SettingsSection";
-import { Card, CardContent } from "@/components/ui/card";
-import { Building2, Mail, Text, Phone } from "lucide-react";
-import AvatarUploader from "@/components/avatar-uploader";
 
 interface ProfileFormProps {
 	initialData: {

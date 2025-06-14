@@ -4,6 +4,7 @@ import {
 	LogOut,
 	Settings,
 	ShieldCheck,
+	Users,
 } from "lucide-react";
 
 export type NavItem = {
@@ -20,7 +21,11 @@ export type NavItemGroup = {
 
 export const navigationData: Record<string, NavItemGroup[]> = {
 	admin: [
-		// Super admin navigation goes here in the future
+		{
+			title: "MANAGEMENT",
+			items: [{ link: "/admin/users", label: "User Management", icon: Users }],
+		},
+		// Future super admin navigation goes here
 	],
 	insurer: [
 		{

@@ -2,10 +2,10 @@ import { LoginForm } from "@/components/auth/LoginForm";
 import { defaultRoleRedirects } from "@/config/routes";
 import { useLoginMutation } from "@/redux/api/authApi";
 import { setCredentials } from "@/redux/slices/authSlice";
-import { useDispatch } from "react-redux";
-import { useSelector } from "react-redux";
 import type { RootState } from "@/redux/store";
 import { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -20,23 +20,48 @@ export default function LoginPage() {
 	const user = useSelector((state: RootState) => state.auth.user);
 
 	useEffect(() => {
-		document.title = "SecureGuard | Login";
+		document.title = "Tila | Login";
 		if (user) {
-			const redirectPath = defaultRoleRedirects[user.role];
-			navigate(redirectPath);
+			// Get the first role from the roles array
+			const userRole = user.roles?.[0]?.name;
+			
+			if (userRole && defaultRoleRedirects[userRole]) {
+				const redirectPath = defaultRoleRedirects[userRole];
+				navigate(redirectPath);
+			}
 		}
 	}, [user, navigate]);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		try {
-			const result = await login({ email, password }).unwrap();
+			const response = await login({ email, password }).unwrap();
+			
+			// The response has the structure: { data: { access_token: string, user: User } }
+			const { access_token, user: userData } = response.data;
+			
+			if (!userData || !access_token) {
+				throw new Error('Invalid response from server');
+			}
+
+			// Ensure roles array exists and has at least one role
+			if (!userData.roles || userData.roles.length === 0) {
+				throw new Error('User has no roles assigned');
+			}
+
+			// For backward compatibility, set the first role as the primary role
+			const userWithRole = {
+				...userData,
+				role: userData.roles[0].name
+			};
+
 			dispatch(
 				setCredentials({
-					user: { ...result.user, role: "insurer" },
-					token: result.access_token,
+					user: userWithRole,
+					token: access_token,
 				}),
 			);
+			
 			toast.success("Login successful!");
 			// Redirect will happen via useEffect
 		} catch (error: unknown) {

@@ -1,6 +1,6 @@
-import { SettingsSection } from "../../../components/SettingsSection";
-import { Building2, Mail, Phone, Text } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Building2, Mail, Phone, Text } from "lucide-react";
+import { SettingsSection } from "../../../components/SettingsSection";
 
 interface ProfilePreviewProps {
 	companyName: string;

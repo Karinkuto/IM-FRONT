@@ -1,8 +1,8 @@
+import { Lock, User } from "lucide-react";
+import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 import { SettingsLayout, type TabType } from "./components/SettingsLayout";
 import ProfilePage from "./pages/profile/ProfilePage";
 import SecurityPage from "./pages/security/SecurityPage";
-import { Routes, Route, Navigate, Outlet } from "react-router-dom";
-import { User, Lock } from "lucide-react";
 
 const TABS: TabType[] = [
 	{
