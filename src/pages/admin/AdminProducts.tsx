@@ -1,137 +1,155 @@
-import { InsurerOnboardingStepper } from "@/components/onboarding/InsurerOnboardingStepper";
+import { useState, useMemo } from "react";
+import { toast } from "sonner";
 import { ProductsTable } from "@/components/admin-components/products/ProductsTable.tsx";
 import { CreateProductDialog } from "@/components/admin-components/products/modals/CreateProductDialog";
 import { EditProductDialog } from "@/components/admin-components/products/modals/EditProductDialog";
 import type { Product } from "@/components/admin-components/products/product-data-types";
+import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import {
-	createProduct,
-	deleteProduct,
-	fetchProducts,
-	updateProduct,
-} from "@/services/productService";
-import type React from "react";
-import { useEffect, useState } from "react";
+	useCreateProductMutation,
+	useDeleteProductMutation,
+	useGetProductsQuery,
+	useUpdateProductMutation,
+	useGetInsuranceTypesQuery,
+} from "@/redux/api/productsApi";
+import { PlusCircle } from "lucide-react";
+
+interface InsuranceTypeApi {
+	id: number;
+	name: string;
+	description: string;
+}
 
 const AdminProducts: React.FC = () => {
-	const [products, setProducts] = useState<Product[]>([]);
-	const [isLoading, setIsLoading] = useState(true);
-	const [error, setError] = useState<Error | null>(null);
+	const {
+		data: products = [],
+		isLoading,
+		error,
+		refetch,
+	} = useGetProductsQuery();
+	const { data: insuranceTypes = [], isLoading: isLoadingInsuranceTypes } =
+		useGetInsuranceTypesQuery();
+	const [createProduct, { isLoading: isCreating }] = useCreateProductMutation();
+	const [updateProduct, { isLoading: isUpdating }] = useUpdateProductMutation();
+	const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
+
 	const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 	const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 	const [selectedProductForEdit, setSelectedProductForEdit] =
 		useState<Product | null>(null);
-	const [showOnboarding, setShowOnboarding] = useState(true);
 
-	useEffect(() => {
-		const getProducts = async () => {
-			setIsLoading(true);
-			setError(null);
-			try {
-				const fetchedProducts = await fetchProducts();
-				setProducts(fetchedProducts);
-			} catch (err) {
-				setError(err as Error);
-			} finally {
-				setIsLoading(false);
-			}
-		};
-		// Only fetch products if the onboarding stepper is not shown
-		if (!showOnboarding) {
-			getProducts();
+	const handleCreateProduct = async (newProduct: Omit<Product, "id">) => {
+		try {
+			await createProduct(newProduct).unwrap();
+			toast.success("Product created successfully");
+			setIsCreateDialogOpen(false);
+			refetch();
+		} catch (error) {
+			console.error("Failed to create product:", error);
+			toast.error("Failed to create product");
 		}
-	}, [showOnboarding]);
-
-	const handleCreateProduct = async (newProduct: Product) => {
-		const createdProduct = await createProduct(newProduct);
-		setProducts((prevProducts) => [...prevProducts, createdProduct]);
-		console.log("Creating product:", createdProduct);
 	};
 
-	const handleEditProduct = (productId: string) => {
-		const productToEdit = products.find((p) => p.id === productId);
+	const handleUpdateProduct = async (updatedProduct: Product) => {
+		if (!updatedProduct.id) return;
+
+		try {
+			await updateProduct(updatedProduct).unwrap();
+			toast.success("Product updated successfully");
+			setIsEditDialogOpen(false);
+			setSelectedProductForEdit(null);
+			refetch();
+		} catch (error) {
+			console.error("Failed to update product:", error);
+			toast.error("Failed to update product");
+		}
+	};
+
+	const handleDeleteProduct = async (productId: string) => {
+		try {
+			await deleteProduct(productId).unwrap();
+			toast.success("Product deleted successfully");
+			refetch();
+		} catch (error) {
+			console.error("Failed to delete product:", error);
+			toast.error("Failed to delete product");
+		}
+	};
+
+	const handleEditClick = (productId: string) => {
+		const productToEdit = products.find((p: Product) => p.id === productId);
 		if (productToEdit) {
 			setSelectedProductForEdit(productToEdit);
 			setIsEditDialogOpen(true);
 		}
 	};
 
-	const handleProductUpdate = async (updatedProduct: Product) => {
-		try {
-			const result = await updateProduct(updatedProduct);
-			setProducts((prevProducts) =>
-				prevProducts.map((p) => (p.id === result.id ? result : p)),
+	const productsWithInsuranceTypeNames = useMemo(() => {
+		return products.map((product: Product) => {
+			const insuranceType = insuranceTypes.find(
+				(type: InsuranceTypeApi) =>
+					type.id.toString() === product.insuranceTypeId,
 			);
-			console.log("Updating product:", result);
-		} catch (err) {
-			console.error("Failed to update product:", err);
-		}
-	};
+			return {
+				...product,
+				insuranceType: insuranceType
+					? insuranceType.name
+					: product.insuranceType,
+			};
+		});
+	}, [products, insuranceTypes]);
 
-	const handleDeleteProduct = async (productId: string) => {
-		const success = await deleteProduct(productId);
-		if (success) {
-			setProducts((prevProducts) =>
-				prevProducts.filter((p) => p.id !== productId),
-			);
-			console.log("Deleting product:", productId);
-		}
-	};
-
-	const handleOnboardingComplete = () => {
-		setShowOnboarding(false);
-	};
-
-	if (showOnboarding) {
+	if (isLoading || isLoadingInsuranceTypes) {
 		return (
-			<InsurerOnboardingStepper
-				onOnboardingComplete={handleOnboardingComplete}
-			/>
+			<div className="flex items-center justify-center h-64">
+				<LoadingSpinner />
+			</div>
 		);
-	}
-
-	if (isLoading) {
-		return <LoadingSpinner />;
 	}
 
 	if (error) {
 		return (
-			<div className="flex justify-center items-center h-full min-h-[calc(100vh-80px)] text-red-500">
-				<p className="text-lg font-medium">Error: {error.message}</p>
+			<div className="p-4 text-red-500">
+				Error loading products. Please try again later.
 			</div>
 		);
 	}
 
 	return (
-		<div className="container mx-auto">
-			<div className="flex justify-between items-start mb-6">
-				<div>
-					<h1 className="text-3xl font-bold">Manage Products</h1>
-					<p className="text-muted-foreground text-sm">
-						Create, edit, and delete insurance products offered to customers.
-					</p>
-				</div>
+		<div className="container py-8">
+			<div className="flex items-center justify-between mb-6">
+				<h1 className="text-2xl font-bold">Insurance Products</h1>
 			</div>
 
 			<ProductsTable
-				products={products}
-				onEditProduct={handleEditProduct}
-				onDeleteProduct={handleDeleteProduct}
+				products={productsWithInsuranceTypeNames}
+				onEdit={handleEditClick}
+				onDelete={handleDeleteProduct}
 				toolbarActionsPrefix={
-					<CreateProductDialog
-						isOpen={isCreateDialogOpen}
-						onOpenChange={setIsCreateDialogOpen}
-						onProductCreate={handleCreateProduct}
-					/>
+					<Button onClick={() => setIsCreateDialogOpen(true)}>
+						<PlusCircle className="mr-2 h-4 w-4" /> Create Product
+					</Button>
 				}
 			/>
 
-			<EditProductDialog
-				isOpen={isEditDialogOpen}
-				onOpenChange={setIsEditDialogOpen}
-				onProductUpdate={handleProductUpdate}
-				product={selectedProductForEdit}
+			<CreateProductDialog
+				isOpen={isCreateDialogOpen}
+				onOpenChange={setIsCreateDialogOpen}
+				onProductCreate={handleCreateProduct}
 			/>
+
+			{selectedProductForEdit && (
+				<EditProductDialog
+					isOpen={isEditDialogOpen}
+					onOpenChange={(openState) => {
+						setIsEditDialogOpen(openState);
+						if (!openState) setSelectedProductForEdit(null);
+					}}
+					onProductUpdate={handleUpdateProduct}
+					product={selectedProductForEdit}
+				/>
+			)}
 
 			{products.length === 0 && (
 				<p className="text-center text-gray-500 mt-4">

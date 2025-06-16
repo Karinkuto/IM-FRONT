@@ -22,7 +22,7 @@ export function InsurerNav({ user }: InsurerNavProps) {
 		.slice(0, 2);
 
 	const handleProfileClick = () => {
-		navigate("/admin/settings?tab=profile");
+		navigate("/insurer/settings?tab=profile");
 	};
 
 	return (

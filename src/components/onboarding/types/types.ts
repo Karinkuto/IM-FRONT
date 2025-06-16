@@ -34,9 +34,44 @@ export interface OnboardingFormContextType {
   isSubmitting: boolean;
 }
 
+// Password strength levels
+export type PasswordStrength = {
+  score: number;
+  label: 'Weak' | 'Fair' | 'Good' | 'Strong';
+  color: 'red' | 'orange' | 'yellow' | 'green';
+};
+
+// Password strength checker
+export const checkPasswordStrength = (password: string): PasswordStrength => {
+  let score = 0;
+  // Length check
+  if (password.length >= 12) score += 2;
+  else if (password.length >= 8) score += 1;
+  
+  // Contains lowercase
+  if (/[a-z]/.test(password)) score += 1;
+  // Contains uppercase
+  if (/[A-Z]/.test(password)) score += 1;
+  // Contains number
+  if (/[0-9]/.test(password)) score += 1;
+  // Contains special char
+  if (/[^A-Za-z0-9]/.test(password)) score += 1;
+  
+  // Determine strength level
+  if (score <= 2) return { score, label: 'Weak', color: 'red' };
+  if (score <= 3) return { score, label: 'Fair', color: 'orange' };
+  if (score <= 5) return { score, label: 'Good', color: 'yellow' };
+  return { score, label: 'Strong', color: 'green' };
+};
+
 // Validation schemas for each step
 export const passwordSchema = z.object({
-  password: z.string().min(8, "Password must be at least 8 characters"),
+  password: z.string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+    .regex(/[0-9]/, 'Password must contain at least one number')
+    .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character'),
   confirmPassword: z.string()
 }).refine(data => data.password === data.confirmPassword, {
   message: "Passwords don't match",

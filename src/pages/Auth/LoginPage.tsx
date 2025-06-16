@@ -24,7 +24,7 @@ export default function LoginPage() {
 		if (user) {
 			// Get the first role from the roles array
 			const userRole = user.roles?.[0]?.name;
-			
+
 			if (userRole && defaultRoleRedirects[userRole]) {
 				const redirectPath = defaultRoleRedirects[userRole];
 				navigate(redirectPath);
@@ -36,23 +36,27 @@ export default function LoginPage() {
 		e.preventDefault();
 		try {
 			const response = await login({ email, password }).unwrap();
-			
-			// The response has the structure: { data: { access_token: string, user: User } }
+
+			// The response has the structure: { success: boolean, data: { access_token: string, user: User } }
+			if (!response.success || !response.data) {
+				throw new Error("Invalid response from server");
+			}
+
 			const { access_token, user: userData } = response.data;
-			
+
 			if (!userData || !access_token) {
-				throw new Error('Invalid response from server');
+				throw new Error("Invalid user data or access token");
 			}
 
 			// Ensure roles array exists and has at least one role
 			if (!userData.roles || userData.roles.length === 0) {
-				throw new Error('User has no roles assigned');
+				throw new Error("User has no roles assigned");
 			}
 
 			// For backward compatibility, set the first role as the primary role
 			const userWithRole = {
 				...userData,
-				role: userData.roles[0].name
+				role: userData.roles[0].name,
 			};
 
 			dispatch(
@@ -61,18 +65,19 @@ export default function LoginPage() {
 					token: access_token,
 				}),
 			);
-			
+
 			toast.success("Login successful!");
-			// Redirect will happen via useEffect
 		} catch (error: unknown) {
-			let message = "Unknown error";
+			let message = "An error occurred during login";
 			if (
 				typeof error === "object" &&
 				error !== null &&
 				"data" in error &&
-				typeof (error as DataError).data?.message === "string"
+				error.data &&
+				typeof error.data === "object" &&
+				"message" in error.data
 			) {
-				message = (error as DataError).data?.message || "Unknown error";
+				message = String(error.data.message);
 			} else if (error instanceof Error) {
 				message = error.message;
 			}

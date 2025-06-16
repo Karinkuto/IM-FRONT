@@ -25,7 +25,7 @@ const authSlice = createSlice({
       action: PayloadAction<{ user: User; token: string }>
     ) => {
       const { user, token } = action.payload;
-      
+
       // Ensure we have a valid user with roles
       if (!user.roles || user.roles.length === 0) {
         return;

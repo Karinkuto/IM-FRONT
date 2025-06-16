@@ -2,113 +2,116 @@ import { SharedDashboardLayout } from "../SharedDashboardLayout";
 import { InsurerNav } from "@/components/shared/InsurerNav";
 import { InsurerOnboardingStepper } from "@/components/onboarding/InsurerOnboardingStepper";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { profileService, type UserProfile } from "@/services/profileService";
-import type { InsurerProfile } from "@/types/insurer";
+import { useGetProfileQuery } from "@/redux/api/authApi";
+import type { InsurerProfile } from "@/types/profile";
 import type { ValidRole } from "@/config/roles";
-import { useCallback, useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 
 export interface InsurerDashboardLayoutProps {
 	role: ValidRole;
 }
 
 export function InsurerDashboardLayout({ role }: InsurerDashboardLayoutProps) {
-	const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-	const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+	const { user } = useAuth();
+
+	// Only fetch profile when we have a valid user ID
+	const { data: userProfileDataResponse, refetch: refetchUserProfile } =
+		useGetProfileQuery(user?.id?.toString() || "", {
+			skip: !user?.id,
+		});
+
 	const portalRoot = useRef<HTMLDivElement | null>(null);
 
 	useEffect(() => {
 		// Create portal root for the overlay if it doesn't exist
-		const root = document.createElement('div');
-		root.id = 'onboarding-portal';
+		const root = document.createElement("div");
+		root.id = "onboarding-portal";
 		document.body.appendChild(root);
 		portalRoot.current = root;
 
 		return () => {
-			document.body.removeChild(root);
-		};
-	}, []);
-
-	useEffect(() => {
-		const fetchProfile = async () => {
-			try {
-				const data = await profileService.fetchProfile();
-				setUserProfile(data);
-			} catch (error) {
-				console.error(
-					"Failed to fetch user profile in InsurerDashboardLayout:",
-					error,
-				);
-			} finally {
-				setIsLoadingProfile(false);
+			const portalElement = document.getElementById("onboarding-portal");
+			if (portalElement) {
+				document.body.removeChild(portalElement);
 			}
 		};
-		fetchProfile();
 	}, []);
 
-	const handleOnboardingComplete = useCallback((profile: InsurerProfile) => {
-		setUserProfile((prev) =>
-			prev ? { ...prev, ...profile, profile_complete: true } : profile,
-		);
-	}, []);
+	const handleOnboardingComplete = useCallback(() => {
+		refetchUserProfile(); // Refetch user profile after onboarding completes
+	}, [refetchUserProfile]);
 
 	const location = useLocation();
 	const pathSegments = location.pathname.split("/").filter(Boolean);
 	let breadcrumbPageContent = "Home";
 
 	const isQuotationDetailsPage =
-		pathSegments.length >= 3 &&
-		pathSegments[1] === "quotation-requests" &&
-		!Number.isNaN(Number.parseInt(pathSegments[2]));
+		pathSegments.includes("quotations") && pathSegments.length > 2;
 
-	if (location.pathname === "/admin/settings/profile") {
-		breadcrumbPageContent = "Profile Settings";
-	} else if (location.pathname === "/admin/settings/security") {
-		breadcrumbPageContent = "Security Settings";
-	} else if (isQuotationDetailsPage) {
-		breadcrumbPageContent = `Quotation Request #${pathSegments[2]}`;
-	} else if (pathSegments.length > 1) {
-		breadcrumbPageContent = pathSegments[pathSegments.length - 1]
-			.replace(/-/g, " ")
-			.replace(/\b\w/g, (char) => char.toUpperCase());
+	if (isQuotationDetailsPage) {
+		breadcrumbPageContent = "Quotation Details";
+	} else if (pathSegments.includes("quotations")) {
+		breadcrumbPageContent = "Quotations";
+	} else if (pathSegments.includes("profile")) {
+		breadcrumbPageContent = "Profile";
+	} else if (pathSegments.includes("settings")) {
+		breadcrumbPageContent = "Settings";
+	} else if (pathSegments.includes("dashboard")) {
+		breadcrumbPageContent = "Dashboard";
 	}
 
-	if (isLoadingProfile || !userProfile) {
+	// Show loading spinner while profile is loading
+	if (!userProfileDataResponse?.data) {
 		return <LoadingSpinner />;
 	}
 
+	// Show onboarding stepper if user has a temporary password or incomplete profile
+	const showOnboardingStepper =
+		!userProfileDataResponse?.data?.insurer?.profile_complete;
+
 	return (
-		<SharedDashboardLayout
-			role={role}
-			breadcrumbPageContent={breadcrumbPageContent}
-			footerContent={
-				<InsurerNav
-					user={
-						{
-							id: userProfile.id || "",
-							role: "insurer",
-							companyName: userProfile.companyName || "User Name",
-							email: userProfile.email || "user@example.com",
-							description: userProfile.description || "",
-							contactEmail: userProfile.contactEmail || "",
-							contactPhone: userProfile.contactPhone || "",
-							logo_url:
-								userProfile.logo_url instanceof Blob
-									? URL.createObjectURL(userProfile.logo_url)
-									: userProfile.logo_url,
-							profile_complete: true,
-						} as InsurerProfile
-					}
-				/>
-			}
-		>
-			{!userProfile?.profile_complete && (
+		<>
+			{showOnboardingStepper && (
 				<div className="fixed inset-0 z-50">
 					<InsurerOnboardingStepper
 						onOnboardingComplete={handleOnboardingComplete}
 					/>
 				</div>
 			)}
-		</SharedDashboardLayout>
+			<SharedDashboardLayout
+				role={role}
+				breadcrumbPageContent={breadcrumbPageContent}
+				footerContent={
+					<InsurerNav
+						user={
+							{
+								id: String(userProfileDataResponse.data.id) || "",
+								role: "insurer",
+								companyName:
+									userProfileDataResponse.data.insurer?.name || "Insurer Name",
+								email:
+									userProfileDataResponse.data.email || "Insurer@example.com",
+								description:
+									userProfileDataResponse.data.insurer?.description || "",
+								contactEmail:
+									userProfileDataResponse.data.insurer?.contact_email || "",
+								contactPhone:
+									userProfileDataResponse.data.insurer?.contact_phone || "",
+								logo_url:
+									userProfileDataResponse.data.insurer?.logo_url instanceof Blob
+										? URL.createObjectURL(
+												userProfileDataResponse.data.insurer.logo_url,
+											)
+										: userProfileDataResponse.data.insurer?.logo_url || null,
+								profile_complete:
+									userProfileDataResponse.data.insurer?.profile_complete,
+							} as InsurerProfile
+						}
+					/>
+				}
+			/>
+		</>
 	);
 }

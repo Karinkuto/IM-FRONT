@@ -127,15 +127,12 @@ export default function AvatarUploader({
 
 	// Handle crop changes
 	const handleCropChange = useCallback((pixels: Area | null) => {
-		console.log('Crop area changed:', pixels);
 		setCroppedAreaPixels(pixels);
 	}, []);
 
 	// Apply the crop and close the dialog
 	const handleApply = async () => {
-		console.log('handleApply called with:', { previewUrl, croppedAreaPixels, fileId });
 		if (!previewUrl || !croppedAreaPixels) {
-			console.error("Missing data for crop");
 			if (fileId) removeFile(fileId);
 			return;
 		}
@@ -152,7 +149,6 @@ export default function AvatarUploader({
 
 			// 2. Create a new object URL for the cropped image
 			const newFinalUrl = URL.createObjectURL(croppedBlob);
-			console.log("Generated newFinalUrl:", newFinalUrl);
 
 			// 3. Clean up old URLs
 			if (previewUrl?.startsWith?.("blob:")) {
@@ -162,7 +158,7 @@ export default function AvatarUploader({
 			// 4. Update state with the new image
 			setFinalImageUrl(newFinalUrl);
 			setPreviewUrl(null);
-			
+
 			// 5. Convert blob to base64 for the parent component
 			const reader = new FileReader();
 			reader.onloadend = () => {
@@ -186,10 +182,8 @@ export default function AvatarUploader({
 
 	// Remove the current image
 	const handleRemoveImage = () => {
-		console.log('handleRemoveImage called, cleaning up');
 		// Cleanup of finalImageUrl is now handled by the useEffect hook
 		if (previewUrl?.startsWith?.("blob:")) {
-			console.log('Revoking preview URL:', previewUrl);
 			URL.revokeObjectURL(previewUrl);
 		}
 		setFinalImageUrl(null);
@@ -199,45 +193,39 @@ export default function AvatarUploader({
 
 	// Clean up object URLs on unmount or when finalImageUrl changes
 	useEffect(() => {
-		console.log('Cleanup effect: Current finalImageUrl:', finalImageUrl);
 		// Capture the current value of finalImageUrl when the effect is defined
 		const urlToRevokeOnUnmount = finalImageUrl;
 		return () => {
 			// Only revoke when component unmounts and if it's a blob URL
 			if (urlToRevokeOnUnmount?.startsWith?.("blob:")) {
-				console.log('Cleanup: Revoking URL:', urlToRevokeOnUnmount);
 				URL.revokeObjectURL(urlToRevokeOnUnmount);
-			} else {
-				console.log('Cleanup: No blob URL to revoke');
 			}
 		};
 	}, [finalImageUrl]); // Include finalImageUrl in dependencies
 
 	// Update finalImageUrl when initialImageUrl changes from parent
 	useEffect(() => {
-		console.log('initialImageUrl changed:', { initialImageUrl, currentFinalUrl: finalImageUrl });
 		// Skip update if initialImageUrl is the same as current finalImageUrl
 		// or if initialImageUrl is null/undefined and we already have a finalImageUrl
-		if (initialImageUrl === finalImageUrl || (!initialImageUrl && finalImageUrl)) {
+		if (
+			initialImageUrl === finalImageUrl ||
+			(!initialImageUrl && finalImageUrl)
+		) {
 			return;
 		}
-		
-		console.log('Updating finalImageUrl from parent:', initialImageUrl);
+
 		setFinalImageUrl(initialImageUrl);
 	}, [initialImageUrl, finalImageUrl]); // Include finalImageUrl in dependencies
 
 	// Open crop dialog when a new file is selected
 	useEffect(() => {
-		console.log('useEffect - fileId changed:', { fileId, previousFileId: previousFileIdRef.current, filePreview });
 		if (fileId && fileId !== previousFileIdRef.current) {
-			console.log('New file selected, setting preview and opening dialog');
 			previousFileIdRef.current = fileId;
 			if (filePreview) {
-				console.log('Setting preview URL:', filePreview);
 				setPreviewUrl(filePreview);
 				setIsDialogOpen(true);
 			} else {
-				console.error('filePreview is null or undefined');
+				console.error("filePreview is null or undefined");
 			}
 		}
 	}, [fileId, filePreview]);
@@ -279,18 +267,15 @@ export default function AvatarUploader({
 				/* Preview mode - shown after image is selected and cropped */
 				<div className="flex flex-col items-center gap-4">
 					<div className="relative w-40 h-40 rounded-lg overflow-hidden border">
-						{console.log('Rendering preview with finalImageUrl:', finalImageUrl)}
 						<img
 							src={finalImageUrl || ""}
 							alt="Company logo preview"
 							className="w-full h-full object-cover"
 							onLoad={(e) => {
-								console.log('Image loaded successfully:', finalImageUrl);
 								// Revoke previous blob URL only after the new image has loaded
 								const currentSrc = (e.target as HTMLImageElement).src;
 								const oldUrl = (e.target as HTMLImageElement).dataset.oldUrl;
 								if (oldUrl?.startsWith("blob:") && oldUrl !== currentSrc) {
-									console.log('Revoking old URL:', oldUrl);
 									URL.revokeObjectURL(oldUrl);
 								}
 								// Store the current src for the next load event to compare
@@ -299,17 +284,11 @@ export default function AvatarUploader({
 							onError={(e) => {
 								const target = e.target as HTMLImageElement;
 								const erroredSrc = target.src;
-								console.error('Error loading image:', { 
-									erroredSrc, 
-									isBlob: erroredSrc.startsWith("blob:"),
-									error: e 
-								});
-								
+
 								if (erroredSrc.startsWith("blob:")) {
-									console.log('Revoking errored blob URL:', erroredSrc);
 									URL.revokeObjectURL(erroredSrc);
 								}
-								target.src = ''; // Clear the broken image
+								target.src = ""; // Clear the broken image
 								setFinalImageUrl(null); // Clear the image on error
 							}}
 							data-old-url={
@@ -351,9 +330,8 @@ export default function AvatarUploader({
 			<input
 				{...getInputProps({
 					onChange: (e) => {
-						console.log('File input changed:', e.target.files);
 						getInputProps().onChange?.(e);
-					}
+					},
 				})}
 				className="hidden"
 				id="avatar-upload"

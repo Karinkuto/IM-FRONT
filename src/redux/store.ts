@@ -1,6 +1,7 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { authApi } from "./api/authApi";
 import { usersApi } from "./api/usersApi";
+import { productsApi } from "./api/productsApi";
 import authReducer from "./slices/authSlice";
 
 export const store = configureStore({
@@ -8,6 +9,7 @@ export const store = configureStore({
     auth: authReducer,
     [authApi.reducerPath]: authApi.reducer,
     [usersApi.reducerPath]: usersApi.reducer,
+    [productsApi.reducerPath]: productsApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
@@ -17,7 +19,7 @@ export const store = configureStore({
         ignoredPaths: ['items.dates'],
       },
     })
-    .concat(authApi.middleware, usersApi.middleware),
+    .concat(authApi.middleware, usersApi.middleware, productsApi.middleware),
   devTools: process.env.NODE_ENV !== 'production',
 });
 

@@ -1,6 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
-import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
+import {
+	Dialog,
+	DialogContent,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+	DialogDescription,
+} from "@/components/ui/dialog";
 import {
 	Form,
 	FormControl,
@@ -15,15 +22,29 @@ import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Info, Save } from "lucide-react";
 import type React from "react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import {
 	type ComboboxOption,
 	type Product,
-	coverageTypeOptions,
 	insuranceTypeOptions,
 } from "../product-data-types";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/redux/store";
+
+interface InsuranceTypeApi {
+	id: number;
+	name: string;
+	description: string;
+}
+
+interface CoverageTypeApi {
+	id: number;
+	name: string;
+	description: string;
+	insurance_type_id: number;
+}
 
 const formSchema = z.object({
 	insuranceType: z.string().min(1, "Insurance type is required"),
@@ -55,24 +76,138 @@ export const EditProductDialog: React.FC<EditProductDialogProps> = ({
 		},
 	});
 
+	const [dynamicCoverageTypeOptions, setDynamicCoverageTypeOptions] = useState<
+		ComboboxOption[]
+	>([]);
+	const [dynamicInsuranceTypeOptions, setDynamicInsuranceTypeOptions] =
+		useState<ComboboxOption[]>([]);
+	const token = useSelector((state: RootState) => state.auth.token);
+
+	const selectedInsuranceType = form.watch("insuranceType");
+
+	useEffect(() => {
+		const fetchInsuranceTypes = async () => {
+			try {
+				const response = await fetch("http://localhost:3000/insurance_types", {
+					headers: {
+						Authorization: `Bearer ${token}`,
+					},
+				});
+				if (!response.ok) {
+					throw new Error(`HTTP error! status: ${response.status}`);
+				}
+				const result = await response.json();
+				console.log("API Response Result (Insurance Types):", result);
+				let data: InsuranceTypeApi[];
+				if (Array.isArray(result.data)) {
+					data = result.data;
+				} else if (Array.isArray(result)) {
+					data = result;
+				} else {
+					data = []; // Default to empty array if unexpected format
+				}
+				console.log("Processed Data (Insurance Types):", data);
+				const options = data.map((item) => ({
+					value: item.id.toString(),
+					label: item.name,
+				}));
+				setDynamicInsuranceTypeOptions(options);
+			} catch (error) {
+				console.error("Error fetching insurance types:", error);
+			}
+		};
+
+		fetchInsuranceTypes();
+	}, [token]);
+
+	useEffect(() => {
+		const fetchCoverageTypes = async () => {
+			if (selectedInsuranceType) {
+				try {
+					const response = await fetch(
+						`http://localhost:3000/insurance_types/${selectedInsuranceType}/coverage_types`,
+						{
+							headers: {
+								Authorization: `Bearer ${token}`,
+							},
+						},
+					);
+					if (!response.ok) {
+						throw new Error(`HTTP error! status: ${response.status}`);
+					}
+					const result = await response.json();
+					console.log("API Response Result (Coverage Types):", result);
+					let data: CoverageTypeApi[];
+					if (Array.isArray(result.data)) {
+						data = result.data;
+					} else if (Array.isArray(result)) {
+						data = result;
+					} else {
+						data = []; // Default to empty array if unexpected format
+					}
+					console.log("Processed Data (Coverage Types):", data);
+					const options = data.map((item) => ({
+						value: item.id.toString(),
+						label: item.name,
+					}));
+					setDynamicCoverageTypeOptions(options);
+					if (
+						!options.some((opt) => opt.value === form.getValues("coverageType"))
+					) {
+						form.setValue("coverageType", "");
+					}
+				} catch (error) {
+					console.error(
+						`Error fetching coverage types for ${selectedInsuranceType}:`,
+						error,
+					);
+				}
+			}
+		};
+		fetchCoverageTypes();
+	}, [selectedInsuranceType, form, token]);
+
 	// Populate form fields when the product prop changes (i.e., when dialog opens with a product)
 	useEffect(() => {
 		if (product) {
-			const insuranceTypeValue =
-				insuranceTypeOptions.find((opt) => opt.label === product.insuranceType)
-					?.value || product.insuranceType;
-			const coverageTypeValue =
-				coverageTypeOptions.find((opt) => opt.label === product.coverageType)
-					?.value || product.coverageType;
+			console.log("Product prop in EditProductDialog:", product); // Targeted log 1
+			console.log("Product Insurance Type ID:", product.insuranceTypeId); // Targeted log 2
+			console.log("Product Coverage Type ID:", product.coverageTypeId); // Targeted log 3
+			form.setValue("description", product.description);
+			form.setValue("pricing", product.pricing.toString());
 
-			form.reset({
-				insuranceType: insuranceTypeValue,
-				coverageType: coverageTypeValue,
-				description: product.description,
-				pricing: product.pricing.toString(),
+			// Directly set insurance type and coverage type from product prop
+			form.setValue("insuranceType", product.insuranceTypeId, {
+				shouldValidate: true,
 			});
+			form.setValue("coverageType", product.coverageTypeId, {
+				shouldValidate: true,
+			});
+			console.log(
+				"Form value after set (Insurance Type):",
+				form.getValues("insuranceType"),
+			); // Targeted log 4
+			console.log(
+				"Form value after set (Coverage Type):",
+				form.getValues("coverageType"),
+			); // Targeted log 5
 		}
 	}, [product, form]);
+
+	// Existing useEffects for fetching dynamic options
+	useEffect(() => {
+		console.log(
+			"Dynamic Insurance Type Options length:",
+			dynamicInsuranceTypeOptions.length,
+		); // Targeted log 6
+	}, [dynamicInsuranceTypeOptions]);
+
+	useEffect(() => {
+		console.log(
+			"Dynamic Coverage Type Options length:",
+			dynamicCoverageTypeOptions.length,
+		); // Targeted log 7
+	}, [dynamicCoverageTypeOptions]);
 
 	const resetFormFields = () => {
 		form.reset();
@@ -84,11 +219,15 @@ export const EditProductDialog: React.FC<EditProductDialogProps> = ({
 		const updatedProduct: Product = {
 			...product, // Keep the existing ID
 			insuranceType:
-				insuranceTypeOptions.find((opt) => opt.value === values.insuranceType)
-					?.label || values.insuranceType,
+				dynamicInsuranceTypeOptions.find(
+					(opt) => opt.value === values.insuranceType,
+				)?.label || "",
+			insuranceTypeId: values.insuranceType, // Send the ID
 			coverageType:
-				coverageTypeOptions.find((opt) => opt.value === values.coverageType)
-					?.label || values.coverageType,
+				dynamicCoverageTypeOptions.find(
+					(opt) => opt.value === values.coverageType,
+				)?.label || "",
+			coverageTypeId: values.coverageType, // Send the ID
 			description: values.description,
 			pricing: Number.parseFloat(values.pricing),
 		};
@@ -107,6 +246,13 @@ export const EditProductDialog: React.FC<EditProductDialogProps> = ({
 			}}
 		>
 			<DialogContent className="sm:max-w-[800px] max-h-[80vh] overflow-y-auto">
+				<DialogHeader>
+					<DialogTitle>Edit Product</DialogTitle>
+					<DialogDescription>
+						Update the product details. All fields are required to ensure proper
+						processing.
+					</DialogDescription>
+				</DialogHeader>
 				<Form {...form}>
 					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
 						<div className="grid grid-cols-12 gap-6">
@@ -153,7 +299,7 @@ export const EditProductDialog: React.FC<EditProductDialogProps> = ({
 													<FormControl>
 														<Combobox
 															key={field.value}
-															options={insuranceTypeOptions as ComboboxOption[]}
+															options={dynamicInsuranceTypeOptions}
 															value={field.value}
 															onValueChange={field.onChange}
 															placeholder="Select Insurance Type"
@@ -177,7 +323,7 @@ export const EditProductDialog: React.FC<EditProductDialogProps> = ({
 													<FormControl>
 														<Combobox
 															key={field.value}
-															options={coverageTypeOptions as ComboboxOption[]}
+															options={dynamicCoverageTypeOptions}
 															value={field.value}
 															onValueChange={field.onChange}
 															placeholder="Select Coverage Type"

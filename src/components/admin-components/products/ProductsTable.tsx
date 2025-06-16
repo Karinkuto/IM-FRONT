@@ -5,15 +5,15 @@ import type { Product } from "./product-data-types.ts";
 
 interface ProductsTableProps {
 	products: Product[];
-	onEditProduct: (productId: string) => void;
-	onDeleteProduct: (productId: string) => void;
+	onEdit: (productId: string) => void;
+	onDelete: (productId: string) => void;
 	toolbarActionsPrefix?: React.ReactNode; // Add the new prop here
 }
 
 export const ProductsTable: FC<ProductsTableProps> = ({
 	products,
-	onEditProduct,
-	onDeleteProduct,
+	onEdit,
+	onDelete,
 	toolbarActionsPrefix,
 }) => {
 	return (
@@ -22,8 +22,8 @@ export const ProductsTable: FC<ProductsTableProps> = ({
 			data={products}
 			toolbarActionsPrefix={toolbarActionsPrefix} // Pass it down to DataTable
 			meta={{
-				onEditProduct,
-				onDeleteProduct,
+				onEditProduct: onEdit,
+				onDeleteProduct: onDelete,
 			}}
 		/>
 	);

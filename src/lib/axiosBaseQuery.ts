@@ -8,6 +8,12 @@ const api = axios.create({
 	withCredentials: true,
 });
 
+// Function to get CSRF token from meta tag
+const getCsrfToken = () => {
+	const tokenMeta = document.querySelector('meta[name="csrf-token"]');
+	return tokenMeta ? tokenMeta.getAttribute("content") : null;
+};
+
 export const axiosBaseQuery =
 	(): BaseQueryFn<
 		{
@@ -24,16 +30,39 @@ export const axiosBaseQuery =
 	async ({ url, method, data, params, headers }, { getState }) => {
 		const state = getState();
 		const token = state.auth.token;
+		const user = state.auth.user;
+
 		if (token) {
 			headers = headers || {};
 			headers.Authorization = `Bearer ${token}`;
 		}
 
+		// Add CSRF token for non-GET requests
+		const csrfToken = getCsrfToken();
+		if (
+			csrfToken &&
+			method &&
+			["POST", "PUT", "PATCH", "DELETE"].includes(method.toUpperCase())
+		) {
+			headers = headers || {};
+			headers["X-CSRF-Token"] = csrfToken;
+		}
+
 		try {
-			const result = await api({ url, method, data, params, headers });
+			const result = await api({
+				url,
+				method,
+				data,
+				params,
+				headers,
+				// Add response type to handle different response formats
+				responseType: "json",
+			});
+
 			return { data: result.data };
 		} catch (axiosError) {
 			const err = axiosError as AxiosError;
+
 			return {
 				error: {
 					status: err.response?.status,

@@ -14,15 +14,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import type React from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import {
-	coverageTypeOptions,
-	insuranceTypeOptions,
-} from "../products/product-data-types.ts";
 
 const filterSchema = z.object({
 	status: z.string().optional(),
-	insuranceType: z.string().optional(),
-	coverageType: z.string().optional(),
+	// insuranceType: z.string().optional(), // Temporarily removed
+	// coverageType: z.string().optional(), // Temporarily removed
 	dateRange: z
 		.object({
 			from: z.date().optional(),
@@ -53,8 +49,8 @@ const QuotationFiltersForm: React.FC<QuotationFiltersProps> = ({
 		resolver: zodResolver(filterSchema),
 		defaultValues: {
 			status: currentFilters.status || "",
-			insuranceType: currentFilters.insuranceType || "",
-			coverageType: currentFilters.coverageType || "",
+			// insuranceType: currentFilters.insuranceType || "", // Temporarily removed
+			// coverageType: currentFilters.coverageType || "", // Temporarily removed
 			dateRange: {
 				from: currentFilters.dateRange?.from || undefined,
 				to: currentFilters.dateRange?.to || undefined,
@@ -99,6 +95,7 @@ const QuotationFiltersForm: React.FC<QuotationFiltersProps> = ({
 					/>
 
 					{/* Insurance Type Filter */}
+					{/*
 					<FormField
 						control={form.control}
 						name="insuranceType"
@@ -118,8 +115,10 @@ const QuotationFiltersForm: React.FC<QuotationFiltersProps> = ({
 							</FormItem>
 						)}
 					/>
+					*/}
 
 					{/* Coverage Type Filter */}
+					{/*
 					<FormField
 						control={form.control}
 						name="coverageType"
@@ -139,6 +138,7 @@ const QuotationFiltersForm: React.FC<QuotationFiltersProps> = ({
 							</FormItem>
 						)}
 					/>
+					*/}
 
 					{/* Date Range Filters */}
 					<FormField

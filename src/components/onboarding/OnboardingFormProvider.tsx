@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo } from "react";
+import { useAuth } from "@/hooks/useAuth";
 import { useForm, FormProvider } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
@@ -11,7 +12,12 @@ import type {
 } from "./types/onboarding";
 import { OnboardingFormContext } from "./context/OnboardingFormContext";
 import { stepSchemas } from "./types/types";
-import { profileService } from "@/services/profileService";
+import {
+	useChangePasswordMutation,
+	useCreateInsurerProfileMutation,
+	useUpdateInsurerProfileMutation,
+} from "@/redux/api/authApi";
+import type { InsurerProfile } from "@/types/profile";
 
 // Helper to safely extract field names from a Zod schema
 const getSchemaFields = (schema: z.ZodTypeAny): string[] => {
@@ -45,24 +51,44 @@ const getSchemaFields = (schema: z.ZodTypeAny): string[] => {
 			if (def.shape && typeof def.shape === "object" && def.shape !== null) {
 				return Object.keys(def.shape);
 			}
-		}
 
-		// Fallback to empty array if shape can't be determined
-		return [];
+			// Fallback to empty array if shape can't be determined
+			return [];
+		}
 	} catch (error) {
 		console.error("Error getting schema fields:", error);
 		return [];
 	}
 };
 
+// Helper function to convert data URL to Blob
+const dataURLtoBlob = (dataurl: string, filename: string) => {
+	const arr = dataurl.split(",");
+	const mimeMatch = arr[0].match(/:(.*?);/);
+	const mime = mimeMatch ? mimeMatch[1] : "image/png";
+	const bstr = atob(arr[1]);
+	let n = bstr.length;
+	const u8arr = new Uint8Array(n);
+	while (n--) {
+		u8arr[n] = bstr.charCodeAt(n);
+	}
+	return new File([u8arr], filename, { type: mime });
+};
+
 export const OnboardingFormProvider: React.FC<OnboardingFormProviderProps> = ({
 	children,
 	initialData = {},
 	onComplete,
+	isTemporaryPassword = false,
 }) => {
-	const [currentStep, setCurrentStep] = useState(1);
+	const { user } = useAuth();
+	const userId = user?.id || initialData.id;
+
+	const initialStep = isTemporaryPassword ? 1 : 1; // Start at step 1 for password, or step 1 for company info if no password needed
+	const totalSteps = isTemporaryPassword ? 5 : 4; // 5 steps if password, 4 if not
+
+	const [currentStep, setCurrentStep] = useState(initialStep);
 	const [isSubmitting, setIsSubmitting] = useState(false);
-	const totalSteps = 5;
 
 	const form = useForm<OnboardingData>({
 		defaultValues: {
@@ -79,7 +105,8 @@ export const OnboardingFormProvider: React.FC<OnboardingFormProviderProps> = ({
 		},
 		mode: "onChange",
 		resolver: async (data) => {
-			const schema = stepSchemas[currentStep - 1];
+			const schemaIndex = isTemporaryPassword ? currentStep - 1 : currentStep;
+			const schema = stepSchemas[schemaIndex];
 			try {
 				const values = await schema.parseAsync(data);
 				return { values, errors: {} };
@@ -105,7 +132,10 @@ export const OnboardingFormProvider: React.FC<OnboardingFormProviderProps> = ({
 
 	const nextStep = useCallback(async () => {
 		try {
-			const currentSchema = stepSchemas[currentStep - 1];
+			const currentSchemaIndex = isTemporaryPassword
+				? currentStep - 1
+				: currentStep;
+			const currentSchema = stepSchemas[currentSchemaIndex];
 			const fields = getSchemaFields(currentSchema);
 
 			// Trigger validation for the current step fields
@@ -119,59 +149,149 @@ export const OnboardingFormProvider: React.FC<OnboardingFormProviderProps> = ({
 			console.error("Error in nextStep:", error);
 			return false;
 		}
-	}, [currentStep, form]);
+	}, [currentStep, form, isTemporaryPassword, totalSteps]);
 
 	const prevStep = useCallback(() => {
 		setCurrentStep((prev) => Math.max(prev - 1, 1));
 	}, []);
 
-	const goToStep = useCallback((step: number) => {
-		setCurrentStep(() => Math.max(1, Math.min(step, totalSteps)));
-	}, []);
+	const goToStep = useCallback(
+		(step: number) => {
+			setCurrentStep(() => Math.max(1, Math.min(step, totalSteps)));
+		},
+		[totalSteps],
+	);
+
+	const [changePassword] = useChangePasswordMutation();
+	const [createInsurerProfile] = useCreateInsurerProfileMutation();
+	const [updateInsurerProfile] = useUpdateInsurerProfileMutation();
 
 	const submitForm = useCallback(async () => {
+		if (!userId) {
+			toast.error("User ID is required to update insurer profile");
+			return;
+		}
+
+		let profile: InsurerProfile;
+
 		try {
 			setIsSubmitting(true);
 			const values = form.getValues();
-			const formData = new FormData();
 
-			// Convert to FormData, handling file uploads
-			for (const [key, value] of Object.entries(values)) {
-				if (value === null || value === undefined) continue;
+			// 1. Handle password change (always from temporary password during onboarding)
+			if (isTemporaryPassword && values.password && values.confirmPassword) {
+				if (values.password !== values.confirmPassword) {
+					toast.error("Passwords do not match.");
+					setIsSubmitting(false);
+					return;
+				}
 
-				if (key === "logo" && value instanceof File) {
-					formData.append("logo", value);
-				} else if (typeof value === "string") {
-					formData.append(key, value);
-				} else if (typeof value === "object") {
-					formData.append(key, JSON.stringify(value));
+				try {
+					// Change password from temporary to permanent
+					await changePassword({
+						new_password: values.password,
+						new_password_confirmation: values.confirmPassword,
+					}).unwrap();
+					toast.success("Password changed successfully!");
+				} catch (error) {
+					console.error("Password change error:", error);
+					toast.error("Failed to update password. Please try again.");
+					setIsSubmitting(false);
+					return;
 				}
 			}
 
-			// Convert FormData to a plain object for type safety
-			const formDataObj: Record<string, unknown> = {};
-			formData.forEach((value, key) => {
-				formDataObj[key] = value;
-			});
-
-			// Create profile update object without spread
-			const profileUpdate = Object.assign(
-				{},
-				formDataObj,
-				// Add any additional transformations if needed
+			// 2. Handle Insurer Profile creation or update
+			const insurerPayload = {
+				name: values.companyName,
+				description: values.description || "",
+				contact_email: values.contactEmail,
+				contact_phone: values.contactPhone || "",
+				api_endpoint: values.apiEndpoint || "",
+				api_key: values.apiKey || "",
+				logo: values.logo || undefined,
+			};
+			console.log(
+				"OnboardingFormProvider - submitForm: Original Insurer Payload:",
+				insurerPayload,
 			);
 
-			// Update profile with the form data
-			const profile = await profileService.updateProfile(profileUpdate);
-			toast.success("Profile updated successfully!");
+			// Create FormData to send multipart/form-data, nesting under 'payload'
+			const formData = new FormData();
+			for (const key in insurerPayload) {
+				if (Object.prototype.hasOwnProperty.call(insurerPayload, key)) {
+					// @ts-ignore
+					let value = insurerPayload[key];
+
+					if (
+						key === "logo" &&
+						typeof value === "string" &&
+						value.startsWith("data:")
+					) {
+						// Convert data URL to Blob/File if it's a data URL string (from image preview)
+						value = dataURLtoBlob(value, `logo_${Date.now()}.png`); // Assuming PNG for now, can be improved
+					}
+
+					if (value instanceof File) {
+						formData.append(`payload[${key}]`, value, value.name);
+					} else if (value !== null && value !== undefined) {
+						formData.append(`payload[${key}]`, String(value));
+					} else if (value === null) {
+						// Explicitly send null for logo if it's null (e.g., user removed it)
+						formData.append(`payload[${key}]`, "null");
+					}
+				}
+			}
+
+			// Log FormData contents for debugging
+			console.log(
+				"OnboardingFormProvider - submitForm: FormData contents (with payload nesting):",
+			);
+			formData.forEach((value, key) => {
+				console.log(`  Key: ${key}, Value:`, value);
+			});
+
+			// 3. Create or update the insurer profile
+			if (initialData.insurerId) {
+				// Update existing profile using the insurer ID
+				profile = await updateInsurerProfile({
+					id: initialData.insurerId,
+					payload: formData,
+				}).unwrap();
+				toast.success("Profile updated successfully!");
+			} else {
+				// Create new profile
+				profile = await createInsurerProfile(formData).unwrap();
+
+				// Update the form with the new insurer ID for any subsequent updates
+				if (profile.id) {
+					form.setValue("insurerId", profile.id);
+				}
+
+				toast.success("Profile created successfully!");
+			}
+
+			// 4. Call the onComplete callback with the updated profile
 			onComplete(profile);
 		} catch (error) {
 			console.error("Error submitting form:", error);
-			toast.error("Failed to update profile. Please try again.");
+			const errorMessage =
+				error?.data?.message || "Failed to save profile. Please try again.";
+			toast.error(errorMessage);
+			throw error;
 		} finally {
 			setIsSubmitting(false);
 		}
-	}, [form, onComplete]);
+	}, [
+		userId,
+		form,
+		changePassword,
+		initialData.insurerId,
+		updateInsurerProfile,
+		createInsurerProfile,
+		onComplete,
+		isTemporaryPassword,
+	]);
 
 	const contextValue = useMemo(
 		() => ({
@@ -184,14 +304,21 @@ export const OnboardingFormProvider: React.FC<OnboardingFormProviderProps> = ({
 			submitForm,
 			goToStep,
 		}),
-		[currentStep, isSubmitting, form, nextStep, prevStep, submitForm, goToStep],
+		[
+			currentStep,
+			isSubmitting,
+			form,
+			nextStep,
+			prevStep,
+			submitForm,
+			goToStep,
+			totalSteps,
+		],
 	);
 
 	return (
 		<OnboardingFormContext.Provider value={contextValue}>
-			<FormProvider {...form}>
-				{children}
-			</FormProvider>
+			<FormProvider {...form}>{children}</FormProvider>
 		</OnboardingFormContext.Provider>
 	);
 };

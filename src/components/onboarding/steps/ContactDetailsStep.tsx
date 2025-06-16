@@ -35,12 +35,12 @@ export const ContactDetailsStep = () => {
 
 			<div className="space-y-2">
 				<Label htmlFor="contactPhone" className="text-sm font-medium">
-					Contact Phone <span className="text-muted-foreground">(Optional)</span>
+					Contact Phone
 				</Label>
 				<Input
 					id="contactPhone"
 					type="tel"
-					placeholder="+1 (555) 000-0000"
+					placeholder="+251 000-0000"
 					className={errors.contactPhone ? "border-destructive" : ""}
 					{...register("contactPhone")}
 				/>
@@ -50,7 +50,7 @@ export const ContactDetailsStep = () => {
 					</p>
 				) : (
 					<p className="text-xs text-muted-foreground mt-1">
-						Include country code. We'll only contact you if we can't reach you by email.
+						We'll only contact you if we can't reach you by email.
 					</p>
 				)}
 			</div>

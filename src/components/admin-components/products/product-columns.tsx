@@ -52,6 +52,15 @@ export const columns: ColumnDef<Product>[] = [
 		},
 	},
 	{
+		accessorKey: "status",
+		header: "Status",
+		cell: ({ row }) => {
+			const status = row.getValue("status") as string;
+			const variant = status === "active" ? "status-approved" : "status-draft";
+			return <Badge variant={variant}>{status}</Badge>;
+		},
+	},
+	{
 		id: "actions",
 		header: () => <div className="text-center">Actions</div>,
 		cell: ({ row, table }) => {

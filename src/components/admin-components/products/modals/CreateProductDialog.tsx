@@ -4,7 +4,9 @@ import {
 	Dialog,
 	DialogContent,
 	DialogFooter,
-	DialogTrigger,
+	DialogHeader,
+	DialogTitle,
+	DialogDescription,
 } from "@/components/ui/dialog";
 import {
 	Form,
@@ -28,6 +30,22 @@ import {
 	coverageTypeOptions,
 	insuranceTypeOptions,
 } from "../product-data-types.ts";
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/redux/store";
+
+interface InsuranceTypeApi {
+	id: number;
+	name: string;
+	description: string;
+}
+
+interface CoverageTypeApi {
+	id: number;
+	name: string;
+	description: string;
+	insurance_type_id: number;
+}
 
 const formSchema = z.object({
 	insuranceType: z.string().min(1, "Insurance type is required"),
@@ -57,18 +75,84 @@ export const CreateProductDialog: React.FC<CreateProductDialogProps> = ({
 		},
 	});
 
+	const [dynamicCoverageTypeOptions, setDynamicCoverageTypeOptions] = useState<
+		ComboboxOption[]
+	>([]);
+	const [dynamicInsuranceTypeOptions, setDynamicInsuranceTypeOptions] =
+		useState<ComboboxOption[]>([]);
+	const token = useSelector((state: RootState) => state.auth.token);
+
+	const selectedInsuranceType = form.watch("insuranceType");
+
+	useEffect(() => {
+		const fetchInsuranceTypes = async () => {
+			try {
+				const response = await fetch("http://localhost:3000/insurance_types", {
+					headers: {
+						Authorization: `Bearer ${token}`,
+					},
+				});
+				if (!response.ok) {
+					throw new Error(`HTTP error! status: ${response.status}`);
+				}
+				const data: InsuranceTypeApi[] = await response.json();
+				const options = data.map((item) => ({
+					value: item.id.toString(),
+					label: item.name,
+				}));
+				setDynamicInsuranceTypeOptions(options);
+			} catch (error) {
+				console.error("Error fetching insurance types:", error);
+			}
+		};
+
+		fetchInsuranceTypes();
+	}, [token]);
+
+	useEffect(() => {
+		const fetchCoverageTypes = async () => {
+			if (selectedInsuranceType) {
+				try {
+					const response = await fetch(
+						`http://localhost:3000/insurance_types/${selectedInsuranceType}/coverage_types`,
+						{
+							headers: {
+								Authorization: `Bearer ${token}`,
+							},
+						},
+					);
+					if (!response.ok) {
+						throw new Error(`HTTP error! status: ${response.status}`);
+					}
+					const data: CoverageTypeApi[] = await response.json();
+					const options = data.map((item) => ({
+						value: item.id.toString(),
+						label: item.name,
+					}));
+					setDynamicCoverageTypeOptions(options);
+					form.setValue("coverageType", ""); // Reset coverageType when insuranceType changes
+				} catch (error) {
+					console.error(
+						`Error fetching coverage types for ${selectedInsuranceType}:`,
+						error,
+					);
+				}
+			} else {
+				setDynamicCoverageTypeOptions([]);
+				form.setValue("coverageType", "");
+			}
+		};
+		fetchCoverageTypes();
+	}, [selectedInsuranceType, form, token]);
+
 	const resetFormFields = () => {
 		form.reset();
 	};
 
 	const onSubmit = (values: z.infer<typeof formSchema>) => {
 		const newProduct: Omit<Product, "id"> = {
-			insuranceType:
-				insuranceTypeOptions.find((opt) => opt.value === values.insuranceType)
-					?.label || values.insuranceType,
-			coverageType:
-				coverageTypeOptions.find((opt) => opt.value === values.coverageType)
-					?.label || values.coverageType,
+			insuranceType: values.insuranceType,
+			coverageType: values.coverageType,
 			description: values.description,
 			pricing: Number.parseFloat(values.pricing),
 		};
@@ -79,19 +163,15 @@ export const CreateProductDialog: React.FC<CreateProductDialogProps> = ({
 	};
 
 	return (
-		<Dialog
-			open={isOpen}
-			onOpenChange={(openState) => {
-				onOpenChange(openState);
-				if (!openState) resetFormFields();
-			}}
-		>
-			<DialogTrigger asChild>
-				<Button>
-					<PlusCircle className="mr-2 h-4 w-4" /> Create Product
-				</Button>
-			</DialogTrigger>
+		<Dialog open={isOpen} onOpenChange={onOpenChange}>
 			<DialogContent className="sm:max-w-[800px] max-h-[80vh] overflow-y-auto">
+				<DialogHeader>
+					<DialogTitle>Create New Product</DialogTitle>
+					<DialogDescription>
+						Fill in the product details to create a new insurance product. All
+						fields are required to ensure proper processing.
+					</DialogDescription>
+				</DialogHeader>
 				<Form {...form}>
 					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
 						<div className="grid grid-cols-12 gap-6">
@@ -138,7 +218,7 @@ export const CreateProductDialog: React.FC<CreateProductDialogProps> = ({
 													<FormLabel>Insurance Type</FormLabel>
 													<FormControl>
 														<Combobox
-															options={insuranceTypeOptions as ComboboxOption[]}
+															options={dynamicInsuranceTypeOptions}
 															value={field.value}
 															onValueChange={field.onChange}
 															placeholder="Select Insurance Type"
@@ -161,7 +241,7 @@ export const CreateProductDialog: React.FC<CreateProductDialogProps> = ({
 													<FormLabel>Coverage Type</FormLabel>
 													<FormControl>
 														<Combobox
-															options={coverageTypeOptions as ComboboxOption[]}
+															options={dynamicCoverageTypeOptions}
 															value={field.value}
 															onValueChange={field.onChange}
 															placeholder="Select Coverage Type"

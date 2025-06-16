@@ -1,6 +1,7 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import type { Role } from "@/types/auth";
 
 import { PasswordStep } from "./steps/PasswordStep";
 import { CompanyInfoStep } from "./steps/CompanyInfoStep";
@@ -9,7 +10,7 @@ import { ApiConfigStep } from "./steps/ApiConfigStep";
 import { BrandingStep } from "./steps/BrandingStep";
 import { OnboardingFormProvider } from "./OnboardingFormProvider";
 import { useOnboardingForm } from "../../hooks/useOnboardingForm";
-import { profileService } from "@/services/profileService";
+import { useGetProfileQuery } from "@/redux/api/authApi";
 import type { InsurerProfile } from "@/types/profile";
 import { useAuth } from "@/hooks/useAuth";
 import { defaultRoleRedirects } from "@/config/routes";
@@ -23,45 +24,17 @@ interface InsurerOnboardingStepperProps {
 export const InsurerOnboardingStepper: React.FC<
 	InsurerOnboardingStepperProps
 > = ({ onOnboardingComplete }) => {
-	const [isInitialized, setIsInitialized] = useState(false);
-	const [initialData, setInitialData] = useState<Partial<InsurerProfile>>({});
-	const [showOnboardingStepper, setShowOnboardingStepper] = useState(false);
 	const { user } = useAuth();
 	const navigate = useNavigate();
 
-	// Check if user has temporary password
-	useEffect(() => {
-		if (user?.temporary_password) {
-			setShowOnboardingStepper(true);
-		} else {
-			setShowOnboardingStepper(false);
-			navigate(defaultRoleRedirects.insurer);
-		}
-	}, [user, navigate]);
-
-	// Fetch initial profile data
-	const fetchInitialProfile = useCallback(async () => {
-		if (!showOnboardingStepper) return;
-
-		try {
-			const profile = await profileService.fetchProfile();
-			setInitialData(profile);
-
-			// If profile is already complete, close the stepper
-			if (profile.profile_complete) {
-				onOnboardingComplete(profile);
-			}
-		} catch (error) {
-			console.error("Error fetching profile:", error);
-			toast.error("Failed to load profile data");
-		} finally {
-			setIsInitialized(true);
-		}
-	}, [showOnboardingStepper, onOnboardingComplete]);
-
-	useEffect(() => {
-		fetchInitialProfile();
-	}, [fetchInitialProfile]);
+	// Only fetch profile when we have a valid user ID
+	const {
+		data: userProfileData,
+		isLoading: isLoadingProfile,
+		isError: isProfileError,
+	} = useGetProfileQuery(user?.id?.toString() || "", {
+		skip: !user?.id,
+	});
 
 	const handleOnboardingComplete = useCallback(
 		(profile: InsurerProfile) => {
@@ -71,32 +44,59 @@ export const InsurerOnboardingStepper: React.FC<
 		[onOnboardingComplete, navigate],
 	);
 
-	if (!showOnboardingStepper || !isInitialized) {
+	if (isLoadingProfile || isProfileError || !userProfileData) {
 		return null;
 	}
 
+	// Pass initialData from userProfileData to the form provider
+	const initialFormData: Partial<InsurerProfile> = {
+		id: String(userProfileData.id),
+		insurerId: userProfileData?.insurer?.id
+			? String(userProfileData.insurer.id)
+			: undefined,
+		companyName: userProfileData?.insurer?.name || "",
+		description: userProfileData?.insurer?.description || "",
+		contactEmail: userProfileData?.insurer?.contact_email || "",
+		contactPhone: userProfileData?.insurer?.contact_phone || "",
+		apiEndpoint: userProfileData?.insurer?.api_endpoint || "",
+		apiKey: userProfileData?.insurer?.api_key || "",
+		logo: userProfileData?.insurer?.logo_url || null,
+		temporary_password: userProfileData?.temporary_password,
+	};
+
 	return (
 		<OnboardingFormProvider
-			initialData={initialData}
+			initialData={initialFormData}
 			onComplete={handleOnboardingComplete}
+			isTemporaryPassword={userProfileData?.temporary_password}
 		>
-			<OnboardingStepperContent />
+			<OnboardingStepperContent
+				isTemporaryPassword={userProfileData?.temporary_password}
+			/>
 		</OnboardingFormProvider>
 	);
 };
 
 // Inner component that uses the form context
-const OnboardingStepperContent: React.FC = () => {
-	const { currentStep, nextStep, prevStep, isSubmitting, form } = useOnboardingForm();
+interface OnboardingStepperContentProps {
+	isTemporaryPassword: boolean | undefined;
+}
+
+const OnboardingStepperContent: React.FC<OnboardingStepperContentProps> = ({
+	isTemporaryPassword,
+}) => {
+	const {
+		currentStep,
+		nextStep,
+		prevStep,
+		isSubmitting,
+		form,
+		submitForm,
+		goToStep,
+	} = useOnboardingForm();
 	const navigate = useNavigate();
 
-	const steps = [
-		{
-			id: "account-setup",
-			title: "Account Setup",
-			description: "Set your password",
-			component: <PasswordStep />,
-		},
+	const baseSteps = [
 		{
 			id: "company-info",
 			title: "Company Info",
@@ -123,6 +123,29 @@ const OnboardingStepperContent: React.FC = () => {
 		},
 	] as const;
 
+	const steps = isTemporaryPassword
+		? [
+				{
+					id: "account-setup",
+					title: "Account Setup",
+					description: "Set your password",
+					component: <PasswordStep />,
+				},
+				...baseSteps,
+			]
+		: baseSteps;
+
+	// Adjust totalSteps based on whether PasswordStep is included
+	const totalSteps = steps.length;
+
+	useEffect(() => {
+		// If password is not temporary, and current step is 1 (which would be password step),
+		// then advance to the first actual profile step (which is now index 0 of baseSteps)
+		if (!isTemporaryPassword && currentStep === 1) {
+			goToStep(1);
+		}
+	}, [isTemporaryPassword, currentStep, goToStep]);
+
 	const handleStepChange = async (step: number) => {
 		if (step > currentStep) {
 			const isValid = await nextStep();
@@ -137,9 +160,19 @@ const OnboardingStepperContent: React.FC = () => {
 	};
 
 	const handleComplete = async () => {
-		const isValid = await nextStep();
+		// First validate the current step
+		const isValid = await form.trigger();
 		if (!isValid) {
 			toast.error("Please fill in all required fields");
+			return;
+		}
+
+		try {
+			// Submit the form data
+			await submitForm();
+		} catch (error) {
+			console.error("Error submitting form:", error);
+			toast.error("Failed to complete onboarding. Please try again.");
 		}
 	};
 
@@ -152,42 +185,44 @@ const OnboardingStepperContent: React.FC = () => {
 	};
 
 	return (
-		<div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm overflow-y-auto p-4 flex items-center justify-center min-h-screen">
+		<div className="fixed inset-0 z-50 bg-background/5 backdrop-blur-sm overflow-y-auto p-4 flex items-center justify-center min-h-screen">
 			<div className="w-full max-w-4xl my-8 mx-auto px-4">
-					<Stepper
-						initialStep={currentStep}
-						onStepChange={handleStepChange}
-						onFinalStepCompleted={handleComplete}
-						onValidateStep={async () => {
-							const isValid = await form.trigger();
-							if (!isValid) {
-								toast.error("Please fill in all required fields");
-							}
-							return isValid;
-						}}
-						backButtonText={currentStep === 1 ? "Cancel" : "Back"}
-						nextButtonText={currentStep === steps.length ? "Finish" : "Next"}
-						disableStepIndicators={false}
-						backButtonProps={{
-							onClick: handleBack,
-							disabled: isSubmitting,
-							variant: "ghost"
-						}}
-						nextButtonProps={{
-							disabled: isSubmitting,
-							className: "bg-primary text-primary-foreground hover:bg-primary/90"
-						}}
-						className="w-full"
-					>
-						{steps.map((step) => (
-							<StepComponent key={step.id}>
-								<div className="w-full space-y-6">
-									<h3 className="text-xl font-semibold text-foreground">{step.title}</h3>
-									<div className="w-full">{step.component}</div>
-								</div>
-							</StepComponent>
-						))}
-					</Stepper>
+				<Stepper
+					initialStep={currentStep}
+					onStepChange={handleStepChange}
+					onFinalStepCompleted={handleComplete}
+					onValidateStep={async () => {
+						const isValid = await form.trigger();
+						if (!isValid) {
+							toast.error("Please fill in all required fields");
+						}
+						return isValid;
+					}}
+					backButtonText={currentStep === 1 ? "Cancel" : "Back"}
+					nextButtonText={currentStep === steps.length ? "Finish" : "Next"}
+					disableStepIndicators={false}
+					backButtonProps={{
+						onClick: handleBack,
+						disabled: isSubmitting,
+						className: "text-muted-foreground hover:bg-muted",
+					}}
+					nextButtonProps={{
+						disabled: isSubmitting,
+						className: "bg-primary text-primary-foreground hover:bg-primary/90",
+					}}
+					className="w-full"
+				>
+					{steps.map((step) => (
+						<StepComponent key={step.id}>
+							<div className="w-full space-y-6">
+								<h3 className="text-xl font-semibold text-foreground">
+									{step.title}
+								</h3>
+								<div className="w-full">{step.component}</div>
+							</div>
+						</StepComponent>
+					))}
+				</Stepper>
 			</div>
 		</div>
 	);

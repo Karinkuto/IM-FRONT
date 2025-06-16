@@ -2,7 +2,9 @@
 export interface Product {
 	id: string; // Or number, depending on your API
 	insuranceType: string;
+	insuranceTypeId: string;
 	coverageType: string; // This will also serve as the Title
+	coverageTypeId: string;
 	description: string;
 	pricing: number;
 }
@@ -20,13 +22,4 @@ export const insuranceTypeOptions: ComboboxOption[] = [
 	{ value: "life", label: "Life" },
 	{ value: "travel", label: "Travel" },
 	{ value: "property", label: "Property" },
-];
-
-export const coverageTypeOptions: ComboboxOption[] = [
-	{ value: "third_party", label: "Third Party" },
-	{ value: "comprehensive", label: "Comprehensive" },
-	{ value: "individual_basic", label: "Individual Basic" },
-	{ value: "family_floater", label: "Family Floater" },
-	{ value: "term_life_20", label: "Term Life 20 Years" },
-	{ value: "whole_life", label: "Whole Life" },
 ];

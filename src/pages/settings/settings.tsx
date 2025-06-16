@@ -19,7 +19,7 @@ const TABS: TabType[] = [
 	},
 ];
 
-const BASE_URL = "/admin/settings";
+const BASE_URL = "/insurer/settings";
 
 // Wrapper component to render the settings layout with tabs
 function SettingsLayoutWrapper() {
