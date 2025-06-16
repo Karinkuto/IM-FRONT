@@ -1,4 +1,4 @@
-import { InsurerOnboardingStepper } from "@/components/admin-components/products/InsurerOnboardingStepper.tsx";
+import { InsurerOnboardingStepper } from "@/components/onboarding/InsurerOnboardingStepper";
 import { ProductsTable } from "@/components/admin-components/products/ProductsTable.tsx";
 import { CreateProductDialog } from "@/components/admin-components/products/modals/CreateProductDialog";
 import { EditProductDialog } from "@/components/admin-components/products/modals/EditProductDialog";

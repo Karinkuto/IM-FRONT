@@ -123,10 +123,16 @@ export const useFileUpload = (
 
 	const createPreview = useCallback(
 		(file: File | FileMetadata): string | undefined => {
+			console.log('createPreview called with file:', file);
+			let previewUrl: string | undefined;
 			if (file instanceof File) {
-				return URL.createObjectURL(file);
+				previewUrl = URL.createObjectURL(file);
+				console.log('Created blob URL for File:', previewUrl);
+			} else {
+				previewUrl = file.url;
+				console.log('Using existing URL for FileMetadata:', previewUrl);
 			}
-			return file.url;
+			return previewUrl;
 		},
 		[],
 	);
@@ -168,7 +174,11 @@ export const useFileUpload = (
 
 	const addFiles = useCallback(
 		(newFiles: FileList | File[]) => {
-			if (!newFiles || newFiles.length === 0) return;
+			console.log('addFiles called with:', newFiles);
+			if (!newFiles || newFiles.length === 0) {
+				console.log('No files provided to addFiles');
+				return;
+			}
 
 			const newFilesArray = Array.from(newFiles);
 			const errors: string[] = [];
@@ -194,7 +204,10 @@ export const useFileUpload = (
 
 			const validFiles: FileWithPreview[] = [];
 
+			console.log('Processing', newFilesArray.length, 'new files');
+
 			newFilesArray.forEach((file) => {
+				console.log('Processing file:', file.name, 'type:', file.type, 'size:', file.size);
 				// Only check for duplicates if multiple files are allowed
 				if (multiple) {
 					const isDuplicate = state.files.some(
@@ -220,23 +233,27 @@ export const useFileUpload = (
 				}
 
 				const error = validateFile(file);
+				console.log('File validation result for', file.name, ':', error || 'Valid');
 				if (error) {
 					errors.push(error);
 				} else {
-					validFiles.push({
-						file,
-						id: generateUniqueId(file),
-						preview: createPreview(file),
-					});
+					const id = generateUniqueId(file);
+					console.log('Generated ID for file:', id);
+					const preview = createPreview(file);
+					console.log('Generated preview URL:', preview);
+					validFiles.push({ file, id, preview });
 				}
 			});
 
 			// Only update state if we have valid files to add
 			if (validFiles.length > 0) {
+				console.log('Valid files to add:', validFiles.length);
+
 				// Call the onFilesAdded callback with the newly added valid files
 				onFilesAdded?.(validFiles);
 
 				setState((prev) => {
+					console.log('Updating state with new files. Previous state:', prev);
 					const newFiles = !multiple
 						? validFiles
 						: [...prev.files, ...validFiles];

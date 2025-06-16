@@ -1,11 +1,11 @@
 import { SharedDashboardLayout } from "../SharedDashboardLayout";
 import { InsurerNav } from "@/components/shared/InsurerNav";
-import { InsurerOnboardingStepper } from "@/components/admin-components/products/InsurerOnboardingStepper";
+import { InsurerOnboardingStepper } from "@/components/onboarding/InsurerOnboardingStepper";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { profileService, type UserProfile } from "@/services/profileService";
 import type { InsurerProfile } from "@/types/insurer";
 import type { ValidRole } from "@/config/roles";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { useLocation } from "react-router-dom";
 
 export interface InsurerDashboardLayoutProps {
@@ -15,6 +15,19 @@ export interface InsurerDashboardLayoutProps {
 export function InsurerDashboardLayout({ role }: InsurerDashboardLayoutProps) {
 	const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 	const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+	const portalRoot = useRef<HTMLDivElement | null>(null);
+
+	useEffect(() => {
+		// Create portal root for the overlay if it doesn't exist
+		const root = document.createElement('div');
+		root.id = 'onboarding-portal';
+		document.body.appendChild(root);
+		portalRoot.current = root;
+
+		return () => {
+			document.body.removeChild(root);
+		};
+	}, []);
 
 	useEffect(() => {
 		const fetchProfile = async () => {
@@ -64,15 +77,6 @@ export function InsurerDashboardLayout({ role }: InsurerDashboardLayoutProps) {
 		return <LoadingSpinner />;
 	}
 
-	// If profile is not complete, show only the onboarding stepper
-	if (!userProfile?.profile_complete) {
-		return (
-			<InsurerOnboardingStepper
-				onOnboardingComplete={handleOnboardingComplete}
-			/>
-		);
-	}
-
 	return (
 		<SharedDashboardLayout
 			role={role}
@@ -97,6 +101,14 @@ export function InsurerDashboardLayout({ role }: InsurerDashboardLayoutProps) {
 					}
 				/>
 			}
-		/>
+		>
+			{!userProfile?.profile_complete && (
+				<div className="fixed inset-0 z-50">
+					<InsurerOnboardingStepper
+						onOnboardingComplete={handleOnboardingComplete}
+					/>
+				</div>
+			)}
+		</SharedDashboardLayout>
 	);
 }
