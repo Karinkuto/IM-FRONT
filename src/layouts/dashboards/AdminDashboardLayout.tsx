@@ -1,9 +1,9 @@
 import { AdminNav } from "@/components/shared/AdminNav";
-import { SharedDashboardLayout } from "../SharedDashboardLayout";
 import type { ValidRole } from "@/config/roles";
-import { useLocation } from "react-router-dom";
-import { useSelector } from "react-redux";
 import type { RootState } from "@/redux/store";
+import { useSelector } from "react-redux";
+import { useLocation } from "react-router-dom";
+import { SharedDashboardLayout } from "../SharedDashboardLayout";
 
 export interface AdminDashboardLayoutProps {
 	role: ValidRole;

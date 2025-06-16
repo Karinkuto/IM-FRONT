@@ -3,10 +3,10 @@ import { Combobox } from "@/components/ui/combobox";
 import {
 	Dialog,
 	DialogContent,
+	DialogDescription,
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-	DialogDescription,
 } from "@/components/ui/dialog";
 import {
 	Form,
@@ -19,19 +19,19 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import type { RootState } from "@/redux/store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Info, Save } from "lucide-react";
 import type React from "react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useSelector } from "react-redux";
 import * as z from "zod";
 import {
 	type ComboboxOption,
 	type Product,
 	insuranceTypeOptions,
 } from "../product-data-types";
-import { useSelector } from "react-redux";
-import type { RootState } from "@/redux/store";
 
 interface InsuranceTypeApi {
 	id: number;

@@ -1,5 +1,5 @@
-import type { UseFormReturn } from "react-hook-form";
 import type { InsurerProfile } from "@/types/profile";
+import type { UseFormReturn } from "react-hook-form";
 
 export interface OnboardingData {
 	password: string;

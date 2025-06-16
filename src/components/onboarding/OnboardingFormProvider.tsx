@@ -1,23 +1,23 @@
-import { useState, useCallback, useMemo } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { useForm, FormProvider } from "react-hook-form";
+import { useCallback, useMemo, useState } from "react";
+import { FormProvider, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
 import { ZodError } from "zod";
 
-// Import types and context
-import type {
-	OnboardingFormProviderProps,
-	OnboardingData,
-} from "./types/onboarding";
-import { OnboardingFormContext } from "./context/OnboardingFormContext";
-import { stepSchemas } from "./types/types";
 import {
 	useChangePasswordMutation,
 	useCreateInsurerProfileMutation,
 	useUpdateInsurerProfileMutation,
 } from "@/redux/api/authApi";
 import type { InsurerProfile } from "@/types/profile";
+import { OnboardingFormContext } from "./context/OnboardingFormContext";
+// Import types and context
+import type {
+	OnboardingData,
+	OnboardingFormProviderProps,
+} from "./types/onboarding";
+import { stepSchemas } from "./types/types";
 
 // Helper to safely extract field names from a Zod schema
 const getSchemaFields = (schema: z.ZodTypeAny): string[] => {

@@ -1,6 +1,6 @@
+import type { Product } from "@/components/admin-components/products/product-data-types";
 import { axiosBaseQuery } from "@/lib/axiosBaseQuery";
 import { createApi } from "@reduxjs/toolkit/query/react";
-import type { Product } from "@/components/admin-components/products/product-data-types";
 
 // Define types for insurance and coverage types
 export interface InsuranceType {

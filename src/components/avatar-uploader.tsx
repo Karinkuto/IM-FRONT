@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { ImageUp, ZoomIn, ZoomOut, AlertCircle } from "lucide-react";
-import { useFileUpload } from "@/hooks/use-file-upload";
 import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
-import { cn } from "@/lib/utils";
+import {
+	Cropper,
+	CropperCropArea,
+	CropperImage,
+} from "@/components/ui/cropper";
 import {
 	Dialog,
 	DialogContent,
@@ -12,11 +12,11 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import {
-	Cropper,
-	CropperCropArea,
-	CropperImage,
-} from "@/components/ui/cropper";
+import { Slider } from "@/components/ui/slider";
+import { useFileUpload } from "@/hooks/use-file-upload";
+import { cn } from "@/lib/utils";
+import { AlertCircle, ImageUp, ZoomIn, ZoomOut } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 type Area = { x: number; y: number; width: number; height: number };
 

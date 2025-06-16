@@ -1,10 +1,10 @@
-import { useFormContext } from "react-hook-form";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import { Eye, EyeOff } from "lucide-react";
-import type { OnboardingData } from "../types/types";
 import { useState } from "react";
+import { useFormContext } from "react-hook-form";
+import type { OnboardingData } from "../types/types";
 
 export const ApiConfigStep = () => {
 	const {
@@ -68,7 +68,9 @@ export const ApiConfigStep = () => {
 					</Button>
 				</div>
 				{errors.apiKey ? (
-					<p className="text-sm text-destructive mt-1">{errors.apiKey.message}</p>
+					<p className="text-sm text-destructive mt-1">
+						{errors.apiKey.message}
+					</p>
 				) : (
 					<p className="text-xs text-muted-foreground mt-1">
 						Keep your API key secure and never share it publicly

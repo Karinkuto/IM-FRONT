@@ -1,13 +1,13 @@
-import { SharedDashboardLayout } from "../SharedDashboardLayout";
-import { InsurerNav } from "@/components/shared/InsurerNav";
 import { InsurerOnboardingStepper } from "@/components/onboarding/InsurerOnboardingStepper";
+import { InsurerNav } from "@/components/shared/InsurerNav";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import type { ValidRole } from "@/config/roles";
+import { useAuth } from "@/hooks/useAuth";
 import { useGetProfileQuery } from "@/redux/api/authApi";
 import type { InsurerProfile } from "@/types/profile";
-import type { ValidRole } from "@/config/roles";
 import { useCallback, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
+import { SharedDashboardLayout } from "../SharedDashboardLayout";
 
 export interface InsurerDashboardLayoutProps {
 	role: ValidRole;

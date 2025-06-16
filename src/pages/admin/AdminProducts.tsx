@@ -1,5 +1,3 @@
-import { useState, useMemo } from "react";
-import { toast } from "sonner";
 import { ProductsTable } from "@/components/admin-components/products/ProductsTable.tsx";
 import { CreateProductDialog } from "@/components/admin-components/products/modals/CreateProductDialog";
 import { EditProductDialog } from "@/components/admin-components/products/modals/EditProductDialog";
@@ -9,11 +7,13 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import {
 	useCreateProductMutation,
 	useDeleteProductMutation,
+	useGetInsuranceTypesQuery,
 	useGetProductsQuery,
 	useUpdateProductMutation,
-	useGetInsuranceTypesQuery,
 } from "@/redux/api/productsApi";
 import { PlusCircle } from "lucide-react";
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
 
 interface InsuranceTypeApi {
 	id: number;

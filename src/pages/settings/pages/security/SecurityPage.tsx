@@ -1,7 +1,7 @@
+import { useChangePasswordMutation } from "@/redux/api/authApi";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { SecurityForm } from "../page-sections/security/SecurityForm";
-import { useChangePasswordMutation } from "@/redux/api/authApi";
 
 export default function SecurityPage() {
 	const [isSubmitting, setIsSubmitting] = useState(false);

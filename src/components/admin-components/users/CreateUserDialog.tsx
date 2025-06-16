@@ -12,9 +12,9 @@ import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PlusCircle, ShieldCheck } from "lucide-react";
 import { useState } from "react";
+import type React from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import type React from "react";
 
 const formSchema = z.object({
 	email: z.string().email("Please enter a valid email address"),

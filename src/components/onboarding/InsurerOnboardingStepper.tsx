@@ -1,20 +1,20 @@
-import { useEffect, useCallback } from "react";
+import type { Role } from "@/types/auth";
+import { useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import type { Role } from "@/types/auth";
 
-import { PasswordStep } from "./steps/PasswordStep";
-import { CompanyInfoStep } from "./steps/CompanyInfoStep";
-import { ContactDetailsStep } from "./steps/ContactDetailsStep";
-import { ApiConfigStep } from "./steps/ApiConfigStep";
-import { BrandingStep } from "./steps/BrandingStep";
-import { OnboardingFormProvider } from "./OnboardingFormProvider";
-import { useOnboardingForm } from "../../hooks/useOnboardingForm";
+import { defaultRoleRedirects } from "@/config/routes";
+import { useAuth } from "@/hooks/useAuth";
 import { useGetProfileQuery } from "@/redux/api/authApi";
 import type { InsurerProfile } from "@/types/profile";
-import { useAuth } from "@/hooks/useAuth";
-import { defaultRoleRedirects } from "@/config/routes";
+import { useOnboardingForm } from "../../hooks/useOnboardingForm";
 import Stepper, { Step as StepComponent } from "../shared/Stepper";
+import { OnboardingFormProvider } from "./OnboardingFormProvider";
+import { ApiConfigStep } from "./steps/ApiConfigStep";
+import { BrandingStep } from "./steps/BrandingStep";
+import { CompanyInfoStep } from "./steps/CompanyInfoStep";
+import { ContactDetailsStep } from "./steps/ContactDetailsStep";
+import { PasswordStep } from "./steps/PasswordStep";
 
 interface InsurerOnboardingStepperProps {
 	onOnboardingComplete: (profile: InsurerProfile) => void;

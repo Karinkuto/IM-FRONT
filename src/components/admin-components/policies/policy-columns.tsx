@@ -1,5 +1,5 @@
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import type { Policy, PolicyStatus } from "@/types/policy";
 import type { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";

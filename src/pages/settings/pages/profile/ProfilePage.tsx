@@ -1,18 +1,18 @@
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { useAuth } from "@/hooks/useAuth";
+import {
+	type InsurerProfilePayload,
+	type UpdateUserProfilePayload,
+	useGetProfileQuery,
+	useUpdateInsurerProfileMutation,
+	useUpdateUserProfileMutation,
+} from "@/redux/api/authApi";
+import type { User } from "@/types/auth";
+import type { InsurerProfile, UserProfile } from "@/types/profile";
 import { useCallback, useEffect } from "react";
 import { toast } from "sonner";
 import { ProfileForm } from "../page-sections/profile/ProfileForm";
 import { ProfilePreview } from "../page-sections/profile/ProfilePreview";
-import {
-	useGetProfileQuery,
-	useUpdateUserProfileMutation,
-	useUpdateInsurerProfileMutation,
-	type UpdateUserProfilePayload,
-	type InsurerProfilePayload,
-} from "@/redux/api/authApi";
-import { useAuth } from "@/hooks/useAuth";
-import type { User } from "@/types/auth";
-import type { InsurerProfile, UserProfile } from "@/types/profile";
 
 // Helper function to convert data URL to Blob (replicated from OnboardingFormProvider)
 const dataURLtoBlob = (dataurl: string, filename: string) => {

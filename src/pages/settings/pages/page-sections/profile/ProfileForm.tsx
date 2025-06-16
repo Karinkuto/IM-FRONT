@@ -6,10 +6,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Building2, Mail, Phone, Text } from "lucide-react";
 import type { ChangeEvent } from "react";
-import { useCallback, useState, useRef, useEffect } from "react";
-import { SettingsSection } from "../../../components/SettingsSection";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
+import { SettingsSection } from "../../../components/SettingsSection";
 
 // Helper function to convert data URL to Blob
 const dataURLtoBlob = (dataurl: string, filename: string) => {

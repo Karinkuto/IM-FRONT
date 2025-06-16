@@ -1,6 +1,6 @@
-import { useFormContext } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useFormContext } from "react-hook-form";
 import type { OnboardingData } from "../types/types";
 
 export const ContactDetailsStep = () => {

@@ -16,11 +16,11 @@ export function AdminNav({ user }: AdminNavProps) {
 
 	const userInitials = user.name
 		? user.name
-			.split(" ")
-			.map((n) => n[0])
-			.join("")
-			.toUpperCase()
-			.slice(0, 2)
+				.split(" ")
+				.map((n) => n[0])
+				.join("")
+				.toUpperCase()
+				.slice(0, 2)
 		: "AD";
 
 	const handleProfileClick = () => {
@@ -54,7 +54,7 @@ export function AdminNav({ user }: AdminNavProps) {
 							{user.name || user.email}
 						</span>
 						<span className="truncate text-xs text-muted-foreground capitalize">
-							{user.role?.toLowerCase() || 'admin'}
+							{user.role?.toLowerCase() || "admin"}
 						</span>
 					</div>
 				</SidebarMenuButton>
