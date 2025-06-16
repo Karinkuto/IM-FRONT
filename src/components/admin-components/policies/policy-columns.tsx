@@ -1,9 +1,34 @@
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import type { Policy, PolicyStatus } from "@/types/policy";
 import type { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 
 export const columns: ColumnDef<Policy>[] = [
+	{
+		accessorKey: "insuredEntity",
+		header: "Insured Entity",
+		cell: ({ row }) => {
+			const insuredEntity = row.getValue("insuredEntity") as string;
+			const initials = insuredEntity
+				.split(" ")
+				.map((n) => n[0])
+				.join("")
+				.toUpperCase();
+			return (
+				<div className="flex items-center gap-2">
+					<Avatar className="h-10 w-10 rounded-md">
+						<AvatarFallback>{initials}</AvatarFallback>
+					</Avatar>
+					<span>{insuredEntity}</span>
+				</div>
+			);
+		},
+	},
+	{
+		accessorKey: "userPhoneNumber",
+		header: "User Phone Number",
+	},
 	{
 		accessorKey: "policyNumber",
 		header: "Policy Number",
@@ -12,19 +37,28 @@ export const columns: ColumnDef<Policy>[] = [
 		),
 	},
 	{
-		accessorKey: "userPhoneNumber",
-		header: "User Phone Number",
-	},
-	{
-		accessorKey: "insuredEntity",
-		header: "Insured Entity",
-	},
-	{
 		accessorKey: "coverageType",
 		header: "Coverage Type",
 		cell: ({ row }) => {
 			const coverageType = row.getValue("coverageType") as string;
 			return <Badge variant="secondary">{coverageType}</Badge>;
+		},
+	},
+	{
+		accessorKey: "status",
+		header: "Status",
+		cell: ({ row }) => {
+			const status = row.getValue("status") as PolicyStatus;
+			const statusVariant = {
+				active: "status-approved",
+				expired: "status-pending",
+				cancelled: "status-rejected",
+			}[status] as "status-approved" | "status-pending" | "status-rejected";
+			return (
+				<Badge variant={statusVariant}>
+					{status.charAt(0).toUpperCase() + status.slice(1)}
+				</Badge>
+			);
 		},
 	},
 	{
@@ -55,23 +89,6 @@ export const columns: ColumnDef<Policy>[] = [
 
 			return (
 				<div className="text-right font-medium font-mono">{formatted}</div>
-			);
-		},
-	},
-	{
-		accessorKey: "status",
-		header: "Status",
-		cell: ({ row }) => {
-			const status = row.getValue("status") as PolicyStatus;
-			const statusVariant = {
-				active: "status-approved",
-				expired: "status-pending",
-				cancelled: "status-rejected",
-			}[status] as "status-approved" | "status-pending" | "status-rejected";
-			return (
-				<Badge variant={statusVariant}>
-					{status.charAt(0).toUpperCase() + status.slice(1)}
-				</Badge>
 			);
 		},
 	},
