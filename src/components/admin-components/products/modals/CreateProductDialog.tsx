@@ -95,7 +95,12 @@ export const CreateProductDialog: React.FC<CreateProductDialogProps> = ({
 				if (!response.ok) {
 					throw new Error(`HTTP error! status: ${response.status}`);
 				}
-				const data: InsuranceTypeApi[] = await response.json();
+				const result = await response.json();
+				const { data } = result;
+				if (!Array.isArray(data)) {
+					setDynamicInsuranceTypeOptions([]);
+					return;
+				}
 				const options = data.map((item) => ({
 					value: item.id.toString(),
 					label: item.name,
