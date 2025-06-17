@@ -7,6 +7,7 @@ export interface InsuranceType {
 	id: string;
 	name: string;
 	description?: string;
+	coverage_types?: CoverageType[]; // Add coverage_types here
 }
 
 export interface CoverageType {
@@ -167,18 +168,6 @@ export const productsApi = createApi({
 			transformResponse: (response: { data: InsuranceType[] }) => response.data,
 			providesTags: ["InsuranceType"],
 		}),
-
-		// Get coverage types by insurance type ID
-		getCoverageTypes: builder.query<CoverageType[], string>({
-			query: (insuranceTypeId) => ({
-				url: `/insurance_types/${insuranceTypeId}/coverage_types`,
-				method: "GET",
-			}),
-			transformResponse: (response: { data: CoverageType[] }) => response.data,
-			providesTags: (result, error, insuranceTypeId) => [
-				{ type: "CoverageType", id: insuranceTypeId },
-			],
-		}),
 	}),
 });
 
@@ -189,5 +178,4 @@ export const {
 	useUpdateProductMutation,
 	useDeleteProductMutation,
 	useGetInsuranceTypesQuery,
-	useGetCoverageTypesQuery,
 } = productsApi;

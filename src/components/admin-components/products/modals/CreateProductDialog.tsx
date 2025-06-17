@@ -1,10 +1,11 @@
-import { Button } from "@/components/ui/button";
-import { Combobox } from "@/components/ui/combobox";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
 	Dialog,
 	DialogContent,
 	DialogDescription,
-	DialogFooter,
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
@@ -18,40 +19,30 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
 import { Textarea } from "@/components/ui/textarea";
-import type { RootState } from "@/redux/store";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Info, PlusCircle } from "lucide-react";
-import type React from "react";
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { useSelector } from "react-redux";
-import * as z from "zod";
+import { CircleDollarSign, Info } from "lucide-react";
+import type { Product } from "@/components/admin-components/products/product-data-types";
+
+// Importing the RTK Query hooks and types
 import {
-	type ComboboxOption,
-	type Product,
-	coverageTypeOptions,
-	insuranceTypeOptions,
-} from "../product-data-types.ts";
-
-interface InsuranceTypeApi {
-	id: number;
-	name: string;
-	description: string;
-}
-
-interface CoverageTypeApi {
-	id: number;
-	name: string;
-	description: string;
-	insurance_type_id: number;
-}
+	useGetInsuranceTypesQuery,
+	type InsuranceType, // Using types from productsApi.ts
+	type CoverageType, // Using types from productsApi.ts
+} from "@/redux/api/productsApi";
 
 const formSchema = z.object({
 	insuranceType: z.string().min(1, "Insurance type is required"),
 	coverageType: z.string().min(1, "Coverage type is required"),
-	description: z.string().min(1, "Description is required"),
-	pricing: z.string().regex(/^\d+(\.\d{1,2})?$/, "Please enter a valid price"),
+	description: z
+		.string()
+		.min(10, "Description must be at least 10 characters.")
+		.max(160, "Description must not be longer than 160 characters."),
+	pricing: z
+		.string()
+		.min(1, "Pricing is required")
+		.regex(/^\d+(\.\d{1,2})?$/, "Invalid price format. Use 00.00"),
 });
 
 interface CreateProductDialogProps {
@@ -75,80 +66,71 @@ export const CreateProductDialog: React.FC<CreateProductDialogProps> = ({
 		},
 	});
 
-	const [dynamicCoverageTypeOptions, setDynamicCoverageTypeOptions] = useState<
-		ComboboxOption[]
-	>([]);
 	const [dynamicInsuranceTypeOptions, setDynamicInsuranceTypeOptions] =
-		useState<ComboboxOption[]>([]);
-	const token = useSelector((state: RootState) => state.auth.token);
+		useState<{ value: string; label: string }[]>([]);
+	const [dynamicCoverageTypeOptions, setDynamicCoverageTypeOptions] = useState<
+		{ value: string; label: string }[]
+	>([]);
 
 	const selectedInsuranceType = form.watch("insuranceType");
 
-	useEffect(() => {
-		const fetchInsuranceTypes = async () => {
-			try {
-				const response = await fetch("http://localhost:3000/insurance_types", {
-					headers: {
-						Authorization: `Bearer ${token}`,
-					},
-				});
-				if (!response.ok) {
-					throw new Error(`HTTP error! status: ${response.status}`);
-				}
-				const result = await response.json();
-				const { data } = result;
-				if (!Array.isArray(data)) {
-					setDynamicInsuranceTypeOptions([]);
-					return;
-				}
-				const options = data.map((item) => ({
-					value: item.id.toString(),
-					label: item.name,
-				}));
-				setDynamicInsuranceTypeOptions(options);
-			} catch (error) {
-				console.error("Error fetching insurance types:", error);
-			}
-		};
-
-		fetchInsuranceTypes();
-	}, [token]);
+	// Fetch Insurance Types using RTK Query
+	const {
+		data: insuranceTypes,
+		isLoading: isLoadingInsuranceTypes,
+		isError: isErrorInsuranceTypes,
+	} = useGetInsuranceTypesQuery();
 
 	useEffect(() => {
-		const fetchCoverageTypes = async () => {
-			if (selectedInsuranceType) {
-				try {
-					const response = await fetch(
-						`http://localhost:3000/insurance_types/${selectedInsuranceType}/coverage_types`,
-						{
-							headers: {
-								Authorization: `Bearer ${token}`,
-							},
-						},
-					);
-					if (!response.ok) {
-						throw new Error(`HTTP error! status: ${response.status}`);
-					}
-					const data: CoverageTypeApi[] = await response.json();
-					const options = data.map((item) => ({
+		if (insuranceTypes) {
+			const options = insuranceTypes.map((item: InsuranceType) => ({
+				value: item.id.toString(),
+				label: item.name,
+			}));
+			setDynamicInsuranceTypeOptions(options);
+		} else if (isErrorInsuranceTypes) {
+			console.error("Error fetching insurance types using RTK Query.");
+			setDynamicInsuranceTypeOptions([]);
+		}
+	}, [insuranceTypes, isErrorInsuranceTypes]);
+
+	// **Refactored: Get Coverage Types from insuranceTypes data**
+	useEffect(() => {
+		console.log("Coverage Types Effect Triggered (new logic).");
+		console.log("Selected Insurance Type:", selectedInsuranceType);
+		console.log("All Insurance Types from API:", insuranceTypes);
+
+		if (selectedInsuranceType && insuranceTypes) {
+			const selectedInsType = insuranceTypes.find(
+				(type) => type.id.toString() === selectedInsuranceType,
+			);
+
+			if (selectedInsType?.coverage_types) {
+				const options = selectedInsType.coverage_types.map(
+					(item: CoverageType) => ({
 						value: item.id.toString(),
 						label: item.name,
-					}));
-					setDynamicCoverageTypeOptions(options);
-					form.setValue("coverageType", ""); // Reset coverageType when insuranceType changes
-				} catch (error) {
-					console.error(
-						`Error fetching coverage types for ${selectedInsuranceType}:`,
-						error,
-					);
-				}
+					}),
+				);
+				console.log("Mapped Coverage Type Options:", options);
+				setDynamicCoverageTypeOptions(options);
+				form.setValue("coverageType", ""); // Reset coverageType when insuranceType changes
+				console.log("Coverage type reset to empty string.");
 			} else {
+				console.log(
+					"No coverage types found for selected insurance type or coverage_types is missing.",
+				);
 				setDynamicCoverageTypeOptions([]);
 				form.setValue("coverageType", "");
 			}
-		};
-		fetchCoverageTypes();
-	}, [selectedInsuranceType, form, token]);
+		} else {
+			console.log(
+				"No insurance type selected or insuranceTypes not loaded, resetting coverage types.",
+			);
+			setDynamicCoverageTypeOptions([]);
+			form.setValue("coverageType", "");
+		}
+	}, [selectedInsuranceType, insuranceTypes, form]); // Dependencies now include insuranceTypes
 
 	const resetFormFields = () => {
 		form.reset();
@@ -228,7 +210,11 @@ export const CreateProductDialog: React.FC<CreateProductDialogProps> = ({
 															onValueChange={field.onChange}
 															placeholder="Select Insurance Type"
 															searchPlaceholder="Search insurance types..."
-															emptyStateMessage="No insurance type found."
+															emptyStateMessage={
+																isLoadingInsuranceTypes
+																	? "Loading insurance types..."
+																	: "No insurance type found."
+															}
 															className="w-full"
 														/>
 													</FormControl>
@@ -251,7 +237,14 @@ export const CreateProductDialog: React.FC<CreateProductDialogProps> = ({
 															onValueChange={field.onChange}
 															placeholder="Select Coverage Type"
 															searchPlaceholder="Search coverage types..."
-															emptyStateMessage="No coverage type found."
+															emptyStateMessage={
+																!selectedInsuranceType
+																	? "Select an insurance type first."
+																	: dynamicCoverageTypeOptions.length === 0 &&
+																			!isLoadingInsuranceTypes
+																		? "No coverage types found for this insurance type."
+																		: "Loading coverage types..."
+															}
 															className="w-full"
 														/>
 													</FormControl>
@@ -290,44 +283,40 @@ export const CreateProductDialog: React.FC<CreateProductDialogProps> = ({
 										name="pricing"
 										render={({ field }) => (
 											<FormItem>
-												<FormLabel>Pricing (ETB)</FormLabel>
+												<FormLabel>Pricing</FormLabel>
 												<FormControl>
-													<Input
-														type="text"
-														placeholder="0.00"
-														{...field}
-														onChange={(e) => {
-															// Allow only numbers and one decimal point
-															const value = e.target.value.replace(
-																/[^0-9.]/g,
-																"",
-															);
-															const decimalCount = (value.match(/\./g) || [])
-																.length;
-															if (decimalCount <= 1) {
-																field.onChange(value);
-															}
-														}}
-													/>
+													<div className="relative">
+														<CircleDollarSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+														<Input
+															placeholder="0.00"
+															className="pl-9"
+															type="text" // Keep as text to handle regex for decimal
+															{...field}
+														/>
+													</div>
 												</FormControl>
+												<FormDescription>
+													Set the estimated price for this product.
+												</FormDescription>
 												<FormMessage />
 											</FormItem>
 										)}
 									/>
 								</div>
 
-								<DialogFooter className="pt-4">
+								<div className="flex justify-end p-6 gap-2">
 									<Button
-										type="button"
 										variant="outline"
-										onClick={() => onOpenChange(false)}
+										onClick={() => {
+											resetFormFields();
+											onOpenChange(false);
+										}}
+										type="button"
 									>
 										Cancel
 									</Button>
-									<Button type="submit">
-										<PlusCircle className="mr-2 h-4 w-4" /> Create Product
-									</Button>
-								</DialogFooter>
+									<Button type="submit">Create Product</Button>
+								</div>
 							</div>
 						</div>
 					</form>
