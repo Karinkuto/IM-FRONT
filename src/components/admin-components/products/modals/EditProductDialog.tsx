@@ -19,34 +19,24 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import type { RootState } from "@/redux/store";
+import {
+	useGetInsuranceTypesQuery,
+	type InsuranceType,
+	type CoverageType,
+} from "@/redux/api/productsApi";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Info, Save } from "lucide-react";
 import type React from "react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useSelector } from "react-redux";
 import * as z from "zod";
-import {
-	type ComboboxOption,
-	type Product,
-	insuranceTypeOptions,
-} from "../product-data-types";
-
-interface InsuranceTypeApi {
-	id: number;
-	name: string;
-	description: string;
-}
-
-interface CoverageTypeApi {
-	id: number;
-	name: string;
-	description: string;
-	insurance_type_id: number;
-}
+import type { ComboboxOption, Product } from "../product-data-types";
 
 const formSchema = z.object({
+	name: z
+		.string()
+		.min(2, "Product name must be at least 2 characters.")
+		.max(50, "Product name must not be longer than 50 characters."),
 	insuranceType: z.string().min(1, "Insurance type is required"),
 	coverageType: z.string().min(1, "Coverage type is required"),
 	description: z.string().min(1, "Description is required"),
@@ -69,11 +59,13 @@ export const EditProductDialog: React.FC<EditProductDialogProps> = ({
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
+			name: "",
 			insuranceType: "",
 			coverageType: "",
 			description: "",
 			pricing: "",
 		},
+		mode: "onBlur",
 	});
 
 	const [dynamicCoverageTypeOptions, setDynamicCoverageTypeOptions] = useState<
@@ -81,133 +73,72 @@ export const EditProductDialog: React.FC<EditProductDialogProps> = ({
 	>([]);
 	const [dynamicInsuranceTypeOptions, setDynamicInsuranceTypeOptions] =
 		useState<ComboboxOption[]>([]);
-	const token = useSelector((state: RootState) => state.auth.token);
 
 	const selectedInsuranceType = form.watch("insuranceType");
 
-	useEffect(() => {
-		const fetchInsuranceTypes = async () => {
-			try {
-				const response = await fetch("http://localhost:3000/insurance_types", {
-					headers: {
-						Authorization: `Bearer ${token}`,
-					},
-				});
-				if (!response.ok) {
-					throw new Error(`HTTP error! status: ${response.status}`);
-				}
-				const result = await response.json();
-				console.log("API Response Result (Insurance Types):", result);
-				let data: InsuranceTypeApi[];
-				if (Array.isArray(result.data)) {
-					data = result.data;
-				} else if (Array.isArray(result)) {
-					data = result;
-				} else {
-					data = []; // Default to empty array if unexpected format
-				}
-				console.log("Processed Data (Insurance Types):", data);
-				const options = data.map((item) => ({
-					value: item.id.toString(),
-					label: item.name,
-				}));
-				setDynamicInsuranceTypeOptions(options);
-			} catch (error) {
-				console.error("Error fetching insurance types:", error);
-			}
-		};
-
-		fetchInsuranceTypes();
-	}, [token]);
+	// Fetch Insurance Types using RTK Query
+	const { data: insuranceTypes, isLoading: isLoadingInsuranceTypes } =
+		useGetInsuranceTypesQuery();
 
 	useEffect(() => {
-		const fetchCoverageTypes = async () => {
-			if (selectedInsuranceType) {
-				try {
-					const response = await fetch(
-						`http://localhost:3000/insurance_types/${selectedInsuranceType}/coverage_types`,
-						{
-							headers: {
-								Authorization: `Bearer ${token}`,
-							},
-						},
-					);
-					if (!response.ok) {
-						throw new Error(`HTTP error! status: ${response.status}`);
-					}
-					const result = await response.json();
-					console.log("API Response Result (Coverage Types):", result);
-					let data: CoverageTypeApi[];
-					if (Array.isArray(result.data)) {
-						data = result.data;
-					} else if (Array.isArray(result)) {
-						data = result;
-					} else {
-						data = []; // Default to empty array if unexpected format
-					}
-					console.log("Processed Data (Coverage Types):", data);
-					const options = data.map((item) => ({
+		if (insuranceTypes) {
+			const options = insuranceTypes.map((item: InsuranceType) => ({
+				value: item.id.toString(),
+				label: item.name,
+			}));
+			setDynamicInsuranceTypeOptions(options);
+		} else {
+			setDynamicInsuranceTypeOptions([]);
+		}
+	}, [insuranceTypes]);
+
+	// Get Coverage Types from insuranceTypes data
+	useEffect(() => {
+		if (selectedInsuranceType && insuranceTypes) {
+			const selectedInsType = insuranceTypes.find(
+				(type) => type.id.toString() === selectedInsuranceType,
+			);
+
+			if (selectedInsType?.coverage_types) {
+				const options = selectedInsType.coverage_types.map(
+					(item: CoverageType) => ({
 						value: item.id.toString(),
 						label: item.name,
-					}));
-					setDynamicCoverageTypeOptions(options);
-					if (
-						!options.some((opt) => opt.value === form.getValues("coverageType"))
-					) {
-						form.setValue("coverageType", "");
-					}
-				} catch (error) {
-					console.error(
-						`Error fetching coverage types for ${selectedInsuranceType}:`,
-						error,
-					);
+					}),
+				);
+				setDynamicCoverageTypeOptions(options);
+				if (
+					!options.some(
+						(opt) => opt.value === form.getValues("coverageType"),
+					) &&
+					product?.coverageTypeId !== form.getValues("coverageType") // Only reset if current value is not the product's original coverage type
+				) {
+					form.setValue("coverageType", "");
 				}
+			} else {
+				setDynamicCoverageTypeOptions([]);
+				form.setValue("coverageType", "");
 			}
-		};
-		fetchCoverageTypes();
-	}, [selectedInsuranceType, form, token]);
+		} else {
+			setDynamicCoverageTypeOptions([]);
+			form.setValue("coverageType", "");
+		}
+	}, [selectedInsuranceType, insuranceTypes, form, product]);
 
 	// Populate form fields when the product prop changes (i.e., when dialog opens with a product)
 	useEffect(() => {
 		if (product) {
-			console.log("Product prop in EditProductDialog:", product); // Targeted log 1
-			console.log("Product Insurance Type ID:", product.insuranceTypeId); // Targeted log 2
-			console.log("Product Coverage Type ID:", product.coverageTypeId); // Targeted log 3
+			form.setValue("name", product.name, { shouldValidate: true });
 			form.setValue("description", product.description);
 			form.setValue("pricing", product.pricing.toString());
-
-			// Directly set insurance type and coverage type from product prop
 			form.setValue("insuranceType", product.insuranceTypeId, {
 				shouldValidate: true,
 			});
 			form.setValue("coverageType", product.coverageTypeId, {
 				shouldValidate: true,
 			});
-			console.log(
-				"Form value after set (Insurance Type):",
-				form.getValues("insuranceType"),
-			); // Targeted log 4
-			console.log(
-				"Form value after set (Coverage Type):",
-				form.getValues("coverageType"),
-			); // Targeted log 5
 		}
 	}, [product, form]);
-
-	// Existing useEffects for fetching dynamic options
-	useEffect(() => {
-		console.log(
-			"Dynamic Insurance Type Options length:",
-			dynamicInsuranceTypeOptions.length,
-		); // Targeted log 6
-	}, [dynamicInsuranceTypeOptions]);
-
-	useEffect(() => {
-		console.log(
-			"Dynamic Coverage Type Options length:",
-			dynamicCoverageTypeOptions.length,
-		); // Targeted log 7
-	}, [dynamicCoverageTypeOptions]);
 
 	const resetFormFields = () => {
 		form.reset();
@@ -218,6 +149,7 @@ export const EditProductDialog: React.FC<EditProductDialogProps> = ({
 
 		const updatedProduct: Product = {
 			...product, // Keep the existing ID
+			name: values.name,
 			insuranceType:
 				dynamicInsuranceTypeOptions.find(
 					(opt) => opt.value === values.insuranceType,
@@ -230,6 +162,8 @@ export const EditProductDialog: React.FC<EditProductDialogProps> = ({
 			coverageTypeId: values.coverageType, // Send the ID
 			description: values.description,
 			pricing: Number.parseFloat(values.pricing),
+			status: product.status, // Preserve status as it's not editable in this dialog
+			customerRating: product.customerRating, // Preserve customerRating as it's not editable in this dialog
 		};
 
 		onProductUpdate(updatedProduct);
@@ -289,6 +223,23 @@ export const EditProductDialog: React.FC<EditProductDialogProps> = ({
 							<div className="col-span-8 flex flex-col justify-between">
 								<div className="space-y-4 p-6 ">
 									<div className="grid grid-cols-2 gap-4">
+										{/* Product Name */}
+										<FormField
+											control={form.control}
+											name="name"
+											render={({ field }) => (
+												<FormItem className="col-span-2">
+													<FormLabel>Product Name</FormLabel>
+													<FormControl>
+														<Input
+															placeholder="Enter product name"
+															{...field}
+														/>
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
 										{/* Insurance Type */}
 										<FormField
 											control={form.control}

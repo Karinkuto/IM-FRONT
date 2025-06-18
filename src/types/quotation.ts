@@ -13,6 +13,7 @@ export interface Address {
 export interface UserInfo {
 	phone_number: string;
 	fin: string;
+	name?: string;
 }
 
 export interface InsuranceType {

@@ -1,32 +1,22 @@
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { useAuth } from "@/hooks/useAuth";
+import { useCallback, useEffect } from 'react';
+import { toast } from 'sonner';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { useAuth } from '@/hooks/useAuth';
 import {
-	type InsurerProfilePayload,
-	type UpdateUserProfilePayload,
-	useGetProfileQuery,
-	useUpdateInsurerProfileMutation,
-	useUpdateUserProfileMutation,
-} from "@/redux/api/authApi";
-import type { User } from "@/types/auth";
-import type { InsurerProfile, UserProfile } from "@/types/profile";
-import { useCallback, useEffect } from "react";
-import { toast } from "sonner";
-import { ProfileForm } from "../page-sections/profile/ProfileForm";
-import { ProfilePreview } from "../page-sections/profile/ProfilePreview";
+  useGetProfileQuery,
+  useUpdateInsurerProfileMutation
+} from '@/redux/api/authApi';
+import { ProfileForm } from '../page-sections/profile/ProfileForm';
+import { ProfilePreview } from '../page-sections/profile/ProfilePreview';
 
-// Helper function to convert data URL to Blob (replicated from OnboardingFormProvider)
-const dataURLtoBlob = (dataurl: string, filename: string) => {
-	const arr = dataurl.split(",");
-	const mimeMatch = arr[0].match(/:(.*?);/);
-	const mime = mimeMatch ? mimeMatch[1] : "image/png";
-	const bstr = atob(arr[1]);
-	let n = bstr.length;
-	const u8arr = new Uint8Array(n);
-	while (n--) {
-		u8arr[n] = bstr.charCodeAt(n);
-	}
-	return new File([u8arr], filename, { type: mime });
-};
+// Define the error type for better type safety
+interface ApiError {
+  data?: {
+    error?: string;
+  };
+  error?: string | { message?: string };
+  message?: string;
+}
 
 export default function ProfilePage() {
 	const { user } = useAuth();
@@ -41,37 +31,71 @@ export default function ProfilePage() {
 		skip: !user?.id,
 	});
 
-	const [updateUserProfile, { isLoading: isUpdatingUser }] =
-		useUpdateUserProfileMutation();
+	// Initialize mutation
 	const [updateInsurerProfile, { isLoading: isUpdatingInsurer }] =
 		useUpdateInsurerProfileMutation();
-	const isSubmitting = isUpdatingUser || isUpdatingInsurer;
+	const isSubmitting = isUpdatingInsurer;
 
 	// Debug log to track user ID and profile data
 	useEffect(() => {
-		console.log("ProfilePage - User ID:", user?.id);
-		console.log("ProfilePage - User data:", user);
-		console.log("ProfilePage - Profile data:", userData);
+		console.log('[ProfilePage] User data updated:', {
+			userId: user?.id,
+			hasInsurer: !!userData?.data.insurer,
+			insurerId: userData?.data.insurer?.id
+		});
 	}, [user, userData]);
 
 	const handleProfileSubmit = useCallback(
 		async (formData: FormData) => {
 			try {
+				// Log the form data being submitted
+				console.log("ProfilePage - Submitting form data:");
+				for (const [key, value] of formData.entries()) {
+					if (value instanceof File) {
+						console.log(`  ${key}: [File] ${value.name} (${value.type}, ${value.size} bytes)`);
+					} else {
+						console.log(`  ${key}:`, value);
+					}
+				}
+
 				// Update insurer profile if it exists
 				if (userData?.data.insurer) {
-					await updateInsurerProfile({
+					console.log("Updating insurer profile with ID:", userData.data.insurer.id);
+					const result = await updateInsurerProfile({
 						id: String(userData.data.insurer.id),
 						payload: formData,
 					}).unwrap();
+
+					console.log("Update insurer profile response:", result);
+				} else {
+					console.log("No insurer profile found, skipping update");
 				}
 
 				toast.success("Profile updated successfully!");
-				refetch(); // Refetch user data to get updated profile information
+				// Refetch user data to get updated profile information
+				await refetch();
 			} catch (error) {
-				console.error("Failed to update profile:", error);
-				toast.error("Failed to update profile.", {
-					description: error instanceof Error ? error.message : "Unknown error",
-				});
+				console.error('Failed to update profile:', error);
+
+				// Extract detailed error message if available
+				let errorMessage = 'Failed to update profile';
+
+				// Type guard to check if error is an object with expected properties
+				const apiError = error as ApiError;
+
+				if (apiError?.data?.error) {
+					errorMessage += `: ${apiError.data.error}`;
+				} else if (typeof apiError?.error === 'string') {
+					errorMessage += `: ${apiError.error}`;
+				} else if (typeof apiError?.error === 'object' && apiError.error?.message) {
+					errorMessage += `: ${apiError.error.message}`;
+				} else if (apiError?.message) {
+					errorMessage += `: ${apiError.message}`;
+				} else if (error instanceof Error) {
+					errorMessage += `: ${error.message}`;
+				}
+
+				toast.error(errorMessage);
 			}
 		},
 		[updateInsurerProfile, userData, refetch],
@@ -89,10 +113,11 @@ export default function ProfilePage() {
 	const userProfileForComponents = {
 		id: String(userData.data.id),
 		companyName: userData.data.insurer?.name || "",
-		email: userData.data.email || "",
 		description: userData.data.insurer?.description || "",
 		contactEmail: userData.data.insurer?.contact_email || "",
 		contactPhone: userData.data.insurer?.contact_phone || "",
+		apiEndpoint: userData.data.insurer?.api_endpoint || "",
+		apiKey: userData.data.insurer?.api_key || "",
 		logo_url:
 			userData.data.insurer?.logo_url instanceof Blob
 				? URL.createObjectURL(userData.data.insurer.logo_url)

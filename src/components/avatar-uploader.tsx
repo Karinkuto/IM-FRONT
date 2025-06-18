@@ -99,7 +99,9 @@ export default function AvatarUploader({
 	const maxSizeMB = 5;
 	const maxSize = maxSizeMB * 1024 * 1024; // 5MB
 
-	const [finalImageUrl, setFinalImageUrl] = useState(initialImageUrl);
+	// Track local image changes separately from initial prop
+	const [localImageUrl, setLocalImageUrl] = useState<string | null>(null);
+	const finalImageUrl = localImageUrl !== null ? localImageUrl : initialImageUrl;
 
 	const [
 		{ files, isDragging, errors },
@@ -156,16 +158,11 @@ export default function AvatarUploader({
 			}
 
 			// 4. Update state with the new image
-			setFinalImageUrl(newFinalUrl);
+			setLocalImageUrl(newFinalUrl);
 			setPreviewUrl(null);
 
-			// 5. Convert blob to base64 for the parent component
-			const reader = new FileReader();
-			reader.onloadend = () => {
-				const base64Image = reader.result as string;
-				onImageChange(base64Image);
-			};
-			reader.readAsDataURL(croppedBlob);
+			// 5. Pass the Blob directly to the parent component
+			onImageChange(croppedBlob);
 
 			// 6. Clean up file
 			if (fileId) {
@@ -176,20 +173,34 @@ export default function AvatarUploader({
 			// Clean up on error
 			if (fileId) removeFile(fileId);
 			setPreviewUrl(null);
+			setLocalImageUrl(null);
 			setIsDialogOpen(false);
 		}
 	};
 
 	// Remove the current image
-	const handleRemoveImage = () => {
-		// Cleanup of finalImageUrl is now handled by the useEffect hook
+	const handleRemoveImage = useCallback(() => {
+		// Clean up any blob URLs
+		if (finalImageUrl?.startsWith?.("blob:")) {
+			URL.revokeObjectURL(finalImageUrl);
+		}
 		if (previewUrl?.startsWith?.("blob:")) {
 			URL.revokeObjectURL(previewUrl);
 		}
-		setFinalImageUrl(null);
+		
+		// Reset all states
+		// Use empty string to indicate removal (null would show the initial image)
+		setLocalImageUrl("");
 		setPreviewUrl(null);
+		
+		// Clear any selected files
+		for (const file of files) {
+			removeFile(file.id);
+		}
+		
+		// Notify parent that the image was removed
 		onImageChange(null);
-	};
+	}, [finalImageUrl, previewUrl, files, removeFile, onImageChange]);
 
 	// Clean up object URLs on unmount or when finalImageUrl changes
 	useEffect(() => {
@@ -203,19 +214,16 @@ export default function AvatarUploader({
 		};
 	}, [finalImageUrl]); // Include finalImageUrl in dependencies
 
-	// Update finalImageUrl when initialImageUrl changes from parent
+	// Update local state when initialImageUrl changes from parent
+	// but only if we don't have any local changes
 	useEffect(() => {
-		// Skip update if initialImageUrl is the same as current finalImageUrl
-		// or if initialImageUrl is null/undefined and we already have a finalImageUrl
-		if (
-			initialImageUrl === finalImageUrl ||
-			(!initialImageUrl && finalImageUrl)
-		) {
-			return;
+		if (localImageUrl === null && initialImageUrl !== finalImageUrl) {
+			// Clean up old blob URL if it exists
+			if (finalImageUrl?.startsWith?.("blob:")) {
+				URL.revokeObjectURL(finalImageUrl);
+			}
 		}
-
-		setFinalImageUrl(initialImageUrl);
-	}, [initialImageUrl, finalImageUrl]); // Include finalImageUrl in dependencies
+	}, [initialImageUrl, localImageUrl, finalImageUrl]);
 
 	// Open crop dialog when a new file is selected
 	useEffect(() => {
@@ -232,7 +240,7 @@ export default function AvatarUploader({
 
 	return (
 		<div className={cn("flex flex-col gap-4 w-full", className)}>
-			{!finalImageUrl ? (
+			{!finalImageUrl || finalImageUrl === "" ? (
 				/* Drop zone - shown when no image is selected */
 				<button
 					type="button"
@@ -264,38 +272,40 @@ export default function AvatarUploader({
 					</div>
 				</button>
 			) : (
-				/* Preview mode - shown after image is selected and cropped */
+					/* Preview mode - shown after image is selected and cropped */
 				<div className="flex flex-col items-center gap-4">
-					<div className="relative w-40 h-40 rounded-lg overflow-hidden border">
-						<img
-							src={finalImageUrl || ""}
-							alt="Company logo preview"
-							className="w-full h-full object-cover"
-							onLoad={(e) => {
-								// Revoke previous blob URL only after the new image has loaded
-								const currentSrc = (e.target as HTMLImageElement).src;
-								const oldUrl = (e.target as HTMLImageElement).dataset.oldUrl;
-								if (oldUrl?.startsWith("blob:") && oldUrl !== currentSrc) {
-									URL.revokeObjectURL(oldUrl);
-								}
-								// Store the current src for the next load event to compare
-								(e.target as HTMLImageElement).dataset.oldUrl = currentSrc;
-							}}
-							onError={(e) => {
-								const target = e.target as HTMLImageElement;
-								const erroredSrc = target.src;
+					{finalImageUrl && (
+						<div className="relative w-40 h-40 rounded-lg overflow-hidden border">
+							<img
+								src={finalImageUrl}
+								alt="Company logo preview"
+								className="w-full h-full object-cover"
+								onLoad={(e) => {
+									// Revoke previous blob URL only after the new image has loaded
+									const currentSrc = (e.target as HTMLImageElement).src;
+									const oldUrl = (e.target as HTMLImageElement).dataset.oldUrl;
+									if (oldUrl?.startsWith("blob:") && oldUrl !== currentSrc) {
+										URL.revokeObjectURL(oldUrl);
+									}
+									// Store the current src for the next load event to compare
+									(e.target as HTMLImageElement).dataset.oldUrl = currentSrc;
+								}}
+								onError={(e) => {
+									const target = e.target as HTMLImageElement;
+									const erroredSrc = target.src;
 
-								if (erroredSrc.startsWith("blob:")) {
-									URL.revokeObjectURL(erroredSrc);
-								}
-								target.src = ""; // Clear the broken image
-								setFinalImageUrl(null); // Clear the image on error
-							}}
-							data-old-url={
-								finalImageUrl?.startsWith?.("blob:") ? finalImageUrl : ""
-							} // Store current URL to compare in onLoad
-						/>
-					</div>
+									if (erroredSrc.startsWith("blob:")) {
+										URL.revokeObjectURL(erroredSrc);
+									}
+									target.src = ""; // Clear the broken image
+									setLocalImageUrl(null); // Clear the image on error
+								}}
+								data-old-url={
+									finalImageUrl.startsWith("blob:") ? finalImageUrl : ""
+								} // Store current URL to compare in onLoad
+							/>
+						</div>
+					)}
 					<div className="flex gap-2">
 						<Button
 							type="button"

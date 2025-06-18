@@ -1,12 +1,15 @@
 // Define the Product type based on Requirement.md
 export interface Product {
 	id: string; // Or number, depending on your API
+	name: string; // Add name field
 	insuranceType: string;
 	insuranceTypeId: string;
 	coverageType: string; // This will also serve as the Title
 	coverageTypeId: string;
 	description: string;
 	pricing: number;
+	customerRating?: number | null; // Add customerRating field
+	status?: string; // Add status field
 }
 
 // Options for Comboboxes

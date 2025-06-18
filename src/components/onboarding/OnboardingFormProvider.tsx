@@ -10,9 +10,9 @@ import {
 	useCreateInsurerProfileMutation,
 	useUpdateInsurerProfileMutation,
 } from "@/redux/api/authApi";
+import { createFormData } from "@/utils/formHelpers";
 import type { InsurerProfile } from "@/types/profile";
 import { OnboardingFormContext } from "./context/OnboardingFormContext";
-// Import types and context
 import type {
 	OnboardingData,
 	OnboardingFormProviderProps,
@@ -61,19 +61,7 @@ const getSchemaFields = (schema: z.ZodTypeAny): string[] => {
 	}
 };
 
-// Helper function to convert data URL to Blob
-const dataURLtoBlob = (dataurl: string, filename: string) => {
-	const arr = dataurl.split(",");
-	const mimeMatch = arr[0].match(/:(.*?);/);
-	const mime = mimeMatch ? mimeMatch[1] : "image/png";
-	const bstr = atob(arr[1]);
-	let n = bstr.length;
-	const u8arr = new Uint8Array(n);
-	while (n--) {
-		u8arr[n] = bstr.charCodeAt(n);
-	}
-	return new File([u8arr], filename, { type: mime });
-};
+// Using dataURLtoBlob from formHelpers utility
 
 export const OnboardingFormProvider: React.FC<OnboardingFormProviderProps> = ({
 	children,
@@ -209,39 +197,17 @@ export const OnboardingFormProvider: React.FC<OnboardingFormProviderProps> = ({
 				contact_phone: values.contactPhone || "",
 				api_endpoint: values.apiEndpoint || "",
 				api_key: values.apiKey || "",
-				logo: values.logo || undefined,
+				logo: values.logo || null,
 			};
-			console.log(
-				"OnboardingFormProvider - submitForm: Original Insurer Payload:",
-				insurerPayload,
-			);
 
-			// Create FormData to send multipart/form-data, nesting under 'payload'
-			const formData = new FormData();
-			for (const key in insurerPayload) {
-				if (Object.prototype.hasOwnProperty.call(insurerPayload, key)) {
-					// @ts-ignore
-					let value = insurerPayload[key];
+			// Create FormData with proper file handling using our utility
+			const formData = createFormData(insurerPayload, ['logo']);
 
-					if (
-						key === "logo" &&
-						typeof value === "string" &&
-						value.startsWith("data:")
-					) {
-						// Convert data URL to Blob/File if it's a data URL string (from image preview)
-						value = dataURLtoBlob(value, `logo_${Date.now()}.png`); // Assuming PNG for now, can be improved
-					}
-
-					if (value instanceof File) {
-						formData.append(`payload[${key}]`, value, value.name);
-					} else if (value !== null && value !== undefined) {
-						formData.append(`payload[${key}]`, String(value));
-					} else if (value === null) {
-						// Explicitly send null for logo if it's null (e.g., user removed it)
-						formData.append(`payload[${key}]`, "null");
-					}
-				}
-			}
+			// Log FormData contents for debugging
+			console.log("FormData contents:");
+			formData.forEach((value, key) => {
+				console.log(`  ${key}:`, value);
+			});
 
 			// Log FormData contents for debugging
 			console.log(

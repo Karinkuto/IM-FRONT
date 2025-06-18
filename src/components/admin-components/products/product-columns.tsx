@@ -11,12 +11,20 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Rating } from "@/components/ui/rating";
 import type { Product } from "./product-data-types.ts"; // Assuming Product type is here
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
 
 export const columns: ColumnDef<Product>[] = [
+	{
+		accessorKey: "name",
+		header: "Product Name",
+		cell: ({ row }) => (
+			<div className="font-medium">{row.getValue("name")}</div>
+		),
+	},
 	{
 		accessorKey: "coverageType",
 		header: "Title (Coverage Type)",
@@ -29,7 +37,7 @@ export const columns: ColumnDef<Product>[] = [
 		header: "Insurance Type",
 		cell: ({ row }) => {
 			const insuranceType = row.getValue("insuranceType") as string;
-			return <Badge>{insuranceType}</Badge>;
+			return <span className="font-medium">{insuranceType}</span>;
 		},
 	},
 	{
@@ -48,6 +56,18 @@ export const columns: ColumnDef<Product>[] = [
 
 			return (
 				<div className="text-right font-medium font-mono">{formatted}</div>
+			);
+		},
+	},
+	{
+		accessorKey: "customerRating",
+		header: "Customer Rating",
+		cell: ({ row }) => {
+			const rating = row.original.customerRating;
+			return rating !== null && rating !== undefined ? (
+				<Rating rating={rating} size="sm" maxRating={5} showValue />
+			) : (
+				<span className="text-gray-500 text-sm">Not Rated Yet</span>
 			);
 		},
 	},

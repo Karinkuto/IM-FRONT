@@ -36,6 +36,11 @@ export interface UpdateUserProfilePayload {
 	fin?: string;
 	password?: string;
 	password_confirmation?: string;
+	logo?: File | null;
+	companyName?: string;
+	description?: string;
+	contactEmail?: string;
+	contactPhone?: string;
 }
 
 export const authApi = createApi({
@@ -122,34 +127,28 @@ export const authApi = createApi({
 				};
 			},
 		}),
-		updateInsurerProfile: builder.mutation<
-			InsurerProfile,
-			{ id: string; payload: FormData } // Expect FormData directly
-		>({
+		updateInsurerProfile: builder.mutation<InsurerProfile, { id: string; payload: FormData }>({
 			query: ({ id, payload }) => {
-				console.log(
-					"authApi - updateInsurerProfile: Received payload:",
-					payload,
-				);
-				if (payload instanceof FormData) {
-					console.log(
-						"authApi - updateInsurerProfile: Payload is FormData. Contents:",
-					);
-					for (const pair of payload.entries()) {
-						console.log(`  Key: ${pair[0]}, Value:`, pair[1]);
+				// Log the FormData contents for debugging
+				console.log(`authApi - updateInsurerProfile: Sending PATCH request to /insurers/${id}`);
+				console.log("FormData contents:");
+				
+				// Log all entries in the FormData
+				for (const [key, value] of payload.entries()) {
+					if (value instanceof File) {
+						console.log(`  ${key}: [File] ${value.name} (${value.type}, ${value.size} bytes)`);
+					} else {
+						console.log(`  ${key}:`, value);
 					}
-				} else {
-					console.log(
-						"authApi - updateInsurerProfile: Payload is NOT FormData.",
-					);
 				}
+
 				return {
 					url: `/insurers/${id}`,
 					method: "PATCH",
-					data: payload, // Pass FormData directly
+					data: payload,
 					headers: {
 						// Let the browser set the correct Content-Type with boundary
-						// 'Content-Type': 'multipart/form-data',
+						'Accept': 'application/json'
 					},
 				};
 			},
@@ -176,12 +175,20 @@ export const authApi = createApi({
 				method: "GET",
 			}),
 		}),
-		updateUserProfile: builder.mutation<User, UpdateUserProfilePayload>({
-			query: (payload) => ({
-				url: "/profile",
-				method: "PATCH",
-				data: { payload },
-			}),
+		updateUserProfile: builder.mutation<User, FormData>({
+			query: (formData) => {
+				console.log("authApi - updateUserProfile: Received FormData:");
+				if (formData instanceof FormData) {
+					for (const pair of formData.entries()) {
+						console.log(`  Key: ${pair[0]}, Value:`, pair[1]);
+					}
+				}
+				return {
+					url: "/profile",
+					method: "PATCH",
+					data: formData,
+				};
+			},
 		}),
 	}),
 });

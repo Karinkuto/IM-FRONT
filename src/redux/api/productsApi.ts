@@ -78,6 +78,7 @@ export const productsApi = createApi({
 				return response.data.map((product) => {
 					return {
 						id: product.id.toString(),
+						name: product.name,
 						insuranceType: "", // Set to empty string, will be enriched by AdminProducts.tsx
 						insuranceTypeId:
 							product.coverage_type?.insurance_type_id?.toString() || "",
@@ -85,6 +86,7 @@ export const productsApi = createApi({
 						coverageTypeId: product.coverage_type?.id?.toString() || "",
 						description: product.description,
 						pricing: Number.parseFloat(product.estimated_price) || 0,
+						customerRating: product.customer_rating,
 						status: product.status || "",
 					};
 				});
@@ -101,6 +103,7 @@ export const productsApi = createApi({
 				const product = response.data;
 				return {
 					id: product.id.toString(),
+					name: product.name,
 					insuranceType: "", // Set to empty string, will be enriched by AdminProducts.tsx
 					insuranceTypeId:
 						product.coverage_type?.insurance_type_id?.toString() || "",
@@ -108,6 +111,7 @@ export const productsApi = createApi({
 					coverageTypeId: product.coverage_type?.id?.toString() || "",
 					description: product.description,
 					pricing: Number.parseFloat(product.estimated_price) || 0,
+					customerRating: product.customer_rating,
 					status: product.status || "",
 				};
 			},
@@ -120,10 +124,10 @@ export const productsApi = createApi({
 				method: "POST",
 				data: {
 					payload: {
-						name: productData.coverageType, // Using coverageType as name
+						name: productData.name,
 						description: productData.description,
 						estimated_price: productData.pricing,
-						coverage_type_id: productData.coverageType, // This should be the ID in a real app
+						coverage_type_id: productData.coverageTypeId,
 						status: "active",
 					},
 				},
@@ -137,7 +141,7 @@ export const productsApi = createApi({
 				method: "PUT",
 				data: {
 					payload: {
-						name: updates.coverageType,
+						name: updates.name,
 						description: updates.description,
 						estimated_price: updates.pricing,
 						coverage_type_id: updates.coverageTypeId,

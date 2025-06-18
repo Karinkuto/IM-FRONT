@@ -13,21 +13,44 @@ import {
 import type { QuotationRequest, QuotationStatus } from "@/types/quotation";
 import type { ColumnDef } from "@tanstack/react-table";
 import { CheckCircle, Eye, MoreHorizontal, XCircle } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export const columns: ColumnDef<QuotationRequest>[] = [
 	{
-		id: "userPhoneNumber",
-		accessorFn: (row) => row.user.phone_number,
-		header: "Phone Number",
-		cell: ({ row }) => (
-			<div className="font-mono">{row.original.user.phone_number}</div>
-		),
-	},
-	{
-		id: "userFin",
-		accessorFn: (row) => row.user.fin,
-		header: "TIN (FIN)",
-		cell: ({ row }) => <div className="font-mono">{row.original.user.fin}</div>,
+		id: "user",
+		accessorFn: (row) => row.user.name || row.user.phone_number,
+		header: "User",
+		cell: ({ row }) => {
+			const userName = row.original.user.name;
+			const userPhoneNumber = row.original.user.phone_number;
+			const userFin = row.original.user.fin;
+
+			const displayValue = userName || userPhoneNumber || userFin;
+			const initials = displayValue
+				? displayValue
+						.split(" ")
+						.map((n: string) => n[0])
+						.join("")
+						.toUpperCase()
+				: "";
+
+			return (
+				<div className="flex items-center gap-2">
+					<Avatar className="h-10 w-10 rounded-md">
+						<AvatarFallback>{initials}</AvatarFallback>
+					</Avatar>
+					<div className="flex flex-col">
+						{userName && <span className="font-medium">{userName}</span>}
+						{userPhoneNumber && (
+							<span className="text-sm text-gray-500">{userPhoneNumber}</span>
+						)}
+						{userFin && (
+							<span className="text-sm text-gray-500">FIN: {userFin}</span>
+						)}
+					</div>
+				</div>
+			);
+		},
 	},
 	{
 		id: "insuranceType",
@@ -35,7 +58,7 @@ export const columns: ColumnDef<QuotationRequest>[] = [
 		header: "Insurance Type",
 		cell: ({ row }) => {
 			const insuranceType = row.original.insurance_type.name;
-			return <Badge>{insuranceType}</Badge>;
+			return <Badge variant="outline">{insuranceType}</Badge>;
 		},
 	},
 	{

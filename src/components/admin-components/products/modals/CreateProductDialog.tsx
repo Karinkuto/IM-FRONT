@@ -33,6 +33,10 @@ import {
 } from "@/redux/api/productsApi";
 
 const formSchema = z.object({
+	name: z
+		.string()
+		.min(2, "Product name must be at least 2 characters.")
+		.max(50, "Product name must not be longer than 50 characters."),
 	insuranceType: z.string().min(1, "Insurance type is required"),
 	coverageType: z.string().min(1, "Coverage type is required"),
 	description: z
@@ -59,11 +63,13 @@ export const CreateProductDialog: React.FC<CreateProductDialogProps> = ({
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
+			name: "",
 			insuranceType: "",
 			coverageType: "",
 			description: "",
 			pricing: "",
 		},
+		mode: "onBlur",
 	});
 
 	const [dynamicInsuranceTypeOptions, setDynamicInsuranceTypeOptions] =
@@ -102,7 +108,7 @@ export const CreateProductDialog: React.FC<CreateProductDialogProps> = ({
 
 		if (selectedInsuranceType && insuranceTypes) {
 			const selectedInsType = insuranceTypes.find(
-				(type) => type.id.toString() === selectedInsuranceType,
+				(type: InsuranceType) => type.id.toString() === selectedInsuranceType,
 			);
 
 			if (selectedInsType?.coverage_types) {
@@ -138,10 +144,15 @@ export const CreateProductDialog: React.FC<CreateProductDialogProps> = ({
 
 	const onSubmit = (values: z.infer<typeof formSchema>) => {
 		const newProduct: Omit<Product, "id"> = {
+			name: values.name,
 			insuranceType: values.insuranceType,
+			insuranceTypeId: values.insuranceType,
 			coverageType: values.coverageType,
+			coverageTypeId: values.coverageType,
 			description: values.description,
 			pricing: Number.parseFloat(values.pricing),
+			status: "active",
+			customerRating: null,
 		};
 
 		onProductCreate(newProduct as Product);
@@ -196,6 +207,23 @@ export const CreateProductDialog: React.FC<CreateProductDialogProps> = ({
 							<div className="col-span-8 flex flex-col justify-between">
 								<div className="space-y-4 p-6 ">
 									<div className="grid grid-cols-2 gap-4">
+										{/* Product Name */}
+										<FormField
+											control={form.control}
+											name="name"
+											render={({ field }) => (
+												<FormItem className="col-span-2">
+													<FormLabel>Product Name</FormLabel>
+													<FormControl>
+														<Input
+															placeholder="Enter product name"
+															{...field}
+														/>
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
 										{/* Insurance Type */}
 										<FormField
 											control={form.control}
