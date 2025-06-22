@@ -15,16 +15,21 @@ export const fetchUser = () => {
 	});
 };
 
-export interface LoginCredentials {
-	username: string;
-	password: string;
-}
+import type { LoginCredentials } from "@/types/auth";
 
 export const loginUser = (userData: LoginCredentials) => {
 	return new Promise<User>((resolve, reject) => {
 		setTimeout(() => {
-			if (userData.username === "admin" && userData.password === "password") {
-				resolve({ ...mockUser, name: userData.username });
+			if (
+				(userData.email === "admin@example.com" ||
+					userData.phone_number === "123-456-7890") &&
+				userData.password === "password"
+			) {
+				resolve({
+					...mockUser,
+					name: userData.email || userData.phone_number || "Admin",
+					role: "admin",
+				});
 			} else {
 				reject(new Error("Invalid credentials"));
 			}

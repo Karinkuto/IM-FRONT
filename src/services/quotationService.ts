@@ -27,8 +27,10 @@ export const mockQuotations: QuotationRequest[] = [
 		},
 		vehicle: {
 			plate_number: "ABC123",
-			front_view_photo_url: "/front.png",
-			back_view_photo_url: "/back.png",
+			photos: {
+				front_view_photo_url: "/front.png",
+				back_view_photo_url: "/back.png",
+			},
 		},
 	},
 	{
@@ -57,8 +59,10 @@ export const mockQuotations: QuotationRequest[] = [
 		},
 		vehicle: {
 			plate_number: "XYZ789",
-			front_view_photo_url: "/front.png",
-			back_view_photo_url: "/back.png",
+			photos: {
+				front_view_photo_url: "/front.png",
+				back_view_photo_url: "/back.png",
+			},
 		},
 	},
 	{
@@ -87,8 +91,10 @@ export const mockQuotations: QuotationRequest[] = [
 		},
 		vehicle: {
 			plate_number: "MCL456",
-			front_view_photo_url: "/front.png",
-			back_view_photo_url: "/back.png",
+			photos: {
+				front_view_photo_url: "/front.png",
+				back_view_photo_url: "/back.png",
+			},
 		},
 	},
 	{
@@ -117,8 +123,10 @@ export const mockQuotations: QuotationRequest[] = [
 		},
 		vehicle: {
 			plate_number: "TRK777",
-			front_view_photo_url: "/front.png",
-			back_view_photo_url: "/back.png",
+			photos: {
+				front_view_photo_url: "/front.png",
+				back_view_photo_url: "/back.png",
+			},
 		},
 	},
 ];

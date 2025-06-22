@@ -1,4 +1,5 @@
 import type React from "react";
+import { useId } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,6 +24,8 @@ export function LoginForm({
 	isLoading,
 	...props
 }: LoginFormProps) {
+	const usernameId = useId();
+	const passwordId = useId();
 	return (
 		<form
 			className={cn("flex flex-col gap-6", className)}
@@ -37,9 +40,9 @@ export function LoginForm({
 			</div>
 			<div className="grid gap-6">
 				<div className="grid gap-3">
-					<Label htmlFor="username">Username</Label>
+					<Label htmlFor={usernameId}>Username</Label>
 					<Input
-						id="username"
+						id={usernameId}
 						name="username"
 						type="text"
 						autoComplete="username"
@@ -51,7 +54,7 @@ export function LoginForm({
 				</div>
 				<div className="grid gap-3">
 					<div className="flex items-center">
-						<Label htmlFor="password">Password</Label>
+						<Label htmlFor={passwordId}>Password</Label>
 						<a
 							href="/forgot-password"
 							className="ml-auto text-sm underline-offset-4 hover:underline"
@@ -60,7 +63,7 @@ export function LoginForm({
 						</a>
 					</div>
 					<Input
-						id="password"
+						id={passwordId}
 						name="password"
 						type="password"
 						autoComplete="current-password"

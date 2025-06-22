@@ -81,7 +81,23 @@ function SidebarProvider({
 			}
 
 			// This sets the cookie to keep the sidebar state.
-			document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
+			if (typeof window !== "undefined" && window.cookieStore) {
+				// Use Cookie Store API
+				window.cookieStore
+					.set({
+						name: SIDEBAR_COOKIE_NAME,
+						value: String(openState),
+						maxAge: SIDEBAR_COOKIE_MAX_AGE,
+						path: "/",
+					})
+					.catch((e) =>
+						console.error("Error setting cookie with Cookie Store API:", e),
+					);
+			} else {
+				// Fallback to document.cookie for older browsers or environments without Cookie Store API
+				// biome-ignore lint/suspicious/noDocumentCookie: This is an intentional fallback for browser compatibility.
+				document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
+			}
 		},
 		[setOpenProp, open],
 	);

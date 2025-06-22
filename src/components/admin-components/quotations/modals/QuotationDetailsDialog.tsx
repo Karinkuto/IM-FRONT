@@ -24,6 +24,8 @@ export default function QuotationDetailsDialog({
 }: QuotationDetailsDialogProps) {
 	const { quotation, isLoading, error } = useQuotation(quotationId);
 
+	const vehiclePhotos = quotation?.vehicle?.photos;
+
 	if (isLoading) {
 		return <LoadingSpinner />;
 	}
@@ -44,15 +46,15 @@ export default function QuotationDetailsDialog({
 				{/* Left: Images stacked vertically */}
 				<div className="flex-shrink-0 bg-muted flex flex-col items-center justify-start max-w-[420px] min-w-[320px] w-fit overflow-y-auto border-r p-4">
 					<VehicleImages
-						frontViewPhotoUrl={quotation.vehicle.photos.front_view_photo_url}
-						backViewPhotoUrl={quotation.vehicle.photos.back_view_photo_url}
-						leftViewPhotoUrl={quotation.vehicle.photos.left_view_photo_url}
-						rightViewPhotoUrl={quotation.vehicle.photos.right_view_photo_url}
-						enginePhotoUrl={quotation.vehicle.photos.engine_photo_url}
+						frontViewPhotoUrl={vehiclePhotos?.front_view_photo_url ?? null}
+						backViewPhotoUrl={vehiclePhotos?.back_view_photo_url ?? null}
+						leftViewPhotoUrl={vehiclePhotos?.left_view_photo_url ?? null}
+						rightViewPhotoUrl={vehiclePhotos?.right_view_photo_url ?? null}
+						enginePhotoUrl={vehiclePhotos?.engine_photo_url ?? null}
 						chassisNumberPhotoUrl={
-							quotation.vehicle.photos.chassis_number_photo_url
+							vehiclePhotos?.chassis_number_photo_url ?? null
 						}
-						librePhotoUrl={quotation.vehicle.photos.libre_photo_url}
+						librePhotoUrl={vehiclePhotos?.libre_photo_url ?? null}
 						stacked
 					/>
 				</div>

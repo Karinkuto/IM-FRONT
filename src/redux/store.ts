@@ -8,22 +8,22 @@ import authReducer from "./slices/authSlice";
 
 // 1. Define root reducer separately
 const rootReducer = {
-  auth: authReducer,
-  [authApi.reducerPath]: authApi.reducer,
-  [productApi.reducerPath]: productApi.reducer,
-  [quotationApi.reducerPath]: quotationApi.reducer,
+	auth: authReducer,
+	[authApi.reducerPath]: authApi.reducer,
+	[productApi.reducerPath]: productApi.reducer,
+	[quotationApi.reducerPath]: quotationApi.reducer,
 };
 
 // 2. Create store using the rootReducer
 export const store = configureStore({
-  reducer: rootReducer,
-  middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(
-      authApi.middleware,
-      productApi.middleware,
-      quotationApi.middleware,
-    ),
-  devTools: process.env.NODE_ENV !== "production",
+	reducer: rootReducer,
+	middleware: (getDefaultMiddleware) =>
+		getDefaultMiddleware().concat(
+			authApi.middleware,
+			productApi.middleware,
+			quotationApi.middleware,
+		),
+	devTools: process.env.NODE_ENV !== "production",
 });
 
 // 3. Derive RootState from the rootReducer

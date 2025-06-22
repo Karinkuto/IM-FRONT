@@ -3,17 +3,44 @@ import {
 	type ReactNode,
 	useContext,
 	useEffect,
+	useMemo,
 	useState,
 } from "react";
-import type { LoginCredentials } from "@/services/authService";
 import { loginUser, logoutUser, mockUser } from "@/services/authService";
-import type { AuthContextType, User } from "@/types/auth";
+import type { AuthContextType, LoginCredentials, User } from "@/types/auth";
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
 	const [user, setUser] = useState<User | null>(null);
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+	const displayUser = useMemo(() => {
+		if (!user) {
+			return null;
+		}
+
+		let name = "";
+		switch (user.role) {
+			case "admin":
+				name = user.email || "Admin User"; // Use email for admin, fallback to 'Admin User'
+				break;
+			case "insurer":
+				name = user.insurer?.name || "Insurer";
+				break;
+			case "customer":
+				// For customer, we are not showing the name on this dashboard.
+				name = "Customer"; // Fallback name, though won't be displayed in NavUser
+				break;
+			default:
+				name = "User";
+		}
+
+		return {
+			name: name,
+			role: user.role,
+		};
+	}, [user]);
 
 	useEffect(() => {
 		const initializeAuth = async () => {
@@ -49,7 +76,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	};
 
 	return (
-		<AuthContext.Provider value={{ user, login, logout, isAuthenticated }}>
+		<AuthContext.Provider
+			value={{ user, login, logout, isAuthenticated, displayUser }}
+		>
 			{children}
 		</AuthContext.Provider>
 	);

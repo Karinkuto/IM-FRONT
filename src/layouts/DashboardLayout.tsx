@@ -35,14 +35,15 @@ interface AppSidebarProps {
 	role: ValidRole;
 	logout: ReturnType<typeof useAuth>["logout"];
 	currentPath: string; // Add currentPath to props
+	displayUser: ReturnType<typeof useAuth>["displayUser"]; // Add displayUser to props
 }
 
 function AppSidebar({
 	role,
-	user,
+	displayUser,
 	logout,
 	currentPath, // Destructure currentPath
-}: AppSidebarProps & { user: ReturnType<typeof useAuth>["user"] }) {
+}: AppSidebarProps) {
 	const navigate = useNavigate();
 
 	const navSections = navigationData[role] || [];
@@ -132,12 +133,12 @@ function AppSidebar({
 				</SidebarMenu>
 				<SidebarSeparator className="my-4" />{" "}
 				{/* Added separator for visual distinction */}
-				{user && (
+				{displayUser && (
 					<NavUser
 						user={{
-							name: user.name || "User Name",
-							email: user.email || "user@example.com",
-							role: user.role || "user",
+							name: displayUser.name,
+							email: "", // Email is not shown, provide an empty string or remove if not strictly needed by NavUser's prop
+							role: displayUser.role,
 						}}
 					/>
 				)}
@@ -152,7 +153,7 @@ export interface DashboardLayoutProps {
 }
 
 export function DashboardLayout({ role }: DashboardLayoutProps) {
-	const { user, logout } = useAuth();
+	const { logout, displayUser } = useAuth();
 	const location = useLocation();
 
 	const pathSegments = location.pathname.split("/").filter(Boolean);
@@ -181,7 +182,7 @@ export function DashboardLayout({ role }: DashboardLayoutProps) {
 		<SidebarProvider>
 			<AppSidebar
 				role={role}
-				user={user}
+				displayUser={displayUser}
 				logout={logout}
 				currentPath={location.pathname}
 			/>
