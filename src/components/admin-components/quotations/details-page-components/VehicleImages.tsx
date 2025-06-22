@@ -1,13 +1,3 @@
-import { XIcon } from "lucide-react";
-import {
-	// MorphingDialog,
-	// MorphingDialogClose,
-	// MorphingDialogContainer,
-	// MorphingDialogContent,
-	// MorphingDialogImage,
-	// MorphingDialogTrigger,
-} from "@/components/ui/morphing-dialog";
-
 interface VehicleImagesProps {
 	frontViewPhotoUrl: string | null;
 	backViewPhotoUrl: string | null;
@@ -18,16 +8,6 @@ interface VehicleImagesProps {
 	librePhotoUrl?: string | null;
 	stacked?: boolean;
 }
-
-const imageSlots = [
-	{ key: "front", label: "Front View" },
-	{ key: "back", label: "Back View" },
-	{ key: "left", label: "Left View" },
-	{ key: "right", label: "Right View" },
-	{ key: "engine", label: "Engine Photo" },
-	{ key: "chassis", label: "Chassis Number Photo" },
-	{ key: "libre", label: "Libre Photo" },
-];
 
 export function VehicleImages({
 	frontViewPhotoUrl,
@@ -81,7 +61,7 @@ export function VehicleImages({
 	return (
 		<div className="space-y-4">
 			<div className={containerClass}>
-				{images.map((img, idx) =>
+				{images.map((img) =>
 					img.url ? (
 						<div
 							key={img.label}

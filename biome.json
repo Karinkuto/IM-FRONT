@@ -22,7 +22,8 @@
 	"javascript": {
 		"formatter": {
 			"quoteStyle": "double"
-		}
+		},
+		"globals": ["React", "JSX"]
 	},
 	"assist": {
 		"enabled": true,
