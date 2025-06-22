@@ -27,6 +27,11 @@ export interface Vehicle {
 	plate_number: string;
 	front_view_photo_url: string;
 	back_view_photo_url: string;
+	left_view_photo_url?: string;
+	right_view_photo_url?: string;
+	engine_photo_url?: string;
+	chassis_number_photo_url?: string;
+	libre_photo_url?: string;
 }
 
 export interface QuotationFormData {

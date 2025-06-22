@@ -1,11 +1,8 @@
 "use client";
-import { NavUser } from "@/components/shared/NavUser";
-import { ModeToggle } from "@/components/shared/mode-toggle";
-import { footerNavigation, navigationData } from "@/config/navigation"; // Added footerNavigation back
-import { useAuth } from "@/context/AuthContext"; // Import useAuth hook
 import { useEffect } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
-
+import { ModeToggle } from "@/components/shared/mode-toggle";
+import { NavUser } from "@/components/shared/NavUser";
 import {
 	Breadcrumb,
 	BreadcrumbItem,
@@ -30,7 +27,9 @@ import {
 	SidebarSeparator,
 	SidebarTrigger,
 } from "@/components/ui/sidebar";
-import type { ValidRole } from "@/config/roles";
+import { footerNavigation, navigationData } from "@/config/navigation"; // Added footerNavigation back
+import type { ValidRole } from "@/config/routes";
+import { useAuth } from "@/context/AuthContext"; // Import useAuth hook
 
 interface AppSidebarProps {
 	role: ValidRole;
@@ -71,7 +70,7 @@ function AppSidebar({
 						</svg>
 					</div>
 					<div>
-						<div className="font-semibold text-lg">SecureGuard</div>
+						<div className="font-semibold text-lg">Tila</div>
 						<div className="text-xs text-muted-foreground">
 							Insurance Platform
 						</div>
@@ -175,7 +174,7 @@ export function DashboardLayout({ role }: DashboardLayoutProps) {
 
 	// Update document title when breadcrumbPageContent changes
 	useEffect(() => {
-		document.title = `SecureGuard | ${breadcrumbPageContent.charAt(0).toUpperCase() + breadcrumbPageContent.slice(1)}`;
+		document.title = `Tila | ${breadcrumbPageContent.charAt(0).toUpperCase() + breadcrumbPageContent.slice(1)}`;
 	}, [breadcrumbPageContent]);
 
 	return (

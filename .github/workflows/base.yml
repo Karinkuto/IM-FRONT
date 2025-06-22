@@ -4,10 +4,12 @@ on:
   push:
     branches:
       - main
-
   pull_request:
     branches:
       - main
+
+permissions:
+  contents: read
 
 jobs:
   lint:
@@ -34,3 +36,19 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  biome:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+      cancel-in-progress: true
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Biome
+        uses: biomejs/setup-biome@v2
+
+      - name: Run Biome linter and formatter check
+        run: biome ci .

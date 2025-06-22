@@ -1,5 +1,7 @@
 "use client";
 
+import type { ColumnDef } from "@tanstack/react-table";
+import { CheckCircle, Eye, MoreHorizontal, XCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,8 +13,6 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { QuotationRequest, QuotationStatus } from "@/types/quotation";
-import type { ColumnDef } from "@tanstack/react-table";
-import { CheckCircle, Eye, MoreHorizontal, XCircle } from "lucide-react";
 
 export const columns: ColumnDef<QuotationRequest>[] = [
 	{

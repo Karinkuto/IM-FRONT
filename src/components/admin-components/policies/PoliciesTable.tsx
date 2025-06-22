@@ -1,6 +1,6 @@
+import type { FC } from "react";
 import { DataTable } from "@/components/ui/data-table";
 import type { Policy } from "@/types/policy";
-import type { FC } from "react";
 import { columns } from "./policy-columns";
 
 interface PoliciesTableProps {

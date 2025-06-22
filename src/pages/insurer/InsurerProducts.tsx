@@ -1,6 +1,8 @@
-import { ProductsTable } from "@/components/admin-components/products/ProductsTable.tsx";
+import type React from "react";
+import { useEffect, useState } from "react";
 import { CreateProductDialog } from "@/components/admin-components/products/modals/CreateProductDialog";
 import { EditProductDialog } from "@/components/admin-components/products/modals/EditProductDialog";
+import { ProductsTable } from "@/components/admin-components/products/ProductsTable.tsx";
 import type { Product } from "@/components/admin-components/products/product-data-types";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import {
@@ -9,8 +11,6 @@ import {
 	fetchProducts,
 	updateProduct,
 } from "@/services/productService";
-import type React from "react";
-import { useEffect, useState } from "react";
 
 const AdminProducts: React.FC = () => {
 	const [products, setProducts] = useState<Product[]>([]);

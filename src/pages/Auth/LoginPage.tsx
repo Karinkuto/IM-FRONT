@@ -1,11 +1,11 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { defaultRoleRedirects } from "@/config/routes";
 import { useAuth } from "@/context/AuthContext";
 import { fetchUser } from "@/services/authService";
 import type { User } from "@/types/auth";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
 
 export default function LoginPage() {
 	const [username, setUsername] = useState("");
@@ -15,7 +15,7 @@ export default function LoginPage() {
 	const { login } = useAuth();
 
 	useEffect(() => {
-		document.title = "SecureGuard | Login";
+		document.title = "Tila | Login";
 	}, []);
 
 	const handleSubmit = async (e: React.FormEvent) => {
@@ -52,7 +52,7 @@ export default function LoginPage() {
 							</svg>
 						</div>
 						<div>
-							<div className="font-semibold text-lg">SecureGuard</div>
+							<div className="font-semibold text-lg">Tila</div>
 							<div className="text-xs text-muted-foreground">
 								Insurance Platform
 							</div>

@@ -1,12 +1,10 @@
-import useClickOutside from "@/hooks/useClickOutside";
-import { cn } from "@/lib/utils";
 import { XIcon } from "lucide-react";
 import {
 	AnimatePresence,
 	MotionConfig,
+	motion,
 	type Transition,
 	type Variant,
-	motion,
 } from "motion/react";
 import React, {
 	useCallback,
@@ -18,6 +16,8 @@ import React, {
 	useState,
 } from "react";
 import { createPortal } from "react-dom";
+import useClickOutside from "@/hooks/useClickOutside";
+import { cn } from "@/lib/utils";
 
 export type MorphingDialogContextType = {
 	isOpen: boolean;
@@ -133,12 +133,14 @@ export type MorphingDialogContentProps = {
 	children: React.ReactNode;
 	className?: string;
 	style?: React.CSSProperties;
+	stopClickOutsidePropagation?: boolean;
 };
 
 function MorphingDialogContent({
 	children,
 	className,
 	style,
+	stopClickOutsidePropagation = false,
 }: MorphingDialogContentProps) {
 	const { setIsOpen, isOpen, uniqueId, triggerRef } = useMorphingDialog();
 	const containerRef = useRef<HTMLDivElement>(null);
@@ -195,8 +197,12 @@ function MorphingDialogContent({
 		}
 	}, [isOpen, triggerRef]);
 
-	useClickOutside(containerRef, () => {
+	useClickOutside(containerRef, (e) => {
 		if (isOpen) {
+			if (stopClickOutsidePropagation) {
+				e.stopPropagation();
+				return;
+			}
 			setIsOpen(false);
 		}
 	});

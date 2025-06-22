@@ -19,17 +19,17 @@ export type NavItemGroup = {
 };
 
 export const navigationData: Record<string, NavItemGroup[]> = {
-	admin: [
+	insurer: [
 		{
 			title: "MANAGEMENT",
 			items: [
-				{ link: "/admin/products", label: "Products", icon: Columns },
+				{ link: "/insurer/products", label: "Products", icon: Columns },
 				{
-					link: "/admin/quotation-requests",
+					link: "/insurer/quotation-requests",
 					label: "Quotations",
 					icon: ShieldCheck,
 				},
-				{ link: "/admin/policies", label: "Policies", icon: Building2 },
+				{ link: "/insurer/policies", label: "Policies", icon: Building2 },
 			],
 		},
 	],

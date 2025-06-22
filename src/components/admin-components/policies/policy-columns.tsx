@@ -1,7 +1,7 @@
-import { Badge } from "@/components/ui/badge";
-import type { Policy, PolicyStatus } from "@/types/policy";
 import type { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
+import { Badge } from "@/components/ui/badge";
+import type { Policy, PolicyStatus } from "@/types/policy";
 
 export const columns: ColumnDef<Policy>[] = [
 	{

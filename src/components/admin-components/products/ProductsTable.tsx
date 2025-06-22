@@ -1,5 +1,5 @@
-import { DataTable } from "@/components/ui/data-table"; // Import the new DataTable
 import type { FC } from "react";
+import { DataTable } from "@/components/ui/data-table"; // Import the new DataTable
 import { columns } from "./product-columns.tsx"; // Import the column definitions
 import type { Product } from "./product-data-types.ts";
 

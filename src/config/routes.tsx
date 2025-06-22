@@ -1,10 +1,11 @@
 import type { ReactNode } from "react";
-import type { ValidRole } from "./roles";
 
-import AdminPolicies from "@/pages/admin/AdminPolicies";
-import AdminProducts from "@/pages/admin/AdminProducts";
-import AdminQuotations from "@/pages/admin/AdminQuotations";
-import QuotationDetailsPage from "@/pages/admin/quotations/[id]";
+import InsurerPolicies from "@/pages/insurer/InsurerPolicies";
+import InsurerProducts from "@/pages/insurer/InsurerProducts";
+import InsurerQuotations from "@/pages/insurer/InsurerQuotations";
+
+export const VALID_ROLES = ["admin", "customer", "insurer"] as const;
+export type ValidRole = (typeof VALID_ROLES)[number];
 
 interface RouteConfig {
 	path: string;
@@ -13,35 +14,33 @@ interface RouteConfig {
 }
 
 export const roleSpecificRoutes: Record<ValidRole, RouteConfig[]> = {
-	admin: [
+	insurer: [
 		// Define admin routes here. Example:
 		// { path: "dashboard", element: <AdminDashboardPage />, isIndex: true },
-		{ path: "products", element: <AdminProducts /> },
-		{ path: "quotation-requests", element: <AdminQuotations /> },
-		{ path: "policies", element: <AdminPolicies /> },
+		{ path: "products", element: <InsurerProducts />, isIndex: true },
 		{
-			path: "quotation-requests/:id",
-			element: <QuotationDetailsPage />,
-			isIndex: false,
+			path: "quotation-requests",
+			element: <InsurerQuotations />,
 		},
+		{ path: "policies", element: <InsurerPolicies /> },
 	],
 	customer: [
 		// Define customer routes here. Example:
 		// { path: "profile", element: <CustomerProfilePage />, isIndex: true },
 	],
-	insurer: [
+	admin: [
 		// Define insurer routes here. Example:
-		// { path: "home", element: <InsurerHome />, isIndex: true },
-		// { path: "listings", element: <InsurerListings /> },
+		// { path: "home", element: <AdminHome />, isIndex: true },
+		// { path: "listings", element: <AdminUserManagement /> },
 	],
 };
 
 export const defaultRoleRedirects: Record<ValidRole, string> = {
 	admin: "/admin", // Adjusted to match a potential "home" path for admin
-	customer: "/customer/home", // Adjusted to match a potential "home" path for customer
-	insurer: "/insurer/home",
+	customer: "/customer", // Adjusted to match a potential "home" path for customer
+	insurer: "/insurer",
 };
 
 // This can be dynamic based on logged-in user's role in a real app
 // For now, defaulting to insurer. You might want to change this or handle it based on auth context.
-export const defaultAppRedirect = defaultRoleRedirects.admin;
+export const defaultAppRedirect = defaultRoleRedirects.insurer;

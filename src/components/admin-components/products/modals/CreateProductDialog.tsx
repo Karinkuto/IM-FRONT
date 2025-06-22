@@ -1,3 +1,8 @@
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Info, PlusCircle } from "lucide-react";
+import type React from "react";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import {
@@ -17,16 +22,11 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Info, PlusCircle } from "lucide-react";
-import type React from "react";
-import { useForm } from "react-hook-form";
-import * as z from "zod";
 import {
 	type ComboboxOption,
-	type Product,
 	coverageTypeOptions,
 	insuranceTypeOptions,
+	type Product,
 } from "../product-data-types.ts";
 
 const formSchema = z.object({

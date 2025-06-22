@@ -1,7 +1,10 @@
-import { defaultRoleRedirects } from "@/config/paths";
-import { VALID_ROLES, type ValidRole } from "@/config/roles";
-import { useAuth } from "@/context/AuthContext";
 import { Navigate, useLocation } from "react-router-dom";
+import {
+	defaultRoleRedirects,
+	VALID_ROLES,
+	type ValidRole,
+} from "@/config/routes";
+import { useAuth } from "@/context/AuthContext";
 import { DashboardLayout } from "./DashboardLayout";
 
 export function RoleLayout() {
@@ -21,13 +24,9 @@ export function RoleLayout() {
 		return <Navigate to={userDefaultPath} replace />;
 	}
 
-	// If authenticated, but role is invalid for the route, redirect to admin if admin, or login
+	// If authenticated but role is invalid for the route, redirect to login
 	if (!VALID_ROLES.includes(role as ValidRole)) {
-		return user?.role === "admin" ? (
-			<Navigate to="/admin" replace />
-		) : (
-			<Navigate to="/login" replace />
-		);
+		return <Navigate to="/login" replace />;
 	}
 
 	return <DashboardLayout role={role as ValidRole} />;

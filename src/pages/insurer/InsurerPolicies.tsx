@@ -1,8 +1,8 @@
+import { useEffect, useState } from "react";
 import { PoliciesTable } from "@/components/admin-components/policies/PoliciesTable.tsx";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { fetchPolicies } from "@/services/policyService";
 import type { Policy } from "@/types/policy";
-import { useEffect, useState } from "react";
 
 export default function AdminPolicies() {
 	const [policies, setPolicies] = useState<Policy[]>([]);
