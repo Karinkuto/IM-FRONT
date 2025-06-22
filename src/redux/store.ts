@@ -1,33 +1,35 @@
 import { configureStore } from "@reduxjs/toolkit";
 import type { TypedUseSelectorHook } from "react-redux";
 import { useDispatch, useSelector } from "react-redux";
-
+import { authApi } from "@/redux/apis/authApi";
+import { productApi } from "@/redux/apis/productApi";
+import { quotationApi } from "@/redux/apis/quotationApi";
 import authReducer from "./slices/authSlice";
 
-import { authApi } from "@/redux/apis/authApi";
+// 1. Define root reducer separately
+const rootReducer = {
+  auth: authReducer,
+  [authApi.reducerPath]: authApi.reducer,
+  [productApi.reducerPath]: productApi.reducer,
+  [quotationApi.reducerPath]: quotationApi.reducer,
+};
 
-// import your RTK Query APIs
-// import { authApi } from './apis/authApi';
-
+// 2. Create store using the rootReducer
 export const store = configureStore({
-	reducer: {
-		auth: authReducer,
-		[authApi.reducerPath]: authApi.reducer,
-		// your domain slices
-		// auth: authReducer,
-		// RTK Query "service" reducers
-		// [authApi.reducerPath]: authApi.reducer,
-	},
-	middleware: (getDefaultMiddleware) =>
-		getDefaultMiddleware().concat(authApi.middleware),
-	// add RTK Query middleware for each service
-	//   .concat(authApi.middleware, postsApi.middleware)
-	devTools: process.env.NODE_ENV !== "production",
+  reducer: rootReducer,
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(
+      authApi.middleware,
+      productApi.middleware,
+      quotationApi.middleware,
+    ),
+  devTools: process.env.NODE_ENV !== "production",
 });
 
+// 3. Derive RootState from the rootReducer
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
 
-// typed hooks everywhere
+// Typed hooks
 export const useAppDispatch = () => useDispatch<AppDispatch>();
 export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;

@@ -1,5 +1,3 @@
-import { useTransition } from "react";
-import { useNavigate } from "react-router-dom";
 import { AddressInformationCard } from "@/components/admin-components/quotations/details-page-components/AddressInformationCard";
 import { DetailSection } from "@/components/admin-components/quotations/details-page-components/DetailSection";
 import { InsuranceDetailsCard } from "@/components/admin-components/quotations/details-page-components/InsuranceDetailsCard";
@@ -25,11 +23,6 @@ export default function QuotationDetailsDialog({
 	quotationId,
 }: QuotationDetailsDialogProps) {
 	const { quotation, isLoading, error } = useQuotation(quotationId);
-	const [isPending] = useTransition();
-	const navigate = useNavigate(); // This navigate is not used in dialog context anymore, but keeping it for now
-
-	console.log("Front View URL:", quotation?.vehicle.front_view_photo_url);
-	console.log("Back View URL:", quotation?.vehicle.back_view_photo_url);
 
 	if (isLoading) {
 		return <LoadingSpinner />;
@@ -51,13 +44,15 @@ export default function QuotationDetailsDialog({
 				{/* Left: Images stacked vertically */}
 				<div className="flex-shrink-0 bg-muted flex flex-col items-center justify-start max-w-[420px] min-w-[320px] w-fit overflow-y-auto border-r p-4">
 					<VehicleImages
-						frontViewPhotoUrl={quotation.vehicle.front_view_photo_url}
-						backViewPhotoUrl={quotation.vehicle.back_view_photo_url}
-						leftViewPhotoUrl={quotation.vehicle.left_view_photo_url}
-						rightViewPhotoUrl={quotation.vehicle.right_view_photo_url}
-						enginePhotoUrl={quotation.vehicle.engine_photo_url}
-						chassisNumberPhotoUrl={quotation.vehicle.chassis_number_photo_url}
-						librePhotoUrl={quotation.vehicle.libre_photo_url}
+						frontViewPhotoUrl={quotation.vehicle.photos.front_view_photo_url}
+						backViewPhotoUrl={quotation.vehicle.photos.back_view_photo_url}
+						leftViewPhotoUrl={quotation.vehicle.photos.left_view_photo_url}
+						rightViewPhotoUrl={quotation.vehicle.photos.right_view_photo_url}
+						enginePhotoUrl={quotation.vehicle.photos.engine_photo_url}
+						chassisNumberPhotoUrl={
+							quotation.vehicle.photos.chassis_number_photo_url
+						}
+						librePhotoUrl={quotation.vehicle.photos.libre_photo_url}
 						stacked
 					/>
 				</div>

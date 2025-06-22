@@ -1,10 +1,10 @@
-import type { AuthResponse, LoginCredentials, User } from "@/types/auth";
+import type { BaseQueryFn } from "@reduxjs/toolkit/query";
+import { createApi } from "@reduxjs/toolkit/query/react";
+import type { AxiosError, AxiosRequestConfig } from "axios";
 import { axiosBaseQuery } from "@/lib/axiosBaseQuery";
 import { logout, setCredentials } from "@/redux/slices/authSlice";
 import type { RootState } from "@/redux/store";
-import { createApi } from "@reduxjs/toolkit/query/react";
-import type { BaseQueryFn } from "@reduxjs/toolkit/query";
-import type { AxiosRequestConfig } from "axios";
+import type { AuthResponse, LoginCredentials, User } from "@/types/auth";
 
 const baseQuery = axiosBaseQuery();
 
@@ -21,7 +21,7 @@ const baseQueryWithReauth: BaseQueryFn<
 > = async (args, api, extraOptions) => {
 	let result = await baseQuery(args, api, extraOptions);
 
-	if (result.error && (result.error as any).status === 401) {
+	if (result.error && (result.error as AxiosError).response?.status === 401) {
 		// try to get a new token
 		const refreshResult = await baseQuery(
 			{ url: "/refresh_token", method: "POST" },

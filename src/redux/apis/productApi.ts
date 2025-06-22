@@ -1,0 +1,96 @@
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { axiosBaseQuery } from "@/lib/axiosBaseQuery";
+import type {
+	CreateInsuranceProductPayload,
+	InsuranceProduct,
+} from "@/types/product";
+
+interface ProductsResponse {
+	data: InsuranceProduct[];
+	meta: {
+		total_pages: number;
+		current_page: number;
+		total_count: number;
+	};
+}
+
+export const productApi = createApi({
+	reducerPath: "productApi",
+	baseQuery: axiosBaseQuery(),
+	tagTypes: ["Product"],
+	endpoints: (builder) => ({
+		createProduct: builder.mutation<
+			InsuranceProduct,
+			CreateInsuranceProductPayload
+		>({
+			query: (payload: CreateInsuranceProductPayload) => ({
+				url: "/insurance_products",
+				method: "POST",
+				data: { payload },
+			}),
+			invalidatesTags: ["Product"],
+		}),
+		getProducts: builder.query<
+			ProductsResponse,
+			{
+				page?: number;
+				per_page?: number;
+				name?: string;
+				status?: string;
+				coverage_type_id?: string;
+			}
+		>({
+			query: (params: {
+				page?: number;
+				per_page?: number;
+				name?: string;
+				status?: string;
+				coverage_type_id?: string;
+			}) => ({
+				url: "/insurance_products",
+				method: "GET",
+				params,
+			}),
+			providesTags: ["Product"],
+		}),
+		getProductById: builder.query<InsuranceProduct, string>({
+			query: (id: string) => ({
+				url: `/insurance_products/${id}`,
+				method: "GET",
+			}),
+			providesTags: (_result, _error, id) => [{ type: "Product", id }],
+		}),
+		updateProduct: builder.mutation<
+			InsuranceProduct,
+			{ id: string; payload: Partial<CreateInsuranceProductPayload> }
+		>({
+			query: ({
+				id,
+				payload,
+			}: {
+				id: string;
+				payload: Partial<CreateInsuranceProductPayload>;
+			}) => ({
+				url: `/insurance_products/${id}`,
+				method: "PUT",
+				data: { payload },
+			}),
+			invalidatesTags: (_result, _error, { id }) => [{ type: "Product", id }],
+		}),
+		deleteProduct: builder.mutation<void, string>({
+			query: (id: string) => ({
+				url: `/insurance_products/${id}`,
+				method: "DELETE",
+			}),
+			invalidatesTags: ["Product"],
+		}),
+	}),
+});
+
+export const {
+	useCreateProductMutation,
+	useGetProductsQuery,
+	useGetProductByIdQuery,
+	useUpdateProductMutation,
+	useDeleteProductMutation,
+} = productApi;
