@@ -1,15 +1,19 @@
-import type { LoginCredentials } from "@/services/authService";
-
 export type User = {
 	role: "admin" | "customer" | "insurer";
 	id: string;
 	name: string;
 	email?: string;
+	phone_number?: string;
+	fin?: string;
 };
 
-export type AuthContextType = {
-	user: User | null;
-	login: (userData: LoginCredentials) => Promise<void>;
-	logout: () => Promise<void>;
-	isAuthenticated: boolean;
+export type LoginCredentials = {
+	email?: string;
+	phone_number?: string;
+	password: string;
+};
+
+export type AuthResponse = {
+	access_token: string;
+	user: User;
 };
