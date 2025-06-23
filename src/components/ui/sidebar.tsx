@@ -81,16 +81,16 @@ function SidebarProvider({
 			}
 
 			// This sets the cookie to keep the sidebar state.
-			if (typeof window !== "undefined" && window.cookieStore) {
-				// Use Cookie Store API
-				window.cookieStore
+			if (typeof window !== "undefined" && "cookieStore" in window) {
+				const cookieStore = (window as any).cookieStore;
+				cookieStore
 					.set({
 						name: SIDEBAR_COOKIE_NAME,
 						value: String(openState),
 						maxAge: SIDEBAR_COOKIE_MAX_AGE,
 						path: "/",
 					})
-					.catch((e) =>
+					.catch((e: unknown) =>
 						console.error("Error setting cookie with Cookie Store API:", e),
 					);
 			} else {

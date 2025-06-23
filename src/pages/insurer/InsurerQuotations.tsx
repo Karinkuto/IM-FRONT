@@ -70,21 +70,24 @@ export default function AdminQuotations() {
 				matches = false;
 			}
 			if (data.dateRange?.from && quotation.id) {
-				// For date range, we'll use a simple mock based on ID for demonstration
-				// In a real app, you'd compare actual dates from quotation objects
-				const quotationDate = new Date(2024, 0, quotation.id); // Mock date for example
+				const quotationDate = new Date(2024, 0, parseInt(quotation.id, 10)); // Mock date for example
 				if (quotationDate < data.dateRange.from) {
 					matches = false;
 				}
 			}
 			if (data.dateRange?.to && quotation.id) {
-				const quotationDate = new Date(2024, 0, quotation.id); // Mock date for example
+				const quotationDate = new Date(2024, 0, parseInt(quotation.id, 10)); // Mock date for example
 				if (quotationDate > data.dateRange.to) {
 					matches = false;
 				}
 			}
 			if (
 				data.vehicleType &&
+				quotation.form_data &&
+				typeof quotation.form_data.vehicle_details === "object" &&
+				quotation.form_data.vehicle_details !== null &&
+				"vehicle_type" in quotation.form_data.vehicle_details &&
+				typeof quotation.form_data.vehicle_details.vehicle_type === "string" &&
 				!quotation.form_data.vehicle_details.vehicle_type
 					.toLowerCase()
 					.includes(data.vehicleType.toLowerCase())
@@ -93,6 +96,12 @@ export default function AdminQuotations() {
 			}
 			if (
 				data.region &&
+				quotation.form_data &&
+				typeof quotation.form_data.current_residence_address === "object" &&
+				quotation.form_data.current_residence_address !== null &&
+				"region" in quotation.form_data.current_residence_address &&
+				typeof quotation.form_data.current_residence_address.region ===
+					"string" &&
 				!quotation.form_data.current_residence_address.region
 					.toLowerCase()
 					.includes(data.region.toLowerCase())
@@ -106,13 +115,13 @@ export default function AdminQuotations() {
 		setIsFilterDialogOpen(false);
 	};
 
-	const handleViewDetails = (quotationId: number) => {
+	const handleViewDetails = (quotationId: string) => {
 		console.log("Viewing details for quotation:", quotationId);
 		navigate(`/admin/quotation-requests/${quotationId}`);
 	};
 
 	const handleStatusChange = async (
-		quotationId: number,
+		quotationId: string,
 		newStatus: QuotationRequest["status"],
 	) => {
 		try {

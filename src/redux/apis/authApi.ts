@@ -123,6 +123,16 @@ export const authApi = createApi({
 				data,
 			}),
 		}),
+		changePassword: builder.mutation<
+			void,
+			{ new_password: string; new_password_confirmation: string }
+		>({
+			query: (data) => ({
+				url: "/auth/change_password",
+				method: "POST",
+				data,
+			}),
+		}),
 	}),
 });
 
@@ -137,4 +147,5 @@ export const {
 	useForgotPasswordMutation,
 	useResetPasswordMutation,
 	useResendVerificationEmailMutation,
+	useChangePasswordMutation,
 } = authApi;

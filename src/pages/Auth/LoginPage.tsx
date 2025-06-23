@@ -8,7 +8,7 @@ import { fetchUser } from "@/services/authService";
 import type { User } from "@/types/auth";
 
 export default function LoginPage() {
-	const [username, setUsername] = useState("");
+	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
 	const navigate = useNavigate();
@@ -22,7 +22,7 @@ export default function LoginPage() {
 		e.preventDefault();
 		setIsLoading(true);
 		try {
-			await login({ username, password });
+			await login({ email, password });
 			toast.success("Login successful!");
 			// Redirect based on role or a default path after login
 			const loggedInUser = (await fetchUser()) as User; // Fetch user to get their actual role
@@ -62,8 +62,8 @@ export default function LoginPage() {
 				<div className="flex flex-1 items-center justify-center">
 					<div className="w-full max-w-xs">
 						<LoginForm
-							username={username}
-							setUsername={setUsername}
+							email={email}
+							setEmail={setEmail}
 							password={password}
 							setPassword={setPassword}
 							onSubmit={handleSubmit}

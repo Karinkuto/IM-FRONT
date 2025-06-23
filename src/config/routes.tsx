@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-
+import UserManagementPage from "@/pages/admin/UserManagementPage";
 import InsurerPolicies from "@/pages/insurer/InsurerPolicies";
 import InsurerProducts from "@/pages/insurer/InsurerProducts";
 import InsurerQuotations from "@/pages/insurer/InsurerQuotations";
@@ -32,11 +32,12 @@ export const roleSpecificRoutes: Record<ValidRole, RouteConfig[]> = {
 		// Define insurer routes here. Example:
 		// { path: "home", element: <AdminHome />, isIndex: true },
 		// { path: "listings", element: <AdminUserManagement /> },
+		{ path: "users", element: <UserManagementPage />, isIndex: true },
 	],
 };
 
 export const defaultRoleRedirects: Record<ValidRole, string> = {
-	admin: "/admin", // Adjusted to match a potential "home" path for admin
+	admin: "/admin/users", // Adjusted to redirect to the user management page
 	customer: "/customer", // Adjusted to match a potential "home" path for customer
 	insurer: "/insurer",
 };

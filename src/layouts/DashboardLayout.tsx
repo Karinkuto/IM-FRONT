@@ -1,6 +1,6 @@
-"use client";
 import { useEffect } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { InsurerOnboarding } from "@/components/insurer-components/InsurerOnboarding"; // Import the new dialog component
 import { ModeToggle } from "@/components/shared/mode-toggle";
 import { NavUser } from "@/components/shared/NavUser";
 import {
@@ -35,12 +35,12 @@ interface AppSidebarProps {
 	role: ValidRole;
 	logout: ReturnType<typeof useAuth>["logout"];
 	currentPath: string; // Add currentPath to props
-	displayUser: ReturnType<typeof useAuth>["displayUser"]; // Add displayUser to props
+	currentUserData: ReturnType<typeof useAuth>["currentUserData"]; // Renamed from displayUser to currentUserData
 }
 
 function AppSidebar({
 	role,
-	displayUser,
+	currentUserData, // Renamed
 	logout,
 	currentPath, // Destructure currentPath
 }: AppSidebarProps) {
@@ -133,12 +133,12 @@ function AppSidebar({
 				</SidebarMenu>
 				<SidebarSeparator className="my-4" />{" "}
 				{/* Added separator for visual distinction */}
-				{displayUser && (
+				{currentUserData && (
 					<NavUser
 						user={{
-							name: displayUser.name,
+							name: currentUserData.name,
 							email: "", // Email is not shown, provide an empty string or remove if not strictly needed by NavUser's prop
-							role: displayUser.role,
+							role: currentUserData.role,
 						}}
 					/>
 				)}
@@ -153,8 +153,11 @@ export interface DashboardLayoutProps {
 }
 
 export function DashboardLayout({ role }: DashboardLayoutProps) {
-	const { logout, displayUser } = useAuth();
+	const { logout, currentUserData } = useAuth();
 	const location = useLocation();
+
+	// const isTemporaryPassword = currentUserData?.isTemporaryPassword; // Get isTemporaryPassword from currentUserData
+	const isTemporaryPassword = true;
 
 	const pathSegments = location.pathname.split("/").filter(Boolean);
 	let breadcrumbPageContent = "Home";
@@ -182,7 +185,7 @@ export function DashboardLayout({ role }: DashboardLayoutProps) {
 		<SidebarProvider>
 			<AppSidebar
 				role={role}
-				displayUser={displayUser}
+				currentUserData={currentUserData}
 				logout={logout}
 				currentPath={location.pathname}
 			/>
@@ -220,6 +223,12 @@ export function DashboardLayout({ role }: DashboardLayoutProps) {
 				</header>
 				<main className="flex flex-1 flex-col gap-4 py-4 px-8">
 					<Outlet />
+					{isTemporaryPassword && (
+						<InsurerOnboarding
+							role={role}
+							isTemporaryPassword={isTemporaryPassword}
+						/>
+					)}
 				</main>
 			</SidebarInset>
 		</SidebarProvider>

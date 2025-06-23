@@ -4,6 +4,7 @@ import {
 	LogOut,
 	Settings,
 	ShieldCheck,
+	Users,
 } from "lucide-react";
 
 export type NavItem = {
@@ -31,6 +32,12 @@ export const navigationData: Record<string, NavItemGroup[]> = {
 				},
 				{ link: "/insurer/policies", label: "Policies", icon: Building2 },
 			],
+		},
+	],
+	admin: [
+		{
+			title: "ADMINISTRATION",
+			items: [{ link: "/admin/users", label: "User Management", icon: Users }],
 		},
 	],
 };

@@ -81,8 +81,8 @@ export const columns: ColumnDef<QuotationRequest>[] = [
 		cell: ({ row, table }) => {
 			const quotation = row.original;
 			const { onViewDetails, onStatusChange } = table.options.meta as {
-				onViewDetails: (id: number) => void;
-				onStatusChange: (id: number, status: QuotationStatus) => void;
+				onViewDetails: (id: string) => void;
+				onStatusChange: (id: string, status: QuotationStatus) => void;
 			};
 
 			return (

@@ -5,19 +5,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
-interface LoginFormProps extends React.ComponentPropsWithoutRef<"form"> {
-	username: string;
-	setUsername: (value: string) => void;
+export interface LoginFormProps {
+	email: string;
+	setEmail: React.Dispatch<React.SetStateAction<string>>;
 	password: string;
-	setPassword: (value: string) => void;
-	onSubmit: (e: React.FormEvent) => void;
+	setPassword: React.Dispatch<React.SetStateAction<string>>;
+	onSubmit: (e: React.FormEvent<HTMLFormElement>) => Promise<void>;
 	isLoading: boolean;
+	className?: string;
 }
 
 export function LoginForm({
 	className,
-	username,
-	setUsername,
+	email,
+	setEmail,
 	password,
 	setPassword,
 	onSubmit,
@@ -47,8 +48,8 @@ export function LoginForm({
 						type="text"
 						autoComplete="username"
 						required
-						value={username}
-						onChange={(e) => setUsername(e.target.value)}
+						value={email}
+						onChange={(e) => setEmail(e.target.value)}
 						className="mt-1 block w-full"
 					/>
 				</div>

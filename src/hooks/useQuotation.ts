@@ -17,7 +17,7 @@ export function useQuotation(id: string | undefined) {
 			setIsLoading(true);
 			setError(null);
 			try {
-				const foundQuotation = await fetchQuotationById(Number.parseInt(id));
+				const foundQuotation = await fetchQuotationById(id);
 				if (foundQuotation) {
 					setQuotation(foundQuotation);
 				} else {

@@ -17,7 +17,7 @@ const CalendarRoot = ({
 	className,
 	rootRef,
 	...props
-}: Parameters<typeof DayPicker>["components"]["Root"]) => {
+}: React.ComponentProps<"div"> & { rootRef?: React.Ref<HTMLDivElement> }) => {
 	return (
 		<div
 			data-slot="calendar"
@@ -32,22 +32,27 @@ const CalendarChevron = ({
 	className,
 	orientation,
 	...props
-}: Parameters<typeof DayPicker>["components"]["Chevron"]) => {
+}: {
+	className?: string;
+	size?: number;
+	disabled?: boolean;
+	orientation?: "left" | "right" | "down" | "up";
+} & React.SVGProps<SVGSVGElement>) => {
 	if (orientation === "left") {
 		return <ChevronLeftIcon className={cn("size-4", className)} {...props} />;
 	}
-
 	if (orientation === "right") {
 		return <ChevronRightIcon className={cn("size-4", className)} {...props} />;
 	}
-
 	return <ChevronDownIcon className={cn("size-4", className)} {...props} />;
 };
 
 const CalendarWeekNumber = ({
 	children,
 	...props
-}: Parameters<typeof DayPicker>["components"]["WeekNumber"]) => {
+}: React.TdHTMLAttributes<HTMLTableCellElement> & {
+	children?: React.ReactNode;
+}) => {
 	return (
 		<td {...props}>
 			<div className="flex size-(--cell-size) items-center justify-center text-center">

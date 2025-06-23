@@ -14,8 +14,9 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
 	const [user, setUser] = useState<User | null>(null);
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
+	const [isLoading, setIsLoading] = useState(true);
 
-	const displayUser = useMemo(() => {
+	const currentUserData = useMemo(() => {
 		if (!user) {
 			return null;
 		}
@@ -39,6 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		return {
 			name: name,
 			role: user.role,
+			isTemporaryPassword: user.temporary_password,
 		};
 	}, [user]);
 
@@ -47,6 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 			// For development: bypass authentication and set a mock user
 			setUser(mockUser);
 			setIsAuthenticated(true);
+			setIsLoading(false);
 		};
 		initializeAuth();
 	}, []);
@@ -77,7 +80,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 	return (
 		<AuthContext.Provider
-			value={{ user, login, logout, isAuthenticated, displayUser }}
+			value={{
+				user,
+				login,
+				logout,
+				isAuthenticated,
+				currentUserData,
+				isLoading,
+			}}
 		>
 			{children}
 		</AuthContext.Provider>

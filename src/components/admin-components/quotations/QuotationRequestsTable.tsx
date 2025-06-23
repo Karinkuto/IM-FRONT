@@ -2,16 +2,17 @@ import type { FC } from "react";
 import { useState } from "react";
 import { DataTable } from "@/components/ui/data-table";
 import { Dialog } from "@/components/ui/dialog";
-import type { QuotationRequest } from "@/types/quotation";
+import type { QuotationRequest, QuotationStatus } from "@/types/quotation";
 import QuotationDetailsDialog from "./modals/QuotationDetailsDialog";
 import { columns } from "./quotation-columns.tsx";
 
-interface QuotationRequestsTableProps {
+export interface QuotationRequestsTableProps {
 	quotations: QuotationRequest[];
+	onViewDetails?: (quotationId: string) => void;
 	onStatusChange: (
-		quotationId: number,
-		newStatus: QuotationRequest["status"],
-	) => void;
+		id: string,
+		newStatus: QuotationStatus,
+	) => void | Promise<void>;
 	toolbarActionsPrefix?: React.ReactNode;
 }
 
@@ -25,8 +26,8 @@ export const QuotationRequestsTable: FC<QuotationRequestsTableProps> = ({
 		null,
 	);
 
-	const onViewDetails = (quotationId: number) => {
-		setSelectedQuotationId(quotationId.toString());
+	const onViewDetails = (quotationId: string) => {
+		setSelectedQuotationId(quotationId);
 		setIsDetailsDialogOpen(true);
 	};
 

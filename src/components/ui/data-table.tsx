@@ -42,8 +42,8 @@ interface DataTableProps<TData, TValue> {
 	meta?: {
 		onEditProduct?: (id: string) => void;
 		onDeleteProduct?: (id: string) => void;
-		onViewDetails?: (id: number) => void;
-		onStatusChange?: (id: number, newStatus: QuotationStatus) => void;
+		onViewDetails?: (id: string) => void;
+		onStatusChange?: (id: string, newStatus: QuotationStatus) => void;
 	};
 }
 

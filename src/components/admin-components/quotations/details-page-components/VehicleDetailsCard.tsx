@@ -10,6 +10,11 @@ export function VehicleDetailsCard({
 	vehicle,
 	formData,
 }: VehicleDetailsCardProps) {
+	const vehicleDetails = formData.vehicle_details as {
+		vehicle_type: string;
+		vehicle_usage: string;
+	};
+
 	return (
 		<div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6 space-y-4">
 			<h3 className="text-xl font-semibold">Vehicle Details</h3>
@@ -17,11 +22,11 @@ export function VehicleDetailsCard({
 				<DescriptionItem label="Plate Number" value={vehicle.plate_number} />
 				<DescriptionItem
 					label="Vehicle Type"
-					value={formData.vehicle_details.vehicle_type}
+					value={vehicleDetails.vehicle_type}
 				/>
 				<DescriptionItem
 					label="Vehicle Usage"
-					value={formData.vehicle_details.vehicle_usage}
+					value={vehicleDetails.vehicle_usage}
 				/>
 			</div>
 		</div>

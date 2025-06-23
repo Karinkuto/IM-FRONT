@@ -12,6 +12,7 @@ export function InsuranceDetailsCard({
 	coverageType,
 	coverageAmount,
 }: InsuranceDetailsCardProps) {
+	const safeCoverageAmount = coverageAmount as number;
 	return (
 		<div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6 space-y-4">
 			<h3 className="text-xl font-semibold">Insurance Details</h3>
@@ -23,7 +24,7 @@ export function InsuranceDetailsCard({
 					value={new Intl.NumberFormat("en-US", {
 						style: "currency",
 						currency: "ETB",
-					}).format(coverageAmount)}
+					}).format(safeCoverageAmount)}
 				/>
 			</div>
 		</div>
