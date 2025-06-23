@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { authApi } from "@/redux/apis/authApi";
 import { productApi } from "@/redux/apis/productApi";
 import { quotationApi } from "@/redux/apis/quotationApi";
+import { userApi } from "@/redux/apis/userApi";
 import authReducer from "./slices/authSlice";
 
 // 1. Define root reducer separately
@@ -12,6 +13,7 @@ const rootReducer = {
 	[authApi.reducerPath]: authApi.reducer,
 	[productApi.reducerPath]: productApi.reducer,
 	[quotationApi.reducerPath]: quotationApi.reducer,
+	[userApi.reducerPath]: userApi.reducer,
 };
 
 // 2. Create store using the rootReducer
@@ -22,6 +24,7 @@ export const store = configureStore({
 			authApi.middleware,
 			productApi.middleware,
 			quotationApi.middleware,
+			userApi.middleware,
 		),
 	devTools: process.env.NODE_ENV !== "production",
 });

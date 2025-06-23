@@ -3,8 +3,8 @@ import { useId } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
 import { PasswordInput } from "@/components/ui/password-input";
+import { cn } from "@/lib/utils";
 
 interface LoginFormProps extends React.ComponentPropsWithoutRef<"form"> {
 	email: string;

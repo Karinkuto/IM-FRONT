@@ -17,7 +17,7 @@ export type User = {
 	roles?: {
 		id: number;
 		name: "admin" | "customer" | "insurer";
-		[key: string]: any;
+		[key: string]: unknown;
 	}[];
 };
 

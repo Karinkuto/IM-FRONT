@@ -29,7 +29,8 @@ const baseQueryWithReauth: BaseQueryFn<
 			extraOptions,
 		);
 		if (refreshResult.data) {
-			const newAccessToken = (refreshResult.data as AuthResponse).access_token;
+			const newAccessToken = (refreshResult.data as AuthResponse).data
+				.access_token;
 			api.dispatch(
 				setCredentials({
 					access_token: newAccessToken,

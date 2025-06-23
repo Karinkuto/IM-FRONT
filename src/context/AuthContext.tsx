@@ -6,12 +6,12 @@ import {
 	useMemo,
 	useState,
 } from "react";
-import { logoutUser } from "@/services/authService";
-import type { AuthContextType, LoginCredentials, User } from "@/types/auth";
+import { useDispatch } from "react-redux";
 import { toast } from "sonner";
 import { useLoginMutation } from "@/redux/apis/authApi";
 import { setCredentials } from "@/redux/slices/authSlice";
-import { useDispatch } from "react-redux";
+import { logoutUser } from "@/services/authService";
+import type { AuthContextType, LoginCredentials, User } from "@/types/auth";
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
@@ -49,7 +49,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	}, [user]);
 
 	useEffect(() => {
-
 		setIsLoading(false);
 
 		// In a real application, you might try to load a persisted user from storage
@@ -88,22 +87,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 				insurer: apiUser.insurer,
 			};
 
+			const newAccessToken = (result.data as { access_token: string })
+				.access_token;
+
 			dispatch(
 				setCredentials({
 					user: loggedInUser,
-					access_token: result.data.access_token,
+					access_token: newAccessToken,
 				}),
 			);
 			setUser(loggedInUser);
 			setIsAuthenticated(true);
 			toast.success("Login successful!");
-
-		} catch (error: any) {
-			const errorMessage =
-				error?.data?.message || "Login failed. Please check your credentials.";
+		} catch (error: unknown) {
+			let errorMessage = "Login failed. Please check your credentials.";
+			if (
+				typeof error === "object" &&
+				error !== null &&
+				"data" in error &&
+				typeof (error as { data?: { message?: unknown } }).data?.message ===
+					"string"
+			) {
+				errorMessage = (error as { data: { message: string } }).data.message;
+			}
 			toast.error(errorMessage);
 			console.error("Login failed:", error);
-			throw error; // Re-throw to allow components to handle login errors
+			throw error;
 		}
 	};
 
