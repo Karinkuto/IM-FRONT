@@ -4,6 +4,7 @@ import type {
 	CreateInsuranceProductPayload,
 	InsuranceProduct,
 } from "@/types/product";
+import type { InsuranceType } from "@/types/quotation";
 
 interface ProductsResponse {
 	data: InsuranceProduct[];
@@ -12,6 +13,10 @@ interface ProductsResponse {
 		current_page: number;
 		total_count: number;
 	};
+}
+
+interface InsuranceTypesResponse {
+	data: InsuranceType[];
 }
 
 export const productApi = createApi({
@@ -84,6 +89,12 @@ export const productApi = createApi({
 			}),
 			invalidatesTags: ["Product"],
 		}),
+		getInsuranceTypes: builder.query<InsuranceTypesResponse, void>({
+			query: () => ({
+				url: "/insurance_types",
+				method: "GET",
+			}),
+		}),
 	}),
 });
 
@@ -93,4 +104,5 @@ export const {
 	useGetProductByIdQuery,
 	useUpdateProductMutation,
 	useDeleteProductMutation,
+	useGetInsuranceTypesQuery,
 } = productApi;

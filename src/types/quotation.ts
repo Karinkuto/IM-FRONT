@@ -15,12 +15,18 @@ export interface UserInfo {
 	fin: string;
 }
 
-export interface InsuranceType {
+export interface CoverageType {
+	id: string;
 	name: string;
+	description: string;
+	insurance_type_id: string;
 }
 
-export interface CoverageType {
+export interface InsuranceType {
+	id: string;
 	name: string;
+	description: string;
+	coverage_types: CoverageType[];
 }
 
 export interface VehiclePhotoUrls {

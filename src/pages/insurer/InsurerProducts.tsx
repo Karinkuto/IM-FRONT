@@ -1,89 +1,119 @@
+import { PlusCircle } from "lucide-react";
 import type React from "react";
-import { useEffect, useState } from "react";
-import { CreateProductDialog } from "@/components/admin-components/products/modals/CreateProductDialog";
-import { EditProductDialog } from "@/components/admin-components/products/modals/EditProductDialog";
-import { ProductsTable } from "@/components/admin-components/products/ProductsTable.tsx";
-import type { Product } from "@/components/admin-components/products/product-data-types";
+import { useMemo, useState } from "react";
+import { ProductDialog } from "@/components/admin-components/products/modals/ProductDialog";
+import { ProductsTable } from "@/components/admin-components/products/ProductsTable";
+import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import {
-	createProduct,
-	deleteProduct,
-	fetchProducts,
-	updateProduct,
-} from "@/services/productService";
+	useCreateProductMutation,
+	useDeleteProductMutation,
+	useGetInsuranceTypesQuery,
+	useGetProductsQuery,
+	useUpdateProductMutation,
+} from "@/redux/apis/productApi";
+import type {
+	CreateInsuranceProductPayload,
+	InsuranceProduct,
+} from "@/types/product";
 
 const AdminProducts: React.FC = () => {
-	const [products, setProducts] = useState<Product[]>([]);
-	const [isLoading, setIsLoading] = useState(true);
-	const [error, setError] = useState<Error | null>(null);
 	const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 	const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 	const [selectedProductForEdit, setSelectedProductForEdit] =
-		useState<Product | null>(null);
+		useState<InsuranceProduct | null>(null);
 
-	useEffect(() => {
-		const getProducts = async () => {
-			setIsLoading(true);
-			setError(null);
-			try {
-				const fetchedProducts = await fetchProducts();
-				setProducts(fetchedProducts);
-			} catch (err) {
-				setError(err as Error);
-			} finally {
-				setIsLoading(false);
-			}
-		};
-		getProducts();
-	}, []);
+	// RTK Query hooks
+	const { data, isLoading, error, refetch } = useGetProductsQuery({});
+	const [createProduct, { isLoading: isCreating }] = useCreateProductMutation();
+	const [updateProduct, { isLoading: isUpdating }] = useUpdateProductMutation();
+	const [deleteProduct] = useDeleteProductMutation();
+	const {
+		data: insuranceTypesData,
+		isLoading: isLoadingInsuranceTypes,
+		error: insuranceTypesError,
+	} = useGetInsuranceTypesQuery();
 
-	const handleCreateProduct = async (newProduct: Product) => {
-		const createdProduct = await createProduct(newProduct);
-		setProducts((prevProducts) => [...prevProducts, createdProduct]);
-		console.log("Creating product:", createdProduct);
-	};
-
-	const handleEditProduct = (productId: string) => {
-		const productToEdit = products.find((p) => p.id === productId);
-		if (productToEdit) {
-			setSelectedProductForEdit(productToEdit);
-			setIsEditDialogOpen(true);
+	const handleCreateProduct = async (
+		newProduct: CreateInsuranceProductPayload,
+	) => {
+		try {
+			await createProduct(newProduct).unwrap();
+			refetch();
+		} catch (err) {
+			// handle error (show toast, etc)
+			console.error("Failed to create product:", err);
 		}
 	};
 
-	const handleProductUpdate = async (updatedProduct: Product) => {
+	const handleEditProduct = (productId: string) => {
+		const productToEdit = data?.data.find((p) => p.id === productId) || null;
+		setSelectedProductForEdit(productToEdit);
+		setIsEditDialogOpen(true);
+	};
+
+	const handleProductUpdate = async (
+		updatedProduct: Partial<InsuranceProduct> & { id: string },
+	) => {
 		try {
-			const result = await updateProduct(updatedProduct);
-			setProducts((prevProducts) =>
-				prevProducts.map((p) => (p.id === result.id ? result : p)),
-			);
-			console.log("Updating product:", result);
+			await updateProduct({
+				id: updatedProduct.id,
+				payload: updatedProduct,
+			}).unwrap();
+			refetch();
 		} catch (err) {
+			// handle error (show toast, etc)
 			console.error("Failed to update product:", err);
 		}
 	};
 
 	const handleDeleteProduct = async (productId: string) => {
-		const success = await deleteProduct(productId);
-		if (success) {
-			setProducts((prevProducts) =>
-				prevProducts.filter((p) => p.id !== productId),
-			);
-			console.log("Deleting product:", productId);
+		try {
+			await deleteProduct(productId).unwrap();
+			refetch();
+		} catch (err) {
+			// handle error (show toast, etc)
+			console.error("Failed to delete product:", err);
 		}
 	};
 
-	if (isLoading) {
+	// Build coverageTypeId -> { coverageTypeName, insuranceTypeName } map
+	const coverageTypesMap = useMemo(() => {
+		if (!insuranceTypesData?.data) return {};
+		const map: Record<
+			string,
+			{ coverageTypeName: string; insuranceTypeName: string }
+		> = {};
+		for (const insuranceType of insuranceTypesData.data) {
+			for (const coverageType of insuranceType.coverage_types) {
+				map[coverageType.id] = {
+					coverageTypeName: coverageType.name,
+					insuranceTypeName: insuranceType.name,
+				};
+			}
+		}
+		return map;
+	}, [insuranceTypesData]);
+
+	if (isLoading || isLoadingInsuranceTypes) {
 		return <LoadingSpinner />;
 	}
 
-	if (error) {
+	if (error || insuranceTypesError) {
 		return (
 			<div className="flex justify-center items-center h-full min-h-[calc(100vh-80px)] text-red-500">
-				<p className="text-lg font-medium">Error: {error.message}</p>
+				<p className="text-lg font-medium">
+					Error:{" "}
+					{"status" in (error || insuranceTypesError)
+						? (error as { status?: string })?.status ||
+							(insuranceTypesError as { status?: string })?.status
+						: "Unknown error"}
+				</p>
 			</div>
 		);
 	}
+
+	const products = data?.data || [];
 
 	return (
 		<div className="container mx-auto">
@@ -94,26 +124,33 @@ const AdminProducts: React.FC = () => {
 						Create, edit, and delete insurance products offered to customers.
 					</p>
 				</div>
+				<Button onClick={() => setIsCreateDialogOpen(true)}>
+					<PlusCircle className="mr-2 h-4 w-4" /> Create Product
+				</Button>
 			</div>
 
 			<ProductsTable
 				products={products}
 				onEditProduct={handleEditProduct}
 				onDeleteProduct={handleDeleteProduct}
-				toolbarActionsPrefix={
-					<CreateProductDialog
-						isOpen={isCreateDialogOpen}
-						onOpenChange={setIsCreateDialogOpen}
-						onProductCreate={handleCreateProduct}
-					/>
-				}
+				coverageTypesMap={coverageTypesMap}
 			/>
 
-			<EditProductDialog
+			<ProductDialog
+				mode="create"
+				isOpen={isCreateDialogOpen}
+				onOpenChange={setIsCreateDialogOpen}
+				onSubmit={handleCreateProduct}
+				isLoading={isCreating}
+			/>
+
+			<ProductDialog
+				mode="edit"
 				isOpen={isEditDialogOpen}
 				onOpenChange={setIsEditDialogOpen}
-				onProductUpdate={handleProductUpdate}
+				onSubmit={handleProductUpdate}
 				product={selectedProductForEdit}
+				isLoading={isUpdating}
 			/>
 
 			{products.length === 0 && (
