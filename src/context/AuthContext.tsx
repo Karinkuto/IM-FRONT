@@ -6,8 +6,12 @@ import {
 	useMemo,
 	useState,
 } from "react";
-import { loginUser, logoutUser, mockUser } from "@/services/authService";
+import { logoutUser } from "@/services/authService";
 import type { AuthContextType, LoginCredentials, User } from "@/types/auth";
+import { toast } from "sonner";
+import { useLoginMutation } from "@/redux/apis/authApi";
+import { setCredentials } from "@/redux/slices/authSlice";
+import { useDispatch } from "react-redux";
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
@@ -15,6 +19,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	const [user, setUser] = useState<User | null>(null);
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
 	const [isLoading, setIsLoading] = useState(true);
+
+	const dispatch = useDispatch();
+
+	const [loginMutation, { isLoading: isLoggingIn }] = useLoginMutation();
 
 	const currentUserData = useMemo(() => {
 		if (!user) {
@@ -29,10 +37,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 			case "insurer":
 				name = user.insurer?.name || "Insurer";
 				break;
-			case "customer":
-				// For customer, we are not showing the name on this dashboard.
-				name = "Customer"; // Fallback name, though won't be displayed in NavUser
-				break;
 			default:
 				name = "User";
 		}
@@ -45,22 +49,59 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	}, [user]);
 
 	useEffect(() => {
-		const initializeAuth = async () => {
-			// For development: bypass authentication and set a mock user
-			setUser(mockUser);
-			setIsAuthenticated(true);
-			setIsLoading(false);
-		};
-		initializeAuth();
+
+		setIsLoading(false);
+
+		// In a real application, you might try to load a persisted user from storage
+		// and set isAuthenticated based on that.
 	}, []);
 
 	const login = async (userData: LoginCredentials) => {
 		try {
-			const loggedInUser = await loginUser(userData);
+			const result = await loginMutation(userData).unwrap();
+
+			if (!result.data || !result.data.user) {
+				toast.error("Login failed: User data not received from server.");
+				console.error(
+					"Login failed: User data is undefined or missing in API response.",
+					result,
+				);
+				throw new Error("User data missing from login response.");
+			}
+
+			const apiUser = result.data.user;
+
+			// Ensure user data is correctly extracted and formatted
+			const loggedInUser: User = {
+				...apiUser,
+				role: (apiUser.roles?.[0]?.name || "customer") as
+					| "admin"
+					| "customer"
+					| "insurer",
+				id: apiUser.id || "",
+				name: apiUser.name || apiUser.email || apiUser.phone_number || "User",
+				email: apiUser.email || "",
+				phone_number: apiUser.phone_number || "",
+				fin: apiUser.fin || "",
+				temporary_password: apiUser.temporary_password || false,
+				customer: apiUser.customer,
+				insurer: apiUser.insurer,
+			};
+
+			dispatch(
+				setCredentials({
+					user: loggedInUser,
+					access_token: result.data.access_token,
+				}),
+			);
 			setUser(loggedInUser);
 			setIsAuthenticated(true);
-			console.log("Login successful:", loggedInUser);
-		} catch (error) {
+			toast.success("Login successful!");
+
+		} catch (error: any) {
+			const errorMessage =
+				error?.data?.message || "Login failed. Please check your credentials.";
+			toast.error(errorMessage);
 			console.error("Login failed:", error);
 			throw error; // Re-throw to allow components to handle login errors
 		}
@@ -71,8 +112,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 			await logoutUser();
 			setUser(null);
 			setIsAuthenticated(false);
+			toast.success("Logged out successfully!");
 			console.log("Logout successful");
 		} catch (error) {
+			toast.error("Logout failed.");
 			console.error("Logout failed:", error);
 			throw error;
 		}
@@ -86,7 +129,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 				logout,
 				isAuthenticated,
 				currentUserData,
-				isLoading,
+				isLoading: isLoading || isLoggingIn,
 			}}
 		>
 			{children}

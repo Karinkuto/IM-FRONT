@@ -1,37 +1,32 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { defaultRoleRedirects } from "@/config/routes";
 import { useAuth } from "@/context/AuthContext";
-import { fetchUser } from "@/services/authService";
-import type { User } from "@/types/auth";
 
 export default function LoginPage() {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
-	const [isLoading, setIsLoading] = useState(false);
 	const navigate = useNavigate();
-	const { login } = useAuth();
+	const { login, isLoading, user, isAuthenticated } = useAuth();
 
 	useEffect(() => {
 		document.title = "Tila | Login";
 	}, []);
 
+	useEffect(() => {
+		if (isAuthenticated && user?.role) {
+			const redirectPath = defaultRoleRedirects[user.role];
+			navigate(redirectPath);
+		}
+	}, [isAuthenticated, user, navigate]);
+
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-		setIsLoading(true);
 		try {
 			await login({ email, password });
-			toast.success("Login successful!");
-			// Redirect based on role or a default path after login
-			const loggedInUser = (await fetchUser()) as User; // Fetch user to get their actual role
-			const redirectPath = defaultRoleRedirects[loggedInUser.role];
-			navigate(redirectPath);
 		} catch (error: unknown) {
-			toast.error(`Login failed: ${(error as Error).message}`);
-		} finally {
-			setIsLoading(false);
+			// Error toast is handled within AuthContext's login function
 		}
 	};
 

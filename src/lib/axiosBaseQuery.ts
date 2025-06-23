@@ -5,7 +5,7 @@ import { logout } from "@/redux/slices/authSlice";
 import type { RootState } from "@/redux/store";
 
 const api = axios.create({
-	baseURL: import.meta.env.VITE_API_URL,
+	baseURL: import.meta.env.VITE_BACKEND_URL,
 });
 
 export const axiosBaseQuery =

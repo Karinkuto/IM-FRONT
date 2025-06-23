@@ -156,8 +156,7 @@ export function DashboardLayout({ role }: DashboardLayoutProps) {
 	const { logout, currentUserData } = useAuth();
 	const location = useLocation();
 
-	// const isTemporaryPassword = currentUserData?.isTemporaryPassword; // Get isTemporaryPassword from currentUserData
-	const isTemporaryPassword = true;
+	const isTemporaryPassword = currentUserData?.isTemporaryPassword; // Get isTemporaryPassword from currentUserData
 
 	const pathSegments = location.pathname.split("/").filter(Boolean);
 	let breadcrumbPageContent = "Home";

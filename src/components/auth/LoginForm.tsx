@@ -4,15 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { PasswordInput } from "@/components/ui/password-input";
 
-export interface LoginFormProps {
+interface LoginFormProps extends React.ComponentPropsWithoutRef<"form"> {
 	email: string;
-	setEmail: React.Dispatch<React.SetStateAction<string>>;
+	setEmail: (value: string) => void;
 	password: string;
-	setPassword: React.Dispatch<React.SetStateAction<string>>;
-	onSubmit: (e: React.FormEvent<HTMLFormElement>) => Promise<void>;
+	setPassword: (value: string) => void;
+	onSubmit: (e: React.FormEvent) => void;
 	isLoading: boolean;
-	className?: string;
 }
 
 export function LoginForm({
@@ -25,7 +25,7 @@ export function LoginForm({
 	isLoading,
 	...props
 }: LoginFormProps) {
-	const usernameId = useId();
+	const emailId = useId();
 	const passwordId = useId();
 	return (
 		<form
@@ -41,12 +41,12 @@ export function LoginForm({
 			</div>
 			<div className="grid gap-6">
 				<div className="grid gap-3">
-					<Label htmlFor={usernameId}>Username</Label>
+					<Label htmlFor={emailId}>Email</Label>
 					<Input
-						id={usernameId}
-						name="username"
-						type="text"
-						autoComplete="username"
+						id={emailId}
+						name="email"
+						type="email"
+						autoComplete="email"
 						required
 						value={email}
 						onChange={(e) => setEmail(e.target.value)}
@@ -63,10 +63,9 @@ export function LoginForm({
 							Forgot your password?
 						</a>
 					</div>
-					<Input
+					<PasswordInput
 						id={passwordId}
 						name="password"
-						type="password"
 						autoComplete="current-password"
 						required
 						value={password}

@@ -14,6 +14,11 @@ export type User = {
 	insurer?: {
 		name: string;
 	};
+	roles?: {
+		id: number;
+		name: "admin" | "customer" | "insurer";
+		[key: string]: any;
+	}[];
 };
 
 export type LoginCredentials = {
@@ -23,8 +28,11 @@ export type LoginCredentials = {
 };
 
 export type AuthResponse = {
-	access_token: string;
-	user: User;
+	success: boolean;
+	data: {
+		access_token: string;
+		user: User;
+	};
 };
 
 export type AuthContextType = {
