@@ -15,13 +15,14 @@ import {
 import type {
 	CreateInsuranceProductPayload,
 	InsuranceProduct,
+	Product,
 } from "@/types/product";
 
 const AdminProducts: React.FC = () => {
 	const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 	const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 	const [selectedProductForEdit, setSelectedProductForEdit] =
-		useState<InsuranceProduct | null>(null);
+		useState<Product | null>(null);
 
 	// RTK Query hooks
 	const { data, isLoading, error, refetch } = useGetProductsQuery({});
@@ -46,8 +47,26 @@ const AdminProducts: React.FC = () => {
 		}
 	};
 
+	// Add mapping function
+	function mapInsuranceProductToProduct(p: InsuranceProduct): Product {
+		console.log("[MAP] Raw InsuranceProduct:", p);
+		return {
+			id: p.id,
+			name: p.name,
+			insuranceType: p.coverage_type?.insurance_type_id
+				? String(p.coverage_type.insurance_type_id)
+				: "",
+			coverageType: p.coverage_type?.id ? String(p.coverage_type.id) : "",
+			description: p.description,
+			pricing: p.estimated_price,
+		};
+	}
+
 	const handleEditProduct = (productId: string) => {
-		const productToEdit = data?.data.find((p) => p.id === productId) || null;
+		const insuranceProduct = data?.data.find((p) => p.id === productId) || null;
+		const productToEdit = insuranceProduct
+			? mapInsuranceProductToProduct(insuranceProduct)
+			: null;
 		setSelectedProductForEdit(productToEdit);
 		setIsEditDialogOpen(true);
 	};
@@ -124,9 +143,6 @@ const AdminProducts: React.FC = () => {
 						Create, edit, and delete insurance products offered to customers.
 					</p>
 				</div>
-				<Button onClick={() => setIsCreateDialogOpen(true)}>
-					<PlusCircle className="mr-2 h-4 w-4" /> Create Product
-				</Button>
 			</div>
 
 			<ProductsTable
@@ -134,6 +150,11 @@ const AdminProducts: React.FC = () => {
 				onEditProduct={handleEditProduct}
 				onDeleteProduct={handleDeleteProduct}
 				coverageTypesMap={coverageTypesMap}
+				toolbarActionsPrefix={
+					<Button onClick={() => setIsCreateDialogOpen(true)}>
+						<PlusCircle className="mr-2 h-4 w-4" /> Create Product
+					</Button>
+				}
 			/>
 
 			<ProductDialog

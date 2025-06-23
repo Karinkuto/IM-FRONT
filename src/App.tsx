@@ -7,6 +7,7 @@ import {
 } from "react-router-dom";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ThemeProvider } from "@/components/shared/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
 import {
 	defaultRoleRedirects,
 	roleSpecificRoutes,
@@ -22,6 +23,7 @@ export default function App() {
 			<AuthProvider>
 				<ErrorBoundary>
 					<BrowserRouter>
+						<Toaster />
 						<Routes>
 							<Route path="/login" element={<LoginPage />} />
 							<Route element={<ProtectedRoute />}>

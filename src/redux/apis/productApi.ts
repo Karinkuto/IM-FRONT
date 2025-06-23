@@ -95,6 +95,12 @@ export const productApi = createApi({
 				method: "GET",
 			}),
 		}),
+		getAllInsuranceTypes: builder.query<{ data: InsuranceType[] }, void>({
+			query: () => ({
+				url: "/insurance_types",
+				method: "GET",
+			}),
+		}),
 	}),
 });
 
@@ -105,4 +111,5 @@ export const {
 	useUpdateProductMutation,
 	useDeleteProductMutation,
 	useGetInsuranceTypesQuery,
+	useGetAllInsuranceTypesQuery,
 } = productApi;

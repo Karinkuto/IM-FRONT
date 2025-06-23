@@ -13,11 +13,8 @@ import {
 	FormLabel,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { coverageTypeOptions, insuranceTypeOptions } from "@/types/product";
 import type { QuotationFilters as QuotationFiltersType } from "@/types/quotation";
-import {
-	coverageTypeOptions,
-	insuranceTypeOptions,
-} from "../products/product-data-types.ts";
 
 const filterSchema = z.object({
 	status: z.string().optional(),

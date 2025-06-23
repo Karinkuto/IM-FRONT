@@ -53,6 +53,7 @@ export function FormModal<T>({
 
 	// Only depend on initialValues to avoid useEffect dependency warning
 	useEffect(() => {
+		console.log("[FormModal] initialValues changed:", initialValues);
 		if (initialValues) {
 			form.reset(initialValues as T);
 		}

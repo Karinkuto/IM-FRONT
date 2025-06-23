@@ -1,5 +1,7 @@
 import { Info } from "lucide-react";
+import React from "react";
 import type { ControllerRenderProps, UseFormReturn } from "react-hook-form";
+import { toast } from "sonner";
 import * as z from "zod";
 import { Combobox } from "@/components/ui/combobox";
 import {
@@ -11,15 +13,12 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-	type ComboboxOption,
-	coverageTypeOptions,
-	insuranceTypeOptions,
-	type Product,
-} from "../product-data-types";
+import { useGetAllInsuranceTypesQuery } from "@/redux/apis/productApi";
+import type { Product } from "@/types/product";
 import { FormModal } from "./FormModal";
 
 const formSchema = z.object({
+	name: z.string().min(1, "Product name is required"),
 	insuranceType: z.string().min(1, "Insurance type is required"),
 	coverageType: z.string().min(1, "Coverage type is required"),
 	description: z.string().min(1, "Description is required"),
@@ -47,29 +46,106 @@ export const ProductDialog = ({
 	isLoading,
 	product,
 }: ProductDialogProps) => {
-	// Initial values
-	const initialValues: ProductFormValues =
-		mode === "edit" && product
-			? {
-					insuranceType:
-						insuranceTypeOptions.find(
-							(opt) =>
-								opt.value === product.insuranceType ||
-								opt.label === product.insuranceType,
-						)?.value || "",
-					coverageType:
-						coverageTypeOptions.find(
-							(opt) =>
-								opt.value === product.coverageType ||
-								opt.label === product.coverageType,
-						)?.value || "",
-					description: product.description || "",
-					pricing:
-						product.pricing !== undefined && product.pricing !== null
-							? product.pricing.toString()
-							: "",
-				}
-			: { insuranceType: "", coverageType: "", description: "", pricing: "" };
+	// Fetch insurance types (with coverage types) from backend
+	const {
+		data: insuranceTypes,
+		isLoading: isTypesLoading,
+		error: typesError,
+	} = useGetAllInsuranceTypesQuery();
+
+	// Refactor getInitialValues to useCallback
+	const getInitialValues = React.useCallback(() => {
+		if (mode === "edit" && product) {
+			return {
+				name: product.name || "",
+				insuranceType: product.insuranceType || "",
+				coverageType: product.coverageType || "",
+				description: product.description || "",
+				pricing:
+					product.pricing !== undefined && product.pricing !== null
+						? product.pricing.toString()
+						: "",
+			};
+		}
+		return {
+			name: "",
+			insuranceType: "",
+			coverageType: "",
+			description: "",
+			pricing: "",
+		};
+	}, [mode, product]);
+
+	const [initialValues, setInitialValues] = React.useState<ProductFormValues>(
+		getInitialValues(),
+	);
+
+	React.useEffect(() => {
+		setInitialValues(getInitialValues());
+	}, [getInitialValues]);
+
+	// State for selected insurance type (for filtering coverage types)
+	const [selectedInsuranceTypeId, setSelectedInsuranceTypeId] =
+		React.useState<string>(initialValues.insuranceType || "");
+	// State for form instance
+	const formRef = React.useRef<UseFormReturn<ProductFormValues> | null>(null);
+
+	// Find the selected insurance type object
+	const selectedInsuranceType = React.useMemo(
+		() =>
+			insuranceTypes?.data?.find(
+				(type) => String(type.id) === String(selectedInsuranceTypeId),
+			),
+		[insuranceTypes, selectedInsuranceTypeId],
+	);
+
+	// Add a ref to reset the form
+	const formInstanceRef = React.useRef<UseFormReturn<ProductFormValues> | null>(
+		null,
+	);
+
+	// Sync selectedInsuranceTypeId with initialValues.insuranceType
+	React.useEffect(() => {
+		setSelectedInsuranceTypeId(initialValues.insuranceType || "");
+	}, [initialValues.insuranceType]);
+
+	// Unified submit handler
+	const handleSubmit = async (values: ProductFormValues) => {
+		// Prepare payload for backend
+		const payload = {
+			name: values.name,
+			description: values.description,
+			estimated_price: Number.parseFloat(values.pricing),
+			coverage_type_id: values.coverageType,
+		};
+		try {
+			await onSubmit(
+				mode === "edit" && product
+					? { ...product, ...payload }
+					: {
+							name: values.name,
+							insuranceType: values.insuranceType,
+							coverageType: values.coverageType,
+							description: values.description,
+							pricing: Number.parseFloat(values.pricing),
+						},
+			);
+			toast.success("Product saved successfully!");
+			onOpenChange(false); // Close dialog
+			setInitialValues({
+				name: "",
+				insuranceType: "",
+				coverageType: "",
+				description: "",
+				pricing: "",
+			});
+			if (formInstanceRef.current) {
+				formInstanceRef.current.reset();
+			}
+		} catch {
+			toast.error("Failed to save product.");
+		}
+	};
 
 	// Dynamic left section
 	const leftSection = (
@@ -101,170 +177,187 @@ export const ProductDialog = ({
 		</div>
 	);
 
-	// Unified submit handler
-	const handleSubmit = (values: ProductFormValues) => {
-		if (mode === "edit" && product) {
-			const updatedProduct: Product = {
-				...product,
-				insuranceType:
-					insuranceTypeOptions.find((opt) => opt.value === values.insuranceType)
-						?.label || values.insuranceType,
-				coverageType:
-					coverageTypeOptions.find((opt) => opt.value === values.coverageType)
-						?.label || values.coverageType,
-				description: values.description,
-				pricing: Number.parseFloat(values.pricing),
-			};
-			onSubmit(updatedProduct);
-		} else {
-			const newProduct: Omit<Product, "id"> = {
-				insuranceType:
-					insuranceTypeOptions.find((opt) => opt.value === values.insuranceType)
-						?.label || values.insuranceType,
-				coverageType:
-					coverageTypeOptions.find((opt) => opt.value === values.coverageType)
-						?.label || values.coverageType,
-				description: values.description,
-				pricing: Number.parseFloat(values.pricing),
-			};
-			onSubmit(newProduct);
-		}
-	};
-
 	return (
-		<FormModal<ProductFormValues>
-			open={isOpen}
-			onOpenChange={onOpenChange}
-			onSubmit={handleSubmit}
-			initialValues={initialValues}
-			validationSchema={formSchema}
-			isLoading={isLoading}
-			mode={mode}
-			title={mode === "create" ? "Create New Product" : "Edit Product"}
-			description={
-				mode === "create"
-					? "Fill in the product details to create a new insurance product. All fields are required to ensure proper processing."
-					: "Update the product details. All fields are required to ensure proper processing."
-			}
-			leftSection={leftSection}
-			renderFields={(form: UseFormReturn<ProductFormValues>) => (
-				<>
-					<div className="space-y-4 p-6 ">
-						<div className="grid grid-cols-2 gap-4">
-							{/* Insurance Type */}
-							<FormField
-								control={form.control}
-								name="insuranceType"
-								render={({
-									field,
-								}: {
-									field: ControllerRenderProps<
-										ProductFormValues,
-										"insuranceType"
-									>;
-								}) => (
-									<FormItem>
-										<FormLabel>Insurance Type</FormLabel>
-										<FormControl>
-											<Combobox
-												options={insuranceTypeOptions as ComboboxOption[]}
-												value={field.value}
-												onValueChange={field.onChange}
-												placeholder="Select Insurance Type"
-												searchPlaceholder="Search insurance types..."
-												emptyStateMessage="No insurance type found."
-												className="w-full"
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							{/* Coverage Type */}
-							<FormField
-								control={form.control}
-								name="coverageType"
-								render={({
-									field,
-								}: {
-									field: ControllerRenderProps<
-										ProductFormValues,
-										"coverageType"
-									>;
-								}) => (
-									<FormItem>
-										<FormLabel>Coverage Type</FormLabel>
-										<FormControl>
-											<Combobox
-												options={coverageTypeOptions as ComboboxOption[]}
-												value={field.value}
-												onValueChange={field.onChange}
-												placeholder="Select Coverage Type"
-												searchPlaceholder="Search coverage types..."
-												emptyStateMessage="No coverage type found."
-												className="w-full"
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-						</div>
-						{/* Description */}
-						<FormField
-							control={form.control}
-							name="description"
-							render={({
-								field,
-							}: {
-								field: ControllerRenderProps<ProductFormValues, "description">;
-							}) => (
-								<FormItem>
-									<FormLabel>Description</FormLabel>
-									<FormControl>
-										<Textarea
-											placeholder="Enter product description..."
-											className="min-h-[100px]"
-											{...field}
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-						{/* Pricing */}
-						<FormField
-							control={form.control}
-							name="pricing"
-							render={({
-								field,
-							}: {
-								field: ControllerRenderProps<ProductFormValues, "pricing">;
-							}) => (
-								<FormItem>
-									<FormLabel>Pricing (ETB)</FormLabel>
-									<FormControl>
-										<Input
-											type="text"
-											placeholder="0.00"
-											{...field}
-											onChange={(e) => {
-												// Allow only numbers and one decimal point
-												const value = e.target.value.replace(/[^0-9.]/g, "");
-												const decimalCount = (value.match(/\./g) || []).length;
-												if (decimalCount <= 1) {
-													field.onChange(value);
-												}
-											}}
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-					</div>
-				</>
-			)}
-		/>
+		<>
+			<FormModal<ProductFormValues>
+				open={isOpen}
+				onOpenChange={onOpenChange}
+				onSubmit={handleSubmit}
+				initialValues={initialValues}
+				validationSchema={formSchema}
+				isLoading={isLoading}
+				mode={mode}
+				title={mode === "create" ? "Create New Product" : "Edit Product"}
+				description={
+					mode === "create"
+						? "Fill in the product details to create a new insurance product. All fields are required to ensure proper processing."
+						: "Update the product details. All fields are required to ensure proper processing."
+				}
+				leftSection={leftSection}
+				renderFields={(form: UseFormReturn<ProductFormValues>) => {
+					formRef.current = form;
+					formInstanceRef.current = form;
+					return (
+						<>
+							<div className="space-y-4 p-6 ">
+								<FormField
+									control={form.control}
+									name="name"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>Product Name</FormLabel>
+											<FormControl>
+												<Input placeholder="Enter product name..." {...field} />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<div className="grid grid-cols-2 gap-4">
+									{/* Insurance Type */}
+									<FormField
+										control={form.control}
+										name="insuranceType"
+										render={({ field }) => {
+											const insuranceTypeOptions =
+												isTypesLoading || !!typesError
+													? []
+													: (insuranceTypes?.data || []).map((type) => ({
+															value: String(type.id),
+															label: type.name,
+														}));
+											return (
+												<FormItem>
+													<FormLabel>Insurance Type</FormLabel>
+													<FormControl>
+														<Combobox
+															options={insuranceTypeOptions}
+															value={field.value}
+															onValueChange={(val) => {
+																field.onChange(val);
+																setSelectedInsuranceTypeId(val);
+																form.setValue("coverageType", "");
+															}}
+															placeholder={
+																isTypesLoading
+																	? "Loading..."
+																	: typesError
+																		? "Failed to load types"
+																		: "Select Insurance Type"
+															}
+															searchPlaceholder="Search insurance types..."
+															emptyStateMessage={
+																typesError
+																	? "Failed to load types"
+																	: "No insurance type found."
+															}
+															className="w-full"
+														/>
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											);
+										}}
+									/>
+									{/* Coverage Type */}
+									<FormField
+										control={form.control}
+										name="coverageType"
+										render={({ field }) => {
+											const coverageTypeOptions = selectedInsuranceType
+												? selectedInsuranceType.coverage_types.map((ct) => ({
+														value: String(ct.id),
+														label: ct.name,
+													}))
+												: [];
+											return (
+												<FormItem>
+													<FormLabel>Coverage Type</FormLabel>
+													<FormControl>
+														<Combobox
+															options={coverageTypeOptions}
+															value={field.value}
+															onValueChange={field.onChange}
+															placeholder={
+																selectedInsuranceType
+																	? "Select Coverage Type"
+																	: "Select insurance Type"
+															}
+															searchPlaceholder="Search coverage types..."
+															emptyStateMessage="No coverage type found."
+															className="w-full"
+														/>
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											);
+										}}
+									/>
+								</div>
+								{/* Description */}
+								<FormField
+									control={form.control}
+									name="description"
+									render={({
+										field,
+									}: {
+										field: ControllerRenderProps<
+											ProductFormValues,
+											"description"
+										>;
+									}) => (
+										<FormItem>
+											<FormLabel>Description</FormLabel>
+											<FormControl>
+												<Textarea
+													placeholder="Enter product description..."
+													className="min-h-[100px]"
+													{...field}
+												/>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								{/* Pricing */}
+								<FormField
+									control={form.control}
+									name="pricing"
+									render={({
+										field,
+									}: {
+										field: ControllerRenderProps<ProductFormValues, "pricing">;
+									}) => (
+										<FormItem>
+											<FormLabel>Pricing (ETB)</FormLabel>
+											<FormControl>
+												<Input
+													type="text"
+													placeholder="0.00"
+													{...field}
+													onChange={(e) => {
+														// Allow only numbers and one decimal point
+														const value = e.target.value.replace(
+															/[^0-9.]/g,
+															"",
+														);
+														const decimalCount = (value.match(/\./g) || [])
+															.length;
+														if (decimalCount <= 1) {
+															field.onChange(value);
+														}
+													}}
+												/>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+							</div>
+						</>
+					);
+				}}
+			/>
+		</>
 	);
 };
