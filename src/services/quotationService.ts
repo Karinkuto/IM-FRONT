@@ -1,162 +1,88 @@
 import type { QuotationRequest, QuotationStatus } from "@/types/quotation";
+import { store } from "@/redux/store";
+import axios from "axios";
 
-export const mockQuotations: QuotationRequest[] = [
-	{
-		id: 1,
-		status: "pending",
-		form_data: {
-			coverage_amount: 5000,
-			vehicle_details: {
-				vehicle_type: "Sedan",
-				vehicle_usage: "Personal",
-			},
-			current_residence_address: {
-				region: "Addis Ababa",
-				house_number: "123",
-			},
-		},
-		user: {
-			phone_number: "+251912345678",
-			fin: "123456789",
-		},
-		insurance_type: {
-			name: "Motor",
-		},
-		coverage_type: {
-			name: "Comprehensive",
-		},
-		vehicle: {
-			plate_number: "ABC123",
-			front_view_photo_url: "/front.png",
-			back_view_photo_url: "/back.png",
-		},
-	},
-	{
-		id: 2,
-		status: "approved",
-		form_data: {
-			coverage_amount: 7500,
-			vehicle_details: {
-				vehicle_type: "SUV",
-				vehicle_usage: "Commercial",
-			},
-			current_residence_address: {
-				region: "Oromia",
-				house_number: "456",
-			},
-		},
-		user: {
-			phone_number: "+251923456789",
-			fin: "987654321",
-		},
-		insurance_type: {
-			name: "Motor",
-		},
-		coverage_type: {
-			name: "Third Party",
-		},
-		vehicle: {
-			plate_number: "XYZ789",
-			front_view_photo_url: "/front.png",
-			back_view_photo_url: "/back.png",
-		},
-	},
-	{
-		id: 3,
-		status: "rejected",
-		form_data: {
-			coverage_amount: 1000,
-			vehicle_details: {
-				vehicle_type: "Motorcycle",
-				vehicle_usage: "Personal",
-			},
-			current_residence_address: {
-				region: "Amhara",
-				house_number: "789",
-			},
-		},
-		user: {
-			phone_number: "+251934567890",
-			fin: "112233445",
-		},
-		insurance_type: {
-			name: "Motor",
-		},
-		coverage_type: {
-			name: "Comprehensive",
-		},
-		vehicle: {
-			plate_number: "MCL456",
-			front_view_photo_url: "/front.png",
-			back_view_photo_url: "/back.png",
-		},
-	},
-	{
-		id: 4,
-		status: "draft",
-		form_data: {
-			coverage_amount: 20000,
-			vehicle_details: {
-				vehicle_type: "Truck",
-				vehicle_usage: "Commercial",
-			},
-			current_residence_address: {
-				region: "Tigray",
-				house_number: "101",
-			},
-		},
-		user: {
-			phone_number: "+251945678901",
-			fin: "667788990",
-		},
-		insurance_type: {
-			name: "Motor",
-		},
-		coverage_type: {
-			name: "Third Party",
-		},
-		vehicle: {
-			plate_number: "TRK777",
-			front_view_photo_url: "/front.png",
-			back_view_photo_url: "/back.png",
-		},
-	},
-];
+const api = axios.create({
+	baseURL: import.meta.env.VITE_BACKEND_URL,
+	withCredentials: true,
+});
 
-export const fetchQuotations = (): Promise<QuotationRequest[]> => {
-	return new Promise((resolve) => {
-		setTimeout(() => {
-			resolve(mockQuotations);
-		}, 500);
-	});
+// Add request interceptor to include auth token
+api.interceptors.request.use((config) => {
+	const state = store.getState();
+	const token = state.auth.token;
+	
+	if (token) {
+		config.headers.Authorization = `Bearer ${token}`;
+	}
+	
+	return config;
+});
+
+interface ApiResponse<T> {
+	success: boolean;
+	data: T;
+}
+
+export const fetchQuotations = async (): Promise<QuotationRequest[]> => {
+	try {
+		const response = await api.get<ApiResponse<QuotationRequest[]>>("/quotation_requests/");
+		
+		if (!response.data.success) {
+			throw new Error("API request failed");
+		}
+		
+		return response.data.data;
+	} catch (error) {
+		console.error("Error fetching quotations:", error);
+		throw error;
+	}
 };
 
-export const fetchQuotationById = (
+export const fetchQuotationById = async (
 	id: number,
 ): Promise<QuotationRequest | undefined> => {
-	return new Promise((resolve) => {
-		setTimeout(() => {
-			resolve(mockQuotations.find((q) => q.id === id));
-		}, 500);
-	});
+	try {
+		const response = await api.get<ApiResponse<QuotationRequest>>(`/quotation_requests/${id}`);
+		
+		if (!response.data.success) {
+			throw new Error("API request failed");
+		}
+		
+		return response.data.data;
+	} catch (error) {
+		if (axios.isAxiosError(error) && error.response?.status === 404) {
+			return undefined;
+		}
+		console.error("Error fetching quotation:", error);
+		throw error;
+	}
 };
 
-export const updateQuotationStatus = (
+export const updateQuotationStatus = async (
 	id: number,
 	status: QuotationStatus,
 ): Promise<QuotationRequest | undefined> => {
-	return new Promise((resolve, reject) => {
-		setTimeout(() => {
-			const quotationIndex = mockQuotations.findIndex((q) => q.id === id);
-			if (quotationIndex !== -1) {
-				mockQuotations[quotationIndex] = {
-					...mockQuotations[quotationIndex],
+	try {
+		const response = await api.patch<ApiResponse<QuotationRequest>>(
+			`/quotation_requests/${id}`,
+			{
+				quotation_request: {
 					status,
-				};
-				resolve(mockQuotations[quotationIndex]);
-			} else {
-				reject(new Error("Quotation not found"));
+				},
 			}
-		}, 500);
-	});
+		);
+		
+		if (!response.data.success) {
+			throw new Error("API request failed");
+		}
+		
+		return response.data.data;
+	} catch (error) {
+		if (axios.isAxiosError(error) && error.response?.status === 404) {
+			throw new Error("Quotation not found");
+		}
+		console.error("Error updating quotation status:", error);
+		throw error;
+	}
 };
