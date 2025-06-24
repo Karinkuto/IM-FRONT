@@ -106,10 +106,9 @@ export default function AdminQuotations() {
     setQuotations(filtered);
     setIsFilterDialogOpen(false);
   };
-
   const handleViewDetails = (quotationId: number) => {
     console.log("Viewing details for quotation:", quotationId);
-    navigate(`/admin/quotation-requests/${quotationId}`);
+    navigate(`/insurer/quotation-requests/${quotationId}`);
   };
 
   const handleStatusChange = async (
