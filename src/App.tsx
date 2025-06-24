@@ -6,8 +6,8 @@ import {
 	Routes,
 } from "react-router-dom";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { ThemeProvider } from "@/components/shared/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { ThemeProvider } from "@/components/ui/theme-provider.tsx";
 import {
 	defaultRoleRedirects,
 	roleSpecificRoutes,

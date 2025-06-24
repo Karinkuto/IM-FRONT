@@ -1,23 +1,27 @@
 import { Filter } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { QuotationFilterDialog } from "@/components/admin-components/quotations/QuotationFilterDialog.tsx";
-import { QuotationRequestsTable } from "@/components/admin-components/quotations/QuotationRequestsTable.tsx";
+import { QuotationFilterDialog } from "@/components/insurer-components/quotations/QuotationFilterDialog";
+import { QuotationRequestsTable } from "@/components/insurer-components/quotations/QuotationRequestsTable";
 import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import {
-	fetchQuotations,
-	updateQuotationStatus,
-} from "@/services/quotationService";
+	useGetQuotationRequestsQuery,
+	useUpdateQuotationRequestMutation,
+} from "@/redux/apis/quotationApi";
 import type {
 	QuotationFilters as QuotationFiltersType,
 	QuotationRequest,
 } from "@/types/quotation";
 
+interface CustomError {
+	error: {
+		status?: number;
+		data: string;
+	};
+}
+
 export default function AdminQuotations() {
-	const [quotations, setQuotations] = useState<QuotationRequest[]>([]);
-	const [isLoading, setIsLoading] = useState(true);
-	const [error, setError] = useState<Error | null>(null);
 	const [isFilterDialogOpen, setIsFilterDialogOpen] = useState(false);
 	const [currentFilters, setCurrentFilters] = useState<QuotationFiltersType>(
 		{},
@@ -25,93 +29,27 @@ export default function AdminQuotations() {
 
 	const navigate = useNavigate();
 
-	useEffect(() => {
-		const getQuotations = async () => {
-			setIsLoading(true);
-			setError(null);
-			try {
-				const fetchedQuotations = await fetchQuotations();
-				setQuotations(fetchedQuotations);
-			} catch (err) {
-				setError(err as Error);
-			} finally {
-				setIsLoading(false);
-			}
-		};
-		getQuotations();
-	}, []);
+	const {
+		data: quotationsData,
+		isLoading,
+		error,
+		refetch,
+	} = useGetQuotationRequestsQuery({
+		page: 1, // You might want to manage pagination state here
+		per_page: 10, // And per_page state
+		status: currentFilters.status,
+		insurance_type: currentFilters.insuranceType,
+		coverage_type: currentFilters.coverageType,
+		vehicle_type: currentFilters.vehicleType,
+		region: currentFilters.region,
+	});
+
+	const [updateQuotationStatus] = useUpdateQuotationRequestMutation();
 
 	const applyFilters = (data: QuotationFiltersType) => {
 		setCurrentFilters(data);
-		// In a real app, you'd re-fetch data from the API with these filters
-		console.log("Applying filters:", data);
-
-		const filtered = quotations.filter((quotation) => {
-			let matches = true;
-
-			if (
-				data.status &&
-				quotation.status.toLowerCase() !== data.status.toLowerCase()
-			) {
-				matches = false;
-			}
-			if (
-				data.insuranceType &&
-				quotation.insurance_type.name.toLowerCase() !==
-					data.insuranceType.toLowerCase()
-			) {
-				matches = false;
-			}
-			if (
-				data.coverageType &&
-				quotation.coverage_type.name.toLowerCase() !==
-					data.coverageType.toLowerCase()
-			) {
-				matches = false;
-			}
-			if (data.dateRange?.from && quotation.id) {
-				const quotationDate = new Date(2024, 0, parseInt(quotation.id, 10)); // Mock date for example
-				if (quotationDate < data.dateRange.from) {
-					matches = false;
-				}
-			}
-			if (data.dateRange?.to && quotation.id) {
-				const quotationDate = new Date(2024, 0, parseInt(quotation.id, 10)); // Mock date for example
-				if (quotationDate > data.dateRange.to) {
-					matches = false;
-				}
-			}
-			if (
-				data.vehicleType &&
-				quotation.form_data &&
-				typeof quotation.form_data.vehicle_details === "object" &&
-				quotation.form_data.vehicle_details !== null &&
-				"vehicle_type" in quotation.form_data.vehicle_details &&
-				typeof quotation.form_data.vehicle_details.vehicle_type === "string" &&
-				!quotation.form_data.vehicle_details.vehicle_type
-					.toLowerCase()
-					.includes(data.vehicleType.toLowerCase())
-			) {
-				matches = false;
-			}
-			if (
-				data.region &&
-				quotation.form_data &&
-				typeof quotation.form_data.current_residence_address === "object" &&
-				quotation.form_data.current_residence_address !== null &&
-				"region" in quotation.form_data.current_residence_address &&
-				typeof quotation.form_data.current_residence_address.region ===
-					"string" &&
-				!quotation.form_data.current_residence_address.region
-					.toLowerCase()
-					.includes(data.region.toLowerCase())
-			) {
-				matches = false;
-			}
-
-			return matches;
-		});
-		setQuotations(filtered);
+		// refetch with new filters
+		refetch();
 		setIsFilterDialogOpen(false);
 	};
 
@@ -125,13 +63,11 @@ export default function AdminQuotations() {
 		newStatus: QuotationRequest["status"],
 	) => {
 		try {
-			const updated = await updateQuotationStatus(quotationId, newStatus);
-			if (updated) {
-				setQuotations((prev) =>
-					prev.map((q) => (q.id === quotationId ? updated : q)),
-				);
-				console.log(`Quotation ${quotationId} status updated to ${newStatus}`);
-			}
+			await updateQuotationStatus({
+				id: quotationId,
+				payload: { status: newStatus },
+			}).unwrap();
+			console.log(`Quotation ${quotationId} status updated to ${newStatus}`);
 		} catch (err) {
 			console.error("Failed to update quotation status:", err);
 		}
@@ -142,12 +78,16 @@ export default function AdminQuotations() {
 	}
 
 	if (error) {
+		const errorMessage =
+			(error as CustomError).error?.data || "An unexpected error occurred.";
 		return (
 			<div className="flex justify-center items-center h-full min-h-[calc(100vh-80px)] text-red-500">
-				<p className="text-lg font-medium">Error: {error.message}</p>
+				<p className="text-lg font-medium">Error: {errorMessage}</p>
 			</div>
 		);
 	}
+
+	const quotations = quotationsData?.data || [];
 
 	return (
 		<div className="space-y-6">

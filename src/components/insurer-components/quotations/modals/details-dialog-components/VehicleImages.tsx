@@ -19,10 +19,6 @@ export function VehicleImages({
 	librePhotoUrl = null,
 	stacked = false,
 }: VehicleImagesProps) {
-	if (!frontViewPhotoUrl && !backViewPhotoUrl) {
-		return null;
-	}
-
 	const containerClass = stacked
 		? "flex flex-col gap-6 w-full"
 		: "grid grid-cols-1 gap-6 sm:grid-cols-2";
@@ -37,32 +33,32 @@ export function VehicleImages({
 			label: "Back View",
 		},
 		{
-			url: leftViewPhotoUrl || frontViewPhotoUrl,
+			url: leftViewPhotoUrl,
 			label: "Left View",
 		},
 		{
-			url: rightViewPhotoUrl || backViewPhotoUrl || frontViewPhotoUrl,
+			url: rightViewPhotoUrl,
 			label: "Right View",
 		},
 		{
-			url: enginePhotoUrl || frontViewPhotoUrl,
+			url: enginePhotoUrl,
 			label: "Engine Photo",
 		},
 		{
-			url: chassisNumberPhotoUrl || frontViewPhotoUrl,
+			url: chassisNumberPhotoUrl,
 			label: "Chassis Number Photo",
 		},
 		{
-			url: librePhotoUrl || frontViewPhotoUrl,
+			url: librePhotoUrl,
 			label: "Libre Photo",
 		},
 	];
 
 	return (
-		<div className="space-y-4">
+		<div className="space-y-4 w-full">
 			<div className={containerClass}>
-				{images.map((img) =>
-					img.url ? (
+				{images.map((img) => {
+					return img.url ? (
 						<div
 							key={img.label}
 							className="group relative overflow-hidden rounded-lg"
@@ -76,8 +72,17 @@ export function VehicleImages({
 								<p className="text-white text-lg font-semibold">{img.label}</p>
 							</div>
 						</div>
-					) : null,
-				)}
+					) : (
+						<div
+							key={img.label}
+							className="w-full h-80 bg-muted flex items-center justify-center rounded-lg border border-dashed border-gray-300"
+						>
+							<span className="text-gray-400 text-lg font-semibold">
+								{img.label}
+							</span>
+						</div>
+					);
+				})}
 			</div>
 		</div>
 	);

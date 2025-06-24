@@ -51,6 +51,21 @@ function useSidebar() {
 	return context;
 }
 
+interface CookieStore {
+	set: (options: {
+		name: string;
+		value: string;
+		maxAge?: number;
+		path?: string;
+	}) => Promise<void>;
+}
+
+declare global {
+	interface Window {
+		cookieStore: CookieStore;
+	}
+}
+
 function SidebarProvider({
 	defaultOpen = true,
 	open: openProp,
@@ -82,7 +97,7 @@ function SidebarProvider({
 
 			// This sets the cookie to keep the sidebar state.
 			if (typeof window !== "undefined" && "cookieStore" in window) {
-				const cookieStore = (window as any).cookieStore;
+				const cookieStore = window.cookieStore;
 				cookieStore
 					.set({
 						name: SIDEBAR_COOKIE_NAME,

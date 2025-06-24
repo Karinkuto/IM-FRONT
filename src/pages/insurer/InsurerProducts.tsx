@@ -1,8 +1,8 @@
 import { PlusCircle } from "lucide-react";
 import type React from "react";
 import { useMemo, useState } from "react";
-import { ProductDialog } from "@/components/admin-components/products/modals/ProductDialog";
-import { ProductsTable } from "@/components/admin-components/products/ProductsTable";
+import { ProductDialog } from "@/components/insurer-components/products/modals/ProductDialog";
+import { ProductsTable } from "@/components/insurer-components/products/ProductsTable";
 import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import {

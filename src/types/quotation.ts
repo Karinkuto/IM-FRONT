@@ -3,16 +3,28 @@ export type QuotationStatus = "draft" | "pending" | "approved" | "rejected";
 export interface VehicleDetails {
 	vehicle_type: string;
 	vehicle_usage: string;
+	goods?: string;
+	number_of_passengers?: number;
 }
 
 export interface Address {
 	region: string;
 	house_number: string;
+	zone?: string;
+	kebele?: string;
 }
 
 export interface UserInfo {
+	id: number;
+	email?: string;
+	verified?: boolean;
 	phone_number: string;
 	fin: string;
+	temporary_password?: string;
+	roles?: string[];
+	created_at?: string;
+	updated_at?: string;
+	customer?: Customer;
 }
 
 export interface CoverageType {
@@ -20,6 +32,7 @@ export interface CoverageType {
 	name: string;
 	description: string;
 	insurance_type_id: string;
+	insurance_type?: InsuranceType;
 }
 
 export interface InsuranceType {
@@ -30,13 +43,13 @@ export interface InsuranceType {
 }
 
 export interface VehiclePhotoUrls {
-	front_view_photo_url: string;
-	back_view_photo_url: string;
-	left_view_photo_url?: string;
-	right_view_photo_url?: string;
-	engine_photo_url?: string;
-	chassis_number_photo_url?: string;
-	libre_photo_url?: string;
+	front_view_photo_url: string | null;
+	back_view_photo_url: string | null;
+	left_view_photo_url?: string | null;
+	right_view_photo_url?: string | null;
+	engine_photo_url?: string | null;
+	chassis_number_photo_url?: string | null;
+	libre_photo_url?: string | null;
 }
 
 export interface Vehicle {
@@ -71,6 +84,8 @@ export interface VehicleAttributes {
 export interface QuotationFormData {
 	// This can be expanded based on specific form data requirements
 	[key: string]: unknown;
+	current_residence_address?: Address;
+	vehicle_details?: VehicleDetails;
 }
 
 export interface CreateQuotationRequestPayload {
@@ -82,14 +97,46 @@ export interface CreateQuotationRequestPayload {
 	vehicle_attributes: VehicleAttributes;
 }
 
+export interface Insurer {
+	id: string;
+	name: string;
+	contact_email: string;
+	contact_phone: string;
+	// logo?: string; // If you want to support logo URLs
+}
+
+export interface InsuranceProduct {
+	id: string;
+	name: string;
+	description: string;
+	estimated_price?: string;
+	customer_rating?: number;
+	status: string;
+	coverage_type?: CoverageType;
+	insurer?: Insurer;
+}
+
+export interface Customer {
+	id: string;
+	first_name: string;
+	middle_name: string;
+	last_name: string;
+	birthdate: string;
+	gender: string;
+	region: string;
+	subcity: string;
+	woreda: string;
+	avatar?: string;
+}
+
 export interface QuotationRequest {
 	id: string;
 	status: QuotationStatus;
-	form_data: QuotationFormData;
+	form_data?: QuotationFormData;
 	user_id: string;
 	user: UserInfo;
 	insurance_product_id: string;
-	insurance_type: InsuranceType;
+	insurance_product?: InsuranceProduct;
 	coverage_type_id: string;
 	coverage_type: CoverageType;
 	vehicle: Vehicle;

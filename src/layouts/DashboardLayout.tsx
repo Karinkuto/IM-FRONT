@@ -1,8 +1,6 @@
 import { useEffect } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { InsurerOnboarding } from "@/components/insurer-components/InsurerOnboarding"; // Import the new dialog component
-import { ModeToggle } from "@/components/shared/mode-toggle";
-import { NavUser } from "@/components/shared/NavUser";
+import { InsurerOnboarding } from "@/components/insurer-components/onboarding/InsurerOnboarding"; // Import the new dialog component
 import {
 	Breadcrumb,
 	BreadcrumbItem,
@@ -10,6 +8,8 @@ import {
 	BreadcrumbPage,
 	BreadcrumbSeparator as BreadcrumbSeparatorUI,
 } from "@/components/ui/breadcrumb";
+import { ModeToggle } from "@/components/ui/mode-toggle";
+import { NavUser } from "@/components/ui/NavUser";
 import {
 	Sidebar,
 	SidebarContent,

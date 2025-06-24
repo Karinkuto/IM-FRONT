@@ -1,5 +1,5 @@
 import { Controller, type UseFormReturn } from "react-hook-form";
-import { AvatarUploader } from "@/components/shared/AvatarUploader";
+import { AvatarUploader } from "@/components/ui/AvatarUploader";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { FormControl, FormItem, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";

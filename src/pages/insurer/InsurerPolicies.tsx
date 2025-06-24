@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { PoliciesTable } from "@/components/admin-components/policies/PoliciesTable.tsx";
+import { PoliciesTable } from "@/components/insurer-components/policies/PoliciesTable";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { fetchPolicies } from "@/services/policyService";
 import type { Policy } from "@/types/policy";
