@@ -1,6 +1,6 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { axiosBaseQuery } from "@/lib/axiosBaseQuery";
-import type { User } from "@/types/user";
+import type { User } from "@/types/auth";
 
 export const userApi = createApi({
 	reducerPath: "userApi",
@@ -15,8 +15,16 @@ export const userApi = createApi({
 			transformResponse: (response: { data: User[] }) => response.data,
 			providesTags: ["User"],
 		}),
+		getUserById: builder.query<User, string>({
+			query: (id) => ({
+				url: `/users/${id}`,
+				method: "GET",
+			}),
+			transformResponse: (response: { data: User }) => response.data,
+			providesTags: ["User"],
+		}),
 		// Add more endpoints (create, update, delete) as needed
 	}),
 });
 
-export const { useGetUsersQuery } = userApi;
+export const { useGetUsersQuery, useGetUserByIdQuery } = userApi;

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { InsurerOnboarding } from "@/components/insurer-components/onboarding/InsurerOnboarding"; // Import the new dialog component
 import {
@@ -153,10 +153,25 @@ export interface DashboardLayoutProps {
 }
 
 export function DashboardLayout({ role }: DashboardLayoutProps) {
-	const { logout, currentUserData } = useAuth();
+	const { logout, user, currentUserData } = useAuth();
 	const location = useLocation();
 
-	const isTemporaryPassword = currentUserData?.isTemporaryPassword; // Get isTemporaryPassword from currentUserData
+	const isTemporaryPassword = currentUserData?.isTemporaryPassword;
+	const hasInsurerProfile = Boolean(user?.insurer);
+
+	const [showOnboarding, setShowOnboarding] = useState(false);
+
+	useEffect(() => {
+		// Show onboarding if the user has an insurer role AND (has a temporary password OR does not have an insurer profile)
+		setShowOnboarding(
+			role === "insurer" &&
+				(Boolean(isTemporaryPassword) || !hasInsurerProfile),
+		);
+	}, [role, isTemporaryPassword, hasInsurerProfile]);
+
+	const handleCloseOnboarding = () => {
+		setShowOnboarding(false);
+	};
 
 	const pathSegments = location.pathname.split("/").filter(Boolean);
 	let breadcrumbPageContent = "Home";
@@ -222,10 +237,12 @@ export function DashboardLayout({ role }: DashboardLayoutProps) {
 				</header>
 				<main className="flex flex-1 flex-col gap-4 py-4 px-8">
 					<Outlet />
-					{isTemporaryPassword && (
+					{showOnboarding && (
 						<InsurerOnboarding
 							role={role}
 							isTemporaryPassword={isTemporaryPassword}
+							hasInsurerProfile={hasInsurerProfile}
+							onClose={handleCloseOnboarding}
 						/>
 					)}
 				</main>
