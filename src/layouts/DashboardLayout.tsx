@@ -223,16 +223,6 @@ export function DashboardLayout({ role }: DashboardLayoutProps) {
 									{role.charAt(0).toUpperCase() + role.slice(1)}
 								</BreadcrumbPage>
 							</BreadcrumbItem>
-							{isQuotationDetailsPage && (
-								<>
-									<BreadcrumbSeparatorUI className="hidden md:block" />
-									<BreadcrumbItem className="hidden md:block">
-										<Link to={`/${role}/quotation-requests`}>
-											<BreadcrumbPage>Quotation Requests</BreadcrumbPage>
-										</Link>
-									</BreadcrumbItem>
-								</>
-							)}
 							<BreadcrumbSeparatorUI className="hidden md:block" />
 							<BreadcrumbItem>
 								<BreadcrumbPage className="capitalize">

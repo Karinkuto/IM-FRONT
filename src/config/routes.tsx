@@ -26,17 +26,12 @@ export const roleSpecificRoutes: Record<ValidRole, RouteConfig[]> = {
 		{ path: "policies", element: <InsurerPolicies /> },
 		{ path: "settings", element: <SettingsPage /> },
 	],
-	customer: [
-		// Define customer routes here. Example:
-		// { path: "profile", element: <CustomerProfilePage />, isIndex: true },
-		{ path: "settings", element: <SettingsPage /> },
-	],
+	customer: [],
 	admin: [
 		// Define insurer routes here. Example:
 		// { path: "home", element: <AdminHome />, isIndex: true },
 		// { path: "listings", element: <AdminUserManagement /> },
 		{ path: "users", element: <UserManagementPage />, isIndex: true },
-		{ path: "settings", element: <SettingsPage /> },
 	],
 };
 

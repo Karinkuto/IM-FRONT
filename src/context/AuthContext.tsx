@@ -9,6 +9,7 @@ import {
 import { useDispatch } from "react-redux";
 import { toast } from "sonner";
 import { useLoginMutation } from "@/redux/apis/authApi";
+import { useGetUserByIdQuery } from "@/redux/apis/userApi";
 import { setCredentials } from "@/redux/slices/authSlice";
 import { logoutUser } from "@/services/authService";
 import type { AuthContextType, LoginCredentials, User } from "@/types/auth";
@@ -23,6 +24,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	const dispatch = useDispatch();
 
 	const [loginMutation, { isLoading: isLoggingIn }] = useLoginMutation();
+	const { refetch: refetchUser } = useGetUserByIdQuery(user?.id || "", {
+		skip: !user?.id, // Skip if no user ID is available
+	});
 
 	const currentUserData = useMemo(() => {
 		if (!user) {
@@ -117,6 +121,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		}
 	};
 
+	const refreshUser = async () => {
+		try {
+			if (!user?.id) return null;
+			
+			const { data } = await refetchUser();
+			if (data) {
+				const updatedUser = data;
+				setUser(updatedUser);
+				dispatch(
+					setCredentials({
+						user: updatedUser,
+						// The token is already in the store, no need to update it
+						access_token: "",
+					}),
+				);
+				return updatedUser;
+			}
+		} catch (error) {
+			console.error("Failed to refresh user data:", error);
+		}
+		return null;
+	};
+
 	const logout = async () => {
 		try {
 			await logoutUser();
@@ -137,6 +164,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 				user,
 				login,
 				logout,
+				refreshUser,
 				isAuthenticated,
 				currentUserData,
 				isLoading: isLoading || isLoggingIn,

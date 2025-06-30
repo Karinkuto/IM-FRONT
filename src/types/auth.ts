@@ -48,6 +48,7 @@ export type AuthContextType = {
 	} | null;
 	login: (credentials: LoginCredentials) => Promise<void>;
 	logout: () => Promise<void>;
+	refreshUser: () => Promise<User | null>;
 	isAuthenticated: boolean;
 	isLoading: boolean;
 };

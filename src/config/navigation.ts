@@ -1,5 +1,4 @@
 import {
-	Building2,
 	Columns,
 	LogOut,
 	Settings,
@@ -30,7 +29,6 @@ export const navigationData: Record<string, NavItemGroup[]> = {
 					label: "Quotations",
 					icon: ShieldCheck,
 				},
-				{ link: "/insurer/policies", label: "Policies", icon: Building2 },
 			],
 		},
 	],

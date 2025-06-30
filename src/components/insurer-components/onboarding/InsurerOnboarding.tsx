@@ -71,7 +71,7 @@ export function InsurerOnboarding({
 	const location = useLocation();
 
 	const dispatch = useDispatch();
-	const { user } = useAuth();
+	const { user, refreshUser } = useAuth();
 
 	const userId = user?.id;
 	const currentAccessToken = useSelector(
@@ -161,43 +161,15 @@ export function InsurerOnboarding({
 
 	// Final submit handler
 	const handleOnboardingSubmit = async (values: OnboardingFormValues) => {
-		// 1. Change password (for temporary password users)
 		try {
-			await changePassword({
+			setLoaderState(1); // Show loading state for both operations
+
+			// 1. Prepare both requests
+			const passwordPromise = changePassword({
 				new_password: values.newPassword,
 				new_password_confirmation: values.confirmPassword,
 			}).unwrap();
-			toast.success("Password changed successfully");
-			setLoaderState(1); // Move to next loader step
 
-			// Refetch user data to get updated temporary_password status
-			const { data: updatedUserResponse } = await refetchUser();
-			if (updatedUserResponse && currentAccessToken) {
-				dispatch(
-					setCredentials({
-						access_token: currentAccessToken,
-						user: updatedUserResponse,
-					}),
-				);
-			}
-		} catch (err: unknown) {
-			const errorMessage =
-				err &&
-				typeof err === "object" &&
-				"data" in err &&
-				err.data &&
-				typeof err.data === "object" &&
-				"error" in err.data &&
-				typeof (err.data as { error?: string }).error === "string"
-					? (err.data as { error: string }).error
-					: "Failed to change password";
-			toast.error(errorMessage);
-			setLoaderErrorStep(0);
-			setLoaderErrorMessage(errorMessage);
-			return;
-		}
-		// 2. Onboard insurer profile
-		try {
 			const formData = buildInsurerOnboardingFormData({
 				name: values.name,
 				description: values.description ?? undefined,
@@ -207,23 +179,53 @@ export function InsurerOnboarding({
 				api_key: values.apiKey ?? undefined,
 				logo: values.logo,
 			});
-			await onboardInsurer(formData).unwrap();
-			toast.success("Profile onboarded successfully");
-			setLoaderState(2); // Move to final loader step
+			const profilePromise = onboardInsurer(formData).unwrap();
 
-			// Refetch user data to get updated insurer profile
+			// 2. Send both requests in parallel
+			await Promise.all([passwordPromise, profilePromise]);
+
+			// 3. Move to verification state
+			setLoaderState(2);
+			toast.success("Processing your updates...");
+
+			// 4. Verify both updates were successful
 			const { data: updatedUserResponse } = await refetchUser();
+
 			if (updatedUserResponse && currentAccessToken) {
+				// Check if password was changed (temporary_password should be false)
+				const isPasswordUpdated = !updatedUserResponse.temporary_password;
+				// Check if profile was created
+				const isProfileUpdated = !!updatedUserResponse.insurer;
+
+				// Update credentials with latest data
 				dispatch(
 					setCredentials({
 						access_token: currentAccessToken,
 						user: updatedUserResponse,
 					}),
 				);
-			}
 
-			toast.success("Onboarding complete!");
-			onClose(); // Close the modal
+				if (isPasswordUpdated && isProfileUpdated) {
+					// Refresh user data in AuthContext to ensure all components are updated
+					await refreshUser();
+					toast.success("All updates completed successfully!");
+					setTimeout(() => {
+						onClose(); // Close the modal after success
+					}, 1000);
+				} else {
+					const errors = [];
+					if (!isPasswordUpdated) {
+						errors.push("password update");
+					}
+					if (!isProfileUpdated) {
+						errors.push("profile update");
+					}
+					throw new Error(`Failed to verify: ${errors.join(" and ")}`);
+				}
+			} else {
+				// Failed to fetch updated user data or missing access token
+				throw new Error("Failed to fetch updated user data");
+			}
 		} catch (err: unknown) {
 			const errorMessage =
 				err &&

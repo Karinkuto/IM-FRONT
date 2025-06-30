@@ -52,9 +52,8 @@ export function FormModal<T extends FieldValues>({
 		mode: "onChange",
 	});
 
-	// Only depend on initialValues to avoid useEffect dependency warning
+	// Reset form when initialValues change
 	useEffect(() => {
-		console.log("[FormModal] initialValues changed:", initialValues);
 		if (initialValues) {
 			form.reset(initialValues as T);
 		}

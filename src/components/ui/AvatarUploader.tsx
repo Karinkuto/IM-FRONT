@@ -189,35 +189,39 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
 					data-dragging={isDragging || undefined}
 					aria-label={preview ? "Change image" : "Upload image"}
 				>
-					{preview ? (
-						<Avatar className={`w-20 h-20 ${avatarClass}`}>
-							<AvatarImage src={preview} alt="Logo" />
-							<AvatarFallback>
-								<CircleUserRoundIcon className="w-8 h-8 opacity-60" />
-							</AvatarFallback>
-						</Avatar>
-					) : (
-						<div className="flex flex-col items-center justify-center py-4">
-							<CircleUserRoundIcon className="w-10 h-10 mb-2 opacity-60" />
-							<span className="text-sm text-muted-foreground">
-								Drag & drop or click to upload
-							</span>
-							<span className="text-xs text-muted-foreground">
-								JPEG/PNG, max {maxSizeMB}MB
-							</span>
-						</div>
-					)}
-					{preview && (
-						<Button
-							onClick={handleRemove}
-							size="icon"
-							className="border-background focus-visible:border-background absolute -top-2 -right-2 size-7 rounded-full border-2 shadow-none"
-							aria-label="Remove image"
-							type="button"
-						>
-							<XIcon className="size-4" />
-						</Button>
-					)}
+					<div className="relative w-full h-full">
+						{preview ? (
+							<Avatar className={`w-20 h-20 ${avatarClass} mx-auto`}>
+								<AvatarImage src={preview} alt="Logo" />
+								<AvatarFallback>
+									<CircleUserRoundIcon className="w-8 h-8 opacity-60" />
+								</AvatarFallback>
+							</Avatar>
+						) : (
+							<div className="flex flex-col items-center justify-center py-4">
+								<CircleUserRoundIcon className="w-10 h-10 mb-2 opacity-60" />
+								<span className="text-sm text-muted-foreground">
+									Drag & drop or click to upload
+								</span>
+								<span className="text-xs text-muted-foreground">
+									JPEG/PNG, max {maxSizeMB}MB
+								</span>
+							</div>
+						)}
+						{preview && (
+							<button
+								onClick={(e) => {
+									e.stopPropagation();
+									handleRemove();
+								}}
+								className="absolute -top-2 -right-2 flex h-7 w-7 items-center justify-center rounded-full border-2 border-background bg-background shadow-sm transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+								aria-label="Remove image"
+								type="button"
+							>
+								<XIcon className="h-4 w-4" />
+							</button>
+						)}
+					</div>
 					<input
 						{...getInputProps()}
 						className="sr-only"

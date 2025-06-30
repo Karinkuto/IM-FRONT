@@ -5,6 +5,7 @@ import { authApi } from "@/redux/apis/authApi";
 import { productApi } from "@/redux/apis/productApi";
 import { quotationApi } from "@/redux/apis/quotationApi";
 import { userApi } from "@/redux/apis/userApi";
+import { insurerApi } from "@/redux/apis/insurerApi";
 import authReducer from "./slices/authSlice";
 
 // 1. Define root reducer separately
@@ -14,6 +15,7 @@ const rootReducer = {
 	[productApi.reducerPath]: productApi.reducer,
 	[quotationApi.reducerPath]: quotationApi.reducer,
 	[userApi.reducerPath]: userApi.reducer,
+	[insurerApi.reducerPath]: insurerApi.reducer,
 };
 
 // 2. Create store using the rootReducer
@@ -25,6 +27,7 @@ export const store = configureStore({
 			productApi.middleware,
 			quotationApi.middleware,
 			userApi.middleware,
+			insurerApi.middleware,
 		),
 	devTools: process.env.NODE_ENV !== "production",
 });
