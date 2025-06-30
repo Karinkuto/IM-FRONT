@@ -97,6 +97,7 @@ export function DataTable<TData, TValue>({
 			rowSelection,
 			globalFilter, // New: global filter state
 		},
+		autoResetPageIndex: false, // Prevent page reset on data change
 	});
 
 	return (

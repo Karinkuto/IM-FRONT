@@ -16,60 +16,65 @@ import {
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { RoleLayout } from "./layouts/RoleLayout";
 import LoginPage from "./pages/Auth/LoginPage";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient();
 
 export default function App() {
 	return (
-		<ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-			<AuthProvider>
-				<ErrorBoundary>
-					<BrowserRouter>
-						<Toaster />
-						<Routes>
-							<Route path="/login" element={<LoginPage />} />
-							<Route element={<ProtectedRoute />}>
-								{/* Redirect root path to the authenticated user's default role path */}
-								<Route path="/" element={<HomeRedirectByRole />} />
+		<QueryClientProvider client={queryClient}>
+			<ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+				<AuthProvider>
+					<ErrorBoundary>
+						<BrowserRouter>
+							<Toaster />
+							<Routes>
+								<Route path="/login" element={<LoginPage />} />
+								<Route element={<ProtectedRoute />}>
+									{/* Redirect root path to the authenticated user's default role path */}
+									<Route path="/" element={<HomeRedirectByRole />} />
 
-								{VALID_ROLES.map((role) => {
-									const routesForRole = roleSpecificRoutes[role];
-									const defaultRouteForRole = routesForRole.find(
-										(r) => r.isIndex,
-									)?.path;
+									{VALID_ROLES.map((role) => {
+										const routesForRole = roleSpecificRoutes[role];
+										const defaultRouteForRole = routesForRole.find(
+											(r) => r.isIndex,
+										)?.path;
 
-									return (
-										<Route
-											key={role}
-											path={`/${role}`}
-											element={<RoleLayout />}
-										>
-											{defaultRouteForRole && (
-												<Route
-													index
-													element={
-														<Navigate to={defaultRouteForRole} replace />
-													}
-												/>
-											)}
-											{routesForRole.map((routeConfig) => (
-												<Route
-													key={routeConfig.path}
-													path={routeConfig.path}
-													element={routeConfig.element}
-												/>
-											))}
+										return (
 											<Route
-												path="*"
-												element={<Navigate to={`/${role}`} replace />}
-											/>
-										</Route>
-									);
-								})}
-							</Route>
-						</Routes>
-					</BrowserRouter>
-				</ErrorBoundary>
-			</AuthProvider>
-		</ThemeProvider>
+												key={role}
+												path={`/${role}`}
+												element={<RoleLayout />}
+											>
+												{defaultRouteForRole && (
+													<Route
+														index
+														element={
+															<Navigate to={defaultRouteForRole} replace />
+														}
+													/>
+												)}
+												{routesForRole.map((routeConfig) => (
+													<Route
+														key={routeConfig.path}
+														path={routeConfig.path}
+														element={routeConfig.element}
+													/>
+												))}
+												<Route
+													path="*"
+													element={<Navigate to={`/${role}`} replace />}
+												/>
+											</Route>
+										);
+									})}
+								</Route>
+							</Routes>
+						</BrowserRouter>
+					</ErrorBoundary>
+				</AuthProvider>
+			</ThemeProvider>
+		</QueryClientProvider>
 	);
 }
 

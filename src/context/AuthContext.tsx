@@ -45,6 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 			name: name,
 			role: user.role,
 			isTemporaryPassword: user.temporary_password,
+			insurer: user.insurer, // Include the insurer data
 		};
 	}, [user]);
 

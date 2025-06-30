@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
-import { type UseFormReturn, useForm } from "react-hook-form";
+import { type FieldValues, type UseFormReturn, useForm } from "react-hook-form";
 import type { ZodSchema } from "zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 
-export interface FormModalProps<T> {
+export interface FormModalProps<T extends FieldValues> {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	onSubmit: (values: T) => void;
@@ -30,7 +30,7 @@ export interface FormModalProps<T> {
 	showFooter?: boolean;
 }
 
-export function FormModal<T>({
+export function FormModal<T extends FieldValues>({
 	open,
 	onOpenChange,
 	onSubmit,
@@ -47,8 +47,9 @@ export function FormModal<T>({
 	showFooter = true,
 }: FormModalProps<T>) {
 	const form = useForm<T>({
-		resolver: zodResolver(validationSchema),
+		resolver: zodResolver(validationSchema as ZodSchema<T>),
 		defaultValues: initialValues as T,
+		mode: "onChange",
 	});
 
 	// Only depend on initialValues to avoid useEffect dependency warning
@@ -57,10 +58,10 @@ export function FormModal<T>({
 		if (initialValues) {
 			form.reset(initialValues as T);
 		}
-	}, [initialValues, form.reset]);
+	}, [initialValues, form]);
 
 	const handleSubmit = form.handleSubmit((values) => {
-		onSubmit(values);
+		onSubmit(values as unknown as T);
 	});
 
 	return (

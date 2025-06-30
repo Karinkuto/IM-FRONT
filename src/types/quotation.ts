@@ -1,3 +1,5 @@
+import type { Customer } from "@/types/user";
+
 export type QuotationStatus = "draft" | "pending" | "approved" | "rejected";
 
 export interface VehicleDetails {
@@ -12,15 +14,16 @@ export interface Address {
 	house_number: string;
 	zone?: string;
 	kebele?: string;
+	woreda?: string;
 }
 
 export interface UserInfo {
-	id: number;
+	id: string | number; // Allow both string and number for backward compatibility
 	email?: string;
 	verified?: boolean;
-	phone_number: string;
-	fin: string;
-	temporary_password?: string;
+	phone_number?: string;
+	fin?: string;
+	temporary_password?: string | null;
 	roles?: string[];
 	created_at?: string;
 	updated_at?: string;
@@ -62,6 +65,14 @@ export interface Vehicle {
 	year_of_manufacture: number;
 	estimated_value: number;
 	photos: VehiclePhotoUrls;
+	// Add direct photo URL properties for easier access
+	front_view_photo_url?: string | null;
+	back_view_photo_url?: string | null;
+	left_view_photo_url?: string | null;
+	right_view_photo_url?: string | null;
+	engine_photo_url?: string | null;
+	chassis_number_photo_url?: string | null;
+	libre_photo_url?: string | null;
 }
 
 export interface VehicleAttributes {
@@ -116,19 +127,6 @@ export interface InsuranceProduct {
 	insurer?: Insurer;
 }
 
-export interface Customer {
-	id: string;
-	first_name: string;
-	middle_name: string;
-	last_name: string;
-	birthdate: string;
-	gender: string;
-	region: string;
-	subcity: string;
-	woreda: string;
-	avatar?: string;
-}
-
 export interface QuotationRequest {
 	id: string;
 	status: QuotationStatus;
@@ -142,6 +140,8 @@ export interface QuotationRequest {
 	vehicle: Vehicle;
 	created_at: string;
 	updated_at: string;
+	// Add missing properties
+	insurance_type?: string;
 }
 
 // For filtering

@@ -46,8 +46,15 @@ const baseQueryWithReauth: BaseQueryFn<
 	return result;
 };
 
+// Define tag types for API
+const TAG_TYPES = {
+	User: "User",
+	Auth: "Auth",
+} as const;
+
 export const authApi = createApi({
 	reducerPath: "authApi",
+	tagTypes: Object.values(TAG_TYPES),
 	baseQuery: baseQueryWithReauth,
 	endpoints: (builder) => ({
 		login: builder.mutation<AuthResponse, LoginCredentials>({
@@ -133,6 +140,7 @@ export const authApi = createApi({
 				method: "POST",
 				data,
 			}),
+			invalidatesTags: ["User"],
 		}),
 	}),
 });

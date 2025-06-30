@@ -50,29 +50,50 @@ export default function QuotationDetailsDialog({
 		return <div className="p-4 text-center">Quotation not found.</div>;
 	}
 
+	// Debug: Log the data being sent to QuotationDetails
+	console.log("[QuotationDetailsDialog] Quotation data:", quotation);
+
 	return (
-		<DialogContent className="max-h-[90vh] overflow-hidden sm:max-w-[90vw] lg:max-w-[80vw] xl:max-w-[70vw] p-0">
+		<DialogContent className="max-h-[90vh] overflow-hidden sm:max-w-[90vw] lg:max-w-[80vw] xl:max-w-[80vw] p-0">
 			<div className="flex h-[80vh] w-full">
 				{/* Left: Images stacked vertically */}
 				<div className="flex-shrink-0 bg-muted flex flex-col items-center justify-start max-w-[380px] min-w-[320px] w-fit overflow-y-auto border-r p-4">
 					<VehicleImages
 						frontViewPhotoUrl={
-							quotation.vehicle?.photos?.front_view_photo_url ?? null
+							quotation.vehicle?.photos?.front_view_photo_url ??
+							quotation.vehicle?.front_view_photo_url ??
+							null
 						}
 						backViewPhotoUrl={
-							quotation.vehicle?.photos?.back_view_photo_url ?? null
+							quotation.vehicle?.photos?.back_view_photo_url ??
+							quotation.vehicle?.back_view_photo_url ??
+							null
 						}
 						leftViewPhotoUrl={
-							quotation.vehicle?.photos?.left_view_photo_url ?? null
+							quotation.vehicle?.photos?.left_view_photo_url ??
+							quotation.vehicle?.left_view_photo_url ??
+							null
 						}
 						rightViewPhotoUrl={
-							quotation.vehicle?.photos?.right_view_photo_url ?? null
+							quotation.vehicle?.photos?.right_view_photo_url ??
+							quotation.vehicle?.right_view_photo_url ??
+							null
 						}
-						enginePhotoUrl={quotation.vehicle?.photos?.engine_photo_url ?? null}
+						enginePhotoUrl={
+							quotation.vehicle?.photos?.engine_photo_url ??
+							quotation.vehicle?.engine_photo_url ??
+							null
+						}
 						chassisNumberPhotoUrl={
-							quotation.vehicle?.photos?.chassis_number_photo_url ?? null
+							quotation.vehicle?.photos?.chassis_number_photo_url ??
+							quotation.vehicle?.chassis_number_photo_url ??
+							null
 						}
-						librePhotoUrl={quotation.vehicle?.photos?.libre_photo_url ?? null}
+						librePhotoUrl={
+							quotation.vehicle?.photos?.libre_photo_url ??
+							quotation.vehicle?.libre_photo_url ??
+							null
+						}
 						stacked
 					/>
 				</div>

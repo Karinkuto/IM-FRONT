@@ -36,10 +36,20 @@ const AdminProducts: React.FC = () => {
 	} = useGetInsuranceTypesQuery();
 
 	const handleCreateProduct = async (
-		newProduct: CreateInsuranceProductPayload,
+		newProduct: Product | Omit<Product, "id">,
 	) => {
 		try {
-			await createProduct(newProduct).unwrap();
+			// Map the Product type to CreateInsuranceProductPayload
+			const payload: CreateInsuranceProductPayload = {
+				name: newProduct.name,
+				description: newProduct.description || "",
+				estimated_price: newProduct.pricing || "0",
+				customer_rating: 0, // Default value
+				status: "active", // Default value
+				coverage_type_id: newProduct.coverageType || "",
+			};
+			await createProduct(payload).unwrap();
+			setIsCreateDialogOpen(false);
 			refetch();
 		} catch (err) {
 			// handle error (show toast, etc)
@@ -53,12 +63,12 @@ const AdminProducts: React.FC = () => {
 		return {
 			id: p.id,
 			name: p.name,
-			insuranceType: p.coverage_type?.insurance_type_id
-				? String(p.coverage_type.insurance_type_id)
+			insuranceType: p.coverage_type?.insurance_type?.id
+				? String(p.coverage_type.insurance_type.id)
 				: "",
 			coverageType: p.coverage_type?.id ? String(p.coverage_type.id) : "",
-			description: p.description,
-			pricing: p.estimated_price,
+			description: p.description || "",
+			pricing: p.estimated_price || "",
 		};
 	}
 
@@ -75,9 +85,10 @@ const AdminProducts: React.FC = () => {
 		updatedProduct: Partial<InsuranceProduct> & { id: string },
 	) => {
 		try {
+			const { id, ...payload } = updatedProduct;
 			await updateProduct({
-				id: updatedProduct.id,
-				payload: updatedProduct,
+				id,
+				...payload,
 			}).unwrap();
 			refetch();
 		} catch (err) {

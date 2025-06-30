@@ -1,5 +1,5 @@
 import type { Row } from "@tanstack/react-table";
-import { Edit, MoreHorizontal, Trash2 } from "lucide-react";
+import { Edit, MoreHorizontal } from "lucide-react";
 import type { FC } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,6 @@ import {
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuLabel,
-	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Rating } from "@/components/ui/rating";
@@ -29,7 +28,6 @@ interface ProductsTableProps {
 // Backend-aligned columns
 const columns = (
 	onEditProduct: (id: string) => void,
-	onDeleteProduct: (id: string) => void,
 	coverageTypesMap?: Record<
 		string,
 		{ coverageTypeName: string; insuranceTypeName: string }
@@ -102,9 +100,11 @@ const columns = (
 	{
 		accessorKey: "status",
 		header: "Status",
-		cell: ({ row }: { row: Row<InsuranceProduct> }) => (
-			<Badge>{row.getValue("status")}</Badge>
-		),
+		cell: ({ row }: { row: Row<InsuranceProduct> }) => {
+			const status = row.getValue("status") as string;
+			const variant = status === "active" ? "status-approved" : undefined;
+			return <Badge variant={variant}>{status}</Badge>;
+		},
 	},
 	{
 		id: "actions",
@@ -143,7 +143,7 @@ export const ProductsTable: FC<ProductsTableProps> = ({
 }) => {
 	return (
 		<DataTable
-			columns={columns(onEditProduct, onDeleteProduct, coverageTypesMap)}
+			columns={columns(onEditProduct, coverageTypesMap)}
 			data={products}
 			toolbarActionsPrefix={toolbarActionsPrefix}
 			meta={{

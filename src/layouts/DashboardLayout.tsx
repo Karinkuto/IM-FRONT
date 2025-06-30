@@ -36,13 +36,15 @@ interface AppSidebarProps {
 	logout: ReturnType<typeof useAuth>["logout"];
 	currentPath: string; // Add currentPath to props
 	currentUserData: ReturnType<typeof useAuth>["currentUserData"]; // Renamed from displayUser to currentUserData
+	user: ReturnType<typeof useAuth>["user"]; // Add user prop
 }
 
 function AppSidebar({
 	role,
-	currentUserData, // Renamed
+	currentUserData,
+	user,
 	logout,
-	currentPath, // Destructure currentPath
+	currentPath,
 }: AppSidebarProps) {
 	const navigate = useNavigate();
 
@@ -107,29 +109,35 @@ function AppSidebar({
 			</SidebarContent>
 			<SidebarFooter className="p-4 mt-auto">
 				<SidebarMenu>
-					{footerNavigation.map((item) => (
-						<SidebarMenuItem key={item.link}>
-							{item.link === "/logout" ? (
-								<SidebarMenuButton
-									className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-muted-foreground"
-									onClick={handleLogout}
-								>
-									<item.icon className="h-5 w-5" />
-									<span>{item.label}</span>
-								</SidebarMenuButton>
-							) : (
-								<SidebarMenuButton
-									asChild
-									className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-muted-foreground"
-								>
-									<Link to={item.link}>
+					{footerNavigation.map((item) => {
+						let link = item.link;
+						if (link.includes(":role")) {
+							link = link.replace(":role", role);
+						}
+						return (
+							<SidebarMenuItem key={item.link}>
+								{item.link === "/logout" ? (
+									<SidebarMenuButton
+										className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-muted-foreground"
+										onClick={handleLogout}
+									>
 										<item.icon className="h-5 w-5" />
 										<span>{item.label}</span>
-									</Link>
-								</SidebarMenuButton>
-							)}
-						</SidebarMenuItem>
-					))}
+									</SidebarMenuButton>
+								) : (
+									<SidebarMenuButton
+										asChild
+										className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-muted-foreground"
+									>
+										<Link to={link}>
+											<item.icon className="h-5 w-5" />
+											<span>{item.label}</span>
+										</Link>
+									</SidebarMenuButton>
+								)}
+							</SidebarMenuItem>
+						);
+					})}
 				</SidebarMenu>
 				<SidebarSeparator className="my-4" />{" "}
 				{/* Added separator for visual distinction */}
@@ -137,8 +145,9 @@ function AppSidebar({
 					<NavUser
 						user={{
 							name: currentUserData.name,
-							email: "", // Email is not shown, provide an empty string or remove if not strictly needed by NavUser's prop
+							email: user?.email || "", // Get email from the user object
 							role: currentUserData.role,
+							avatar: currentUserData.insurer?.logo_url,
 						}}
 					/>
 				)}
@@ -200,6 +209,7 @@ export function DashboardLayout({ role }: DashboardLayoutProps) {
 			<AppSidebar
 				role={role}
 				currentUserData={currentUserData}
+				user={user}
 				logout={logout}
 				currentPath={location.pathname}
 			/>

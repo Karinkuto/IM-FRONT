@@ -3,11 +3,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Rating } from "@/components/ui/rating";
 import type {
+	Address,
 	InsuranceType,
 	QuotationRequest,
-	QuotationStatus,
-	Vehicle,
-	VehicleDetails,
 } from "@/types/quotation";
 
 // Shared DescriptionItem for all cards
@@ -25,21 +23,6 @@ function DescriptionItem({ label, value }: DescriptionItemProps) {
 	);
 }
 
-// DetailSection
-interface DetailSectionProps {
-	title: string;
-	children: React.ReactNode;
-}
-
-function DetailSection({ title, children }: DetailSectionProps) {
-	return (
-		<div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6 space-y-4">
-			<h3 className="text-xl font-semibold">{title}</h3>
-			<div className="flex flex-col gap-4">{children}</div>
-		</div>
-	);
-}
-
 // Add a simple divider component for visual separation
 function CardDivider() {
 	return <div className="my-2 border-t border-muted" />;
@@ -47,7 +30,7 @@ function CardDivider() {
 
 // AddressInformationCard
 interface AddressInformationCardProps {
-	address?: QuotationRequest["form_data"]["current_residence_address"];
+	address?: Address;
 }
 
 function AddressInformationCard({ address }: AddressInformationCardProps) {
@@ -58,13 +41,25 @@ function AddressInformationCard({ address }: AddressInformationCardProps) {
 			</div>
 			<CardDivider />
 			<div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-				<DescriptionItem label="Region" value={address?.region ?? "-"} />
-				<DescriptionItem label="Zone" value={address?.zone ?? "-"} />
-				<DescriptionItem label="Woreda" value={address?.woreda ?? "-"} />
-				<DescriptionItem label="Kebele" value={address?.kebele ?? "-"} />
+				<DescriptionItem
+					label="Region"
+					value={address?.region ? String(address.region) : "-"}
+				/>
+				<DescriptionItem
+					label="Zone"
+					value={address?.zone ? String(address.zone) : "-"}
+				/>
+				<DescriptionItem
+					label="Woreda"
+					value={address?.woreda ? String(address.woreda) : "-"}
+				/>
+				<DescriptionItem
+					label="Kebele"
+					value={address?.kebele ? String(address.kebele) : "-"}
+				/>
 				<DescriptionItem
 					label="House Number"
-					value={address?.house_number ?? "-"}
+					value={address?.house_number ? String(address.house_number) : "-"}
 				/>
 			</div>
 		</div>

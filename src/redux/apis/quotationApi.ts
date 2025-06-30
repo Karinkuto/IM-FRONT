@@ -54,6 +54,10 @@ export const quotationApi = createApi({
 				url: `/quotation_requests/${id}`,
 				method: "GET",
 			}),
+			transformResponse: (response: {
+				success: boolean;
+				data: QuotationRequest;
+			}) => response.data,
 			providesTags: (_result, _error, id) => [{ type: "Quotation", id }],
 		}),
 		updateQuotationRequest: builder.mutation<

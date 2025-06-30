@@ -41,6 +41,10 @@ export type AuthContextType = {
 		name: string;
 		role: string;
 		isTemporaryPassword?: boolean;
+		insurer?: {
+			name: string;
+			logo_url?: string;
+		};
 	} | null;
 	login: (credentials: LoginCredentials) => Promise<void>;
 	logout: () => Promise<void>;

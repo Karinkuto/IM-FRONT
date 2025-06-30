@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useGetAllInsuranceTypesQuery } from "@/redux/apis/productApi";
 import type { Product } from "@/types/product";
-import { FormModal } from "./FormModal";
+import { FormModal } from "../../../ui/FormModal";
 
 const formSchema = z.object({
 	name: z.string().min(1, "Product name is required"),
