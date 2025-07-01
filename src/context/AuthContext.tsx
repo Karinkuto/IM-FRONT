@@ -1,7 +1,6 @@
 import {
 	createContext,
 	type ReactNode,
-	useContext,
 	useEffect,
 	useMemo,
 	useState,
@@ -12,67 +11,55 @@ import { useLoginMutation } from "@/redux/apis/authApi";
 import { useGetUserByIdQuery } from "@/redux/apis/userApi";
 import { setCredentials } from "@/redux/slices/authSlice";
 import { logoutUser } from "@/services/authService";
-import type { AuthContextType, LoginCredentials, User } from "@/types/auth";
+import type {
+	AuthContextType,
+	User as AuthUser,
+	LoginCredentials,
+} from "@/types/auth";
+import type { User as ApiUser } from "@/types/user";
+import { mapApiUserToAuthUser } from "@/utils/authUtils";
 import {
-	setItem as setSessionItem,
-	getItem as getSessionItem,
-	removeItem as removeSessionItem,
-} from "@/lib/secureSessionStorage";
+	getSessionItem,
+	removeSessionItem,
+	setSessionItem,
+} from "@/utils/sessionStorage";
 
-const AuthContext = createContext<AuthContextType | null>(null);
-
-// Utility function to map user.ts User to auth.ts User
-function mapUserToAuthUser(
-	user: import("@/types/user").User,
-): import("@/types/auth").User {
-	return {
-		id: String(user.id),
-		role: (user.role ?? "customer") as "admin" | "customer" | "insurer",
-		name: user.name,
-		email: user.email,
-		phone_number: user.phone_number ?? undefined,
-		fin: user.fin ?? undefined,
-		temporary_password:
-			typeof user.temporary_password === "boolean"
-				? user.temporary_password
-				: undefined,
-		customer: user.customer
-			? {
-					first_name: user.customer.first_name,
-					middle_name: user.customer.middle_name,
-					last_name: user.customer.last_name,
-				}
-			: undefined,
-		insurer: user.insurer ? { name: user.insurer.name } : undefined,
-		roles: Array.isArray(user.roles)
-			? user.roles.map((r: any) => ({
-					id: r.id,
-					name: r.name as "admin" | "customer" | "insurer",
-				}))
-			: undefined,
-	};
-}
+// Create and export the AuthContext
+export const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-	const [user, setUser] = useState<User | null>(null);
+	const [user, setUser] = useState<AuthUser | null>(null);
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
 	const [isLoading, setIsLoading] = useState(true);
 
 	const dispatch = useDispatch();
 
 	const [loginMutation, { isLoading: isLoggingIn }] = useLoginMutation();
-	const { refetch: refetchUser } = useGetUserByIdQuery(user?.id || "", {
+	// Use a type assertion to handle the API response
+	const { refetch } = useGetUserByIdQuery(user?.id || "", {
 		skip: !user?.id, // Skip if no user ID is available
 	});
 
+	const refetchUser = async () => {
+		try {
+			const response = await refetch();
+			// Use type assertion to handle the API response
+			return response.data as unknown as ApiUser | undefined;
+		} catch (error) {
+			console.error("Error refetching user:", error);
+			return undefined;
+		}
+	};
+
 	// Restore auth state from sessionStorage on mount
 	useEffect(() => {
-		(async () => {
-			const stored = await getSessionItem("auth");
-			if (stored) {
-				try {
-					const parsed = JSON.parse(stored);
-					if (parsed && parsed.user && parsed.access_token) {
+		// Initialize auth state from session storage
+		const initializeAuth = async () => {
+			try {
+				const session = await getSessionItem("auth");
+				if (session) {
+					const parsed = JSON.parse(session);
+					if (parsed?.user && parsed?.access_token) {
 						setUser(parsed.user);
 						setIsAuthenticated(true);
 						dispatch(
@@ -82,10 +69,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 							}),
 						);
 					}
-				} catch {}
+				}
+			} catch (error) {
+				console.error("Error initializing auth state:", error);
+			} finally {
+				setIsLoading(false);
 			}
-			setIsLoading(false);
-		})();
+		};
+
+		void initializeAuth();
 	}, [dispatch]);
 
 	const currentUserData = useMemo(() => {
@@ -126,25 +118,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 				throw new Error("User data missing from login response.");
 			}
 
-			const apiUser = result.data.user;
+			// Use type assertion to handle the API response
+			const apiUser = result.data.user as unknown as ApiUser;
 			console.log("API User data received from backend:", apiUser);
 
-			// Ensure user data is correctly extracted and formatted
-			const loggedInUser: User = {
-				...apiUser,
-				role:
-					apiUser.roles && apiUser.roles.length > 0
-						? (apiUser.roles[0].name as "admin" | "customer" | "insurer")
-						: "customer",
-				id: apiUser.id || "",
-				name: apiUser.name || apiUser.email || apiUser.phone_number || "User",
-				email: apiUser.email || "",
-				phone_number: apiUser.phone_number || "",
-				fin: apiUser.fin || "",
-				temporary_password: apiUser.temporary_password || false,
-				customer: apiUser.customer,
-				insurer: apiUser.insurer,
-			};
+			// Map API user to AuthUser type using our utility function
+			const loggedInUser = mapApiUserToAuthUser(apiUser);
 
 			console.log("Frontend determined user role:", loggedInUser.role);
 
@@ -186,17 +165,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		try {
 			if (!user?.id) return null;
 
-			const { data } = await refetchUser();
+			const data = await refetchUser();
 			if (data) {
-				const updatedUser = data;
+				// Ensure the data is properly typed before mapping
+				const typedData = data as unknown as ApiUser;
+				const updatedUser = mapApiUserToAuthUser(typedData);
 				setUser(updatedUser);
-				dispatch(
-					setCredentials({
-						user: updatedUser,
-						// The token is already in the store, no need to update it
-						access_token: "",
-					}),
-				);
+
 				// Update sessionStorage with new user info (keep access_token)
 				const stored = await getSessionItem("auth");
 				if (stored) {
@@ -209,14 +184,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 								access_token: parsed.access_token,
 							}),
 						);
-					} catch {}
+
+						// Update Redux store with the new user data
+						dispatch(
+							setCredentials({
+								user: updatedUser,
+								access_token: parsed.access_token,
+							}),
+						);
+
+						return updatedUser;
+					} catch (error) {
+						console.error(
+							"Failed to update session storage with new user data:",
+							error,
+						);
+						throw error;
+					}
 				}
-				return updatedUser;
 			}
+			return null;
 		} catch (error) {
 			console.error("Failed to refresh user data:", error);
+			throw error;
 		}
-		return null;
 	};
 
 	const logout = async () => {
@@ -251,10 +242,5 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	);
 }
 
-export const useAuth = () => {
-	const context = useContext(AuthContext);
-	if (!context) {
-		throw new Error("useAuth must be used within an AuthProvider");
-	}
-	return context;
-};
+// Export the useAuth hook
+export { useAuth } from "@/hooks/useAuth";

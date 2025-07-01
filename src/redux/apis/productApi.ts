@@ -1,10 +1,10 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { axiosBaseQuery } from "@/lib/axiosBaseQuery";
+import type { InsuranceType } from "@/types/insurance";
 import type {
 	CreateInsuranceProductPayload,
 	InsuranceProduct,
 } from "@/types/product";
-import type { InsuranceType } from "@/types/quotation";
 
 export interface UpdateProductPayload
 	extends Partial<CreateInsuranceProductPayload> {
@@ -74,7 +74,7 @@ export const productApi = createApi({
 			query: ({ id, ...payload }: UpdateProductPayload) => ({
 				url: `/insurance_products/${id}`,
 				method: "PUT",
-				data: payload,
+				data: { payload },
 			}),
 			invalidatesTags: (_result, _error, { id }) => [{ type: "Product", id }],
 		}),

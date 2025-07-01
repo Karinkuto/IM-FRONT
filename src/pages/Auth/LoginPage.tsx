@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { defaultRoleRedirects } from "@/config/routes";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function LoginPage() {
 	const [email, setEmail] = useState("");
@@ -26,7 +27,11 @@ export default function LoginPage() {
 		try {
 			await login({ email, password });
 		} catch (error: unknown) {
-			// Error toast is handled within AuthContext's login function
+			const errorMessage =
+				error instanceof Error
+					? error.message
+					: "Invalid credentials. Please try again.";
+			toast.error(errorMessage);
 		}
 	};
 

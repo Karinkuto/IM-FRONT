@@ -1,6 +1,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
-import { type FieldValues, type UseFormReturn, useForm } from "react-hook-form";
+import {
+	type DefaultValues,
+	type FieldValues,
+	type UseFormReturn,
+	useForm,
+} from "react-hook-form";
 import type { ZodSchema } from "zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -48,7 +53,7 @@ export function FormModal<T extends FieldValues>({
 }: FormModalProps<T>) {
 	const form = useForm<T>({
 		resolver: zodResolver(validationSchema as ZodSchema<T>),
-		defaultValues: initialValues as T,
+		defaultValues: initialValues as DefaultValues<T>,
 		mode: "onChange",
 	});
 
@@ -83,7 +88,7 @@ export function FormModal<T extends FieldValues>({
 										: "col-span-12"
 								}
 							>
-								{renderFields(form)}
+								{renderFields(form as UseFormReturn<T>)}
 								{showFooter && (
 									<DialogFooter className="mt-6">
 										<Button

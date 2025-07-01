@@ -111,14 +111,15 @@ export const ProductDialog = ({
 
 	// Unified submit handler
 	const handleSubmit = async (values: ProductFormValues) => {
-		// Prepare payload for backend
-		const payload = {
-			name: values.name,
-			description: values.description,
-			estimated_price: Number.parseFloat(values.pricing),
-			coverage_type_id: values.coverageType,
-		};
 		try {
+			// Prepare payload for backend
+			const payload = {
+				name: values.name,
+				description: values.description,
+				estimated_price: Number.parseFloat(values.pricing),
+				coverage_type_id: values.coverageType,
+			};
+
 			await onSubmit(
 				mode === "edit" && product
 					? { ...product, ...payload }
@@ -130,8 +131,16 @@ export const ProductDialog = ({
 							pricing: Number.parseFloat(values.pricing),
 						},
 			);
-			toast.success("Product saved successfully!");
-			onOpenChange(false); // Close dialog
+
+			const successMessage =
+				mode === "edit"
+					? "Product updated successfully!"
+					: "Product created successfully!";
+
+			toast.success(successMessage);
+			onOpenChange(false);
+
+			// Reset form values
 			setInitialValues({
 				name: "",
 				insuranceType: "",
@@ -139,11 +148,16 @@ export const ProductDialog = ({
 				description: "",
 				pricing: "",
 			});
+
 			if (formInstanceRef.current) {
 				formInstanceRef.current.reset();
 			}
-		} catch {
-			toast.error("Failed to save product.");
+		} catch (_error) {
+			const errorMessage =
+				mode === "edit"
+					? "Failed to update product"
+					: "Failed to create product";
+			toast.error(errorMessage);
 		}
 	};
 
@@ -264,12 +278,13 @@ export const ProductDialog = ({
 										control={form.control}
 										name="coverageType"
 										render={({ field }) => {
-											const coverageTypeOptions = selectedInsuranceType
-												? selectedInsuranceType.coverage_types.map((ct) => ({
-														value: String(ct.id),
-														label: ct.name,
-													}))
-												: [];
+											const coverageTypeOptions =
+												selectedInsuranceType?.coverage_types
+													? selectedInsuranceType.coverage_types.map((ct) => ({
+															value: String(ct.id),
+															label: "name" in ct ? ct.name : "Unknown",
+														}))
+													: [];
 											return (
 												<FormItem>
 													<FormLabel>Coverage Type</FormLabel>

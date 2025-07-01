@@ -1,6 +1,7 @@
 import { PlusCircle } from "lucide-react";
 import type React from "react";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import { ProductDialog } from "@/components/insurer-components/products/modals/ProductDialog";
 import { ProductsTable } from "@/components/insurer-components/products/ProductsTable";
 import { Button } from "@/components/ui/button";
@@ -51,15 +52,15 @@ const AdminProducts: React.FC = () => {
 			await createProduct(payload).unwrap();
 			setIsCreateDialogOpen(false);
 			refetch();
-		} catch (err) {
-			// handle error (show toast, etc)
-			console.error("Failed to create product:", err);
+		} catch {
+			toast.error("Failed to create product");
 		}
 	};
 
 	// Add mapping function
-	function mapInsuranceProductToProduct(p: InsuranceProduct): Product {
-		console.log("[MAP] Raw InsuranceProduct:", p);
+	function mapInsuranceProductToProduct(
+		p: InsuranceProduct,
+	): Product & { status?: string; customer_rating?: number | null } {
 		return {
 			id: p.id,
 			name: p.name,
@@ -68,7 +69,9 @@ const AdminProducts: React.FC = () => {
 				: "",
 			coverageType: p.coverage_type?.id ? String(p.coverage_type.id) : "",
 			description: p.description || "",
-			pricing: Number(p.estimated_price) || "",
+			pricing: Number(p.estimated_price) || 0, // Ensure pricing is always a number
+			status: p.status,
+			customer_rating: p.customer_rating,
 		};
 	}
 
@@ -82,25 +85,36 @@ const AdminProducts: React.FC = () => {
 	};
 
 	const handleProductUpdate = async (
-		product: Product | Omit<Product, "id">,
+		product:
+			| (Product & { status?: string; customer_rating?: number | null })
+			| Omit<Product, "id">,
 	) => {
 		// If product has no id, do nothing (should not happen in edit mode)
 		if (!("id" in product)) return;
+
+		// Find the original product data to get the status and rating
+		const originalProduct = data?.data.find((p) => p.id === product.id);
+
 		const payload = {
 			id: product.id,
 			name: product.name,
 			description: product.description,
 			estimated_price: Number(product.pricing),
-			customer_rating: 0, // or the correct value if available
-			status: "active", // or the correct value if available
+			// Use the original product's status and rating, or fallback to defaults
+			status: product.status || originalProduct?.status || "draft",
+			// Convert null to undefined to match the API's expected type
+			customer_rating:
+				(product.customer_rating ?? originalProduct?.customer_rating ?? 0) ||
+				undefined,
 			coverage_type_id: product.coverageType,
 		};
+
 		try {
 			await updateProduct(payload).unwrap();
 			refetch();
 			setIsEditDialogOpen(false);
-		} catch (err) {
-			console.error("Failed to update product:", err);
+		} catch {
+			toast.error("Failed to update product");
 		}
 	};
 
@@ -108,9 +122,8 @@ const AdminProducts: React.FC = () => {
 		try {
 			await deleteProduct(productId).unwrap();
 			refetch();
-		} catch (err) {
-			// handle error (show toast, etc)
-			console.error("Failed to delete product:", err);
+		} catch {
+			toast.error("Failed to delete product");
 		}
 	};
 
@@ -122,11 +135,17 @@ const AdminProducts: React.FC = () => {
 			{ coverageTypeName: string; insuranceTypeName: string }
 		> = {};
 		for (const insuranceType of insuranceTypesData.data) {
-			for (const coverageType of insuranceType.coverage_types) {
-				map[coverageType.id] = {
-					coverageTypeName: coverageType.name,
-					insuranceTypeName: insuranceType.name,
-				};
+			if (insuranceType.coverage_types) {
+				for (const coverageType of insuranceType.coverage_types) {
+					const coverageTypeId =
+						"id" in coverageType ? coverageType.id : String(coverageType);
+					const coverageTypeName =
+						"name" in coverageType ? coverageType.name : "Unknown";
+					map[coverageTypeId] = {
+						coverageTypeName,
+						insuranceTypeName: insuranceType.name,
+					};
+				}
 			}
 		}
 		return map;
@@ -140,11 +159,24 @@ const AdminProducts: React.FC = () => {
 		return (
 			<div className="flex justify-center items-center h-full min-h-[calc(100vh-80px)] text-red-500">
 				<p className="text-lg font-medium">
-					Error:{" "}
-					{"status" in (error || insuranceTypesError)
-						? (error as { status?: string })?.status ||
-							(insuranceTypesError as { status?: string })?.status
-						: "Unknown error"}
+					{(() => {
+						const getErrorStatus = (err: unknown) => {
+							if (err && typeof err === "object") {
+								const status = (err as { status?: unknown }).status;
+								if (status !== null && status !== undefined) {
+									return String(status);
+								}
+							}
+							return null;
+						};
+
+						const errorStatus = error ? getErrorStatus(error) : null;
+						const insuranceErrorStatus = insuranceTypesError
+							? getErrorStatus(insuranceTypesError)
+							: null;
+
+						return `Error: ${errorStatus || insuranceErrorStatus || "Unknown error"}`;
+					})()}
 				</p>
 			</div>
 		);

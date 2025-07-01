@@ -4,7 +4,7 @@ import {
 	VALID_ROLES,
 	type ValidRole,
 } from "@/config/routes";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { DashboardLayout } from "./DashboardLayout";
 
 export function RoleLayout() {

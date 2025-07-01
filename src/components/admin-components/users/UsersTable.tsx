@@ -30,8 +30,8 @@ export default function UsersTable() {
 	const [openEditUser, setOpenEditUser] = useState(false);
 	const [editUserInitial, setEditUserInitial] = useState<any>(null);
 	const [editUserId, setEditUserId] = useState<string | number | null>(null);
-	const [createUser, { isLoading: isCreating }] = useCreateUserMutation();
-	const [updateUser, { isLoading: isUpdating }] = useUpdateUserMutation();
+	const [createUser] = useCreateUserMutation();
+	const [updateUser] = useUpdateUserMutation();
 	const [formError, setFormError] = useState<string | null>(null);
 
 	const handleAddUser = async (values: any) => {

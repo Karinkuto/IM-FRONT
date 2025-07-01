@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/sidebar";
 import { footerNavigation, navigationData } from "@/config/navigation"; // Added footerNavigation back
 import type { ValidRole } from "@/config/routes";
-import { useAuth } from "@/context/AuthContext"; // Import useAuth hook
+import { useAuth } from "@/hooks/useAuth";
 import { useGetInsurerQuery } from "@/redux/apis/insurerApi";
 
 interface AppSidebarProps {
@@ -50,11 +50,9 @@ function AppSidebar({
 	const navigate = useNavigate();
 
 	// Fetch live insurer data for logo_url if user is insurer
-	let insurerId: string | number | undefined;
-	if (user?.role === "insurer" && user.insurer?.id) {
-		insurerId = user.insurer.id;
-	}
-	const { data: liveInsurer } = useGetInsurerQuery(insurerId!, {
+	const insurerId =
+		user?.insurer && "id" in user.insurer ? String(user.insurer.id) : undefined;
+	const { data: liveInsurer } = useGetInsurerQuery(insurerId || "", {
 		skip: !insurerId,
 	});
 

@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { Form } from "@/components/ui/form";
 import Stepper, { Step } from "@/components/ui/stepper";
 import type { ValidRole } from "@/config/routes";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { useChangePasswordMutation } from "@/redux/apis/authApi";
 import { useOnboardInsurerMutation } from "@/redux/apis/insurerApi";
 import { useGetUserByIdQuery } from "@/redux/apis/userApi";
@@ -51,20 +51,56 @@ const onboardingSteps = [
 ];
 
 // Utility function to map user.ts User to auth.ts User
-function mapUserToAuthUser(
+const mapUserToAuthUser = (
 	user: import("@/types/user").User,
-): import("@/types/auth").User {
+): import("@/types/auth").User => {
+	// Helper function to normalize roles to the expected format
+	const normalizeRoles = (
+		roles: unknown,
+	): { id: number; name: "admin" | "customer" | "insurer" }[] | undefined => {
+		if (!roles) return undefined;
+
+		if (Array.isArray(roles)) {
+			return roles.map((role) => {
+				if (typeof role === "string") {
+					return {
+						id: 0, // Default ID for string roles
+						name: role as "admin" | "customer" | "insurer",
+					};
+				} else if (role && typeof role === "object" && "name" in role) {
+					return {
+						id: "id" in role ? Number(role.id) : 0,
+						name: String(role.name) as "admin" | "customer" | "insurer",
+					};
+				}
+				return { id: 0, name: "customer" as const }; // Default fallback
+			});
+		}
+		return undefined;
+	};
+
+	// Determine the user's role
+	const determineRole = (): "admin" | "customer" | "insurer" => {
+		if (user.role) return user.role;
+		if (user.roles && user.roles.length > 0) {
+			const firstRole = Array.isArray(user.roles) ? user.roles[0] : null;
+			if (firstRole) {
+				if (typeof firstRole === "string")
+					return firstRole as "admin" | "customer" | "insurer";
+				if (firstRole.name)
+					return firstRole.name as "admin" | "customer" | "insurer";
+			}
+		}
+		return "customer"; // Default role
+	};
+
 	return {
-		id: String(user.id),
-		role: (user.role ?? "customer") as "admin" | "customer" | "insurer",
-		name: user.name,
+		id: user.id.toString(),
+		role: determineRole(),
 		email: user.email,
-		phone_number: user.phone_number ?? undefined,
-		fin: user.fin ?? undefined,
-		temporary_password:
-			typeof user.temporary_password === "boolean"
-				? user.temporary_password
-				: undefined,
+		phone_number: user.phone_number || undefined,
+		fin: user.fin || undefined,
+		temporary_password: !!user.temporary_password,
 		customer: user.customer
 			? {
 					first_name: user.customer.first_name,
@@ -73,14 +109,9 @@ function mapUserToAuthUser(
 				}
 			: undefined,
 		insurer: user.insurer ? { name: user.insurer.name } : undefined,
-		roles: Array.isArray(user.roles)
-			? user.roles.map((r: any) => ({
-					id: r.id,
-					name: r.name as "admin" | "customer" | "insurer",
-				}))
-			: undefined,
+		roles: normalizeRoles(user.roles),
 	};
-}
+};
 
 export function InsurerOnboarding({
 	role,
