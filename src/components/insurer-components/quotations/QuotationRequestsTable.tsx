@@ -2,11 +2,10 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { CheckCircle, Eye, MoreHorizontal, XCircle } from "lucide-react";
 import type { FC } from "react";
 import { useState } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
-import { Dialog } from "@/components/ui/dialog";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -20,9 +19,9 @@ import QuotationDetailsDialog from "./modals/QuotationDetailsDialog.tsx";
 
 export interface QuotationRequestsTableProps {
 	quotations: QuotationRequest[];
-	onViewDetails?: (quotationId: string) => void;
+	onViewDetails?: (quotationId: number) => void;
 	onStatusChange: (
-		id: string,
+		id: number,
 		newStatus: QuotationStatus,
 	) => void | Promise<void>;
 	toolbarActionsPrefix?: React.ReactNode;
@@ -30,97 +29,155 @@ export interface QuotationRequestsTableProps {
 
 export const QuotationRequestsTable: FC<QuotationRequestsTableProps> = ({
 	quotations,
-	onStatusChange,
+	onStatusChange: onStatusChangeProp,
 	toolbarActionsPrefix,
 }) => {
-	const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
-	const [selectedQuotationId, setSelectedQuotationId] = useState<string | null>(
+	const [selectedQuotationId, setSelectedQuotationId] = useState<number | null>(
 		null,
 	);
 
-	const onViewDetails = (quotationId: string) => {
-		setSelectedQuotationId(quotationId);
-		setIsDetailsDialogOpen(true);
+	const onViewDetails = (id: string | number) => {
+		setSelectedQuotationId(Number(id));
 	};
 
-	// Helper to get full name from customer
-	const getCustomerFullName = (customer?: {
-		first_name: string;
-		middle_name: string;
-		last_name: string;
-	}) => {
-		if (!customer) return "-";
-		return [customer.first_name, customer.middle_name, customer.last_name]
-			.filter(Boolean)
-			.join(" ");
+	// Handle status change with string ID for DataTable compatibility
+	const handleStatusChange = (id: string, status: QuotationStatus) => {
+		return onStatusChangeProp(Number(id), status);
 	};
 
-	const columns: ColumnDef<QuotationRequest>[] = [
+	// Prepare meta object for DataTable with proper typing
+	const meta = {
+		onViewDetails: (id: string) => onViewDetails(id),
+		onStatusChange: (id: string, status: QuotationStatus) =>
+			handleStatusChange(id, status),
+	} as const;
+
+	const columns: ColumnDef<QuotationRequest, unknown>[] = [
 		{
-			id: "customerAvatar",
-			header: "",
-			cell: ({ row }) => {
-				const customer = row.original.user.customer;
-				const fullName = customer
-					? [customer.first_name, customer.middle_name, customer.last_name]
-							.filter(Boolean)
-							.join(" ")
-					: "-";
-				const avatarUrl = customer?.avatar;
+			id: "user",
+			accessorFn: (row) => row.user.customer.full_name,
+			header: "User",
+			cell: ({
+				row: {
+					original: {
+						user: { customer, phone_number },
+					},
+				},
+			}) => {
+				const fullName = [
+					customer.first_name,
+					customer.middle_name,
+					customer.last_name,
+				]
+					.filter(Boolean)
+					.join(" ");
 				const initials = fullName
 					.split(" ")
 					.map((n) => n[0])
 					.join("")
-					.toUpperCase()
-					.slice(0, 2);
+					.toUpperCase();
+
 				return (
-					<Avatar className="h-9 w-9 mr-2 rounded-md">
-						{avatarUrl ? (
-							<AvatarImage src={avatarUrl} alt={fullName} />
-						) : (
+					<div className="flex items-center gap-2">
+						<Avatar className="h-10 w-10 rounded-md">
 							<AvatarFallback>{initials}</AvatarFallback>
-						)}
-					</Avatar>
+						</Avatar>
+						<div className="flex flex-col">
+							<span className="font-medium">{fullName}</span>
+							<span className="text-sm text-muted-foreground">
+								{phone_number}
+							</span>
+						</div>
+					</div>
 				);
 			},
-			enableSorting: false,
-			enableHiding: false,
 		},
 		{
-			id: "customerFullName",
-			header: "Full Name",
-			accessorFn: (row) => getCustomerFullName(row.user.customer),
+			id: "requestType",
+			accessorFn: (row) => row.request_summary.request_type,
+			header: "Request Type",
 			cell: ({ row }) => (
-				<div className="font-medium">
-					{getCustomerFullName(row.original.user.customer)}
-				</div>
+				<Badge variant="outline">
+					{row.original.request_summary.request_type}
+				</Badge>
 			),
 		},
 		{
-			id: "userPhoneNumber",
-			header: "Phone Number",
-			accessorFn: (row) => row.user.phone_number,
-			cell: ({ row }) => (
-				<div className="font-mono">{row.original.user.phone_number}</div>
-			),
-		},
-		{
-			id: "insuranceProduct",
-			header: "Insurance Product",
-			accessorFn: (row) => row.insurance_product?.name ?? "-",
+			id: "vehicle",
+			header: "Vehicle",
 			cell: ({ row }) => {
-				const product = row.original.insurance_product;
-				const insuranceType =
-					row.original.insurance_product?.coverage_type?.insurance_type?.name;
-				const coverageType = row.original.coverage_type?.name;
+				const entity = row.original.insured_entity.entity;
 				return (
-					<div>
-						<div className="font-semibold">{product?.name ?? "-"}</div>
-						{insuranceType && coverageType && (
-							<div className="text-xs text-muted-foreground mt-0.5">
-								{insuranceType} - {coverageType}
-							</div>
-						)}
+					<div className="flex flex-col">
+						<span className="font-medium">
+							{entity.make} {entity.model} ({entity.year_of_manufacture})
+						</span>
+						<span className="text-sm text-muted-foreground font-mono">
+							{entity.plate_number}
+						</span>
+					</div>
+				);
+			},
+		},
+		{
+			id: "estimatedValue",
+			header: "Estimated Value",
+			cell: ({ row }) => {
+				const value = parseFloat(row.original.request_summary.estimated_value);
+				return <div className="font-medium">ETB {value.toLocaleString()}</div>;
+			},
+		},
+		{
+			id: "insurer",
+			accessorFn: (row) => row.insurance_product.insurer.name,
+			header: "Insurer",
+			cell: ({ row }) => {
+				const insurer = row.original.insurance_product.insurer;
+				return (
+					<div className="flex flex-col">
+						<span className="font-medium">{insurer.name}</span>
+						<span className="text-sm text-muted-foreground">
+							ETB{" "}
+							{parseFloat(
+								row.original.insurance_product.estimated_price,
+							).toLocaleString()}
+						</span>
+					</div>
+				);
+			},
+		},
+		{
+			id: "riskProfile",
+			accessorFn: (row) => row.request_summary.user_risk_profile.total_entities,
+			header: "Risk Profile",
+			cell: ({ row }) => {
+				const riskProfile = row.original.request_summary.user_risk_profile;
+				return (
+					<div className="flex flex-col text-sm">
+						<span>Entities: {riskProfile.total_entities}</span>
+						<span>Policies: {riskProfile.total_policies}</span>
+						<span
+							className={
+								riskProfile.verified_status ? "text-green-600" : "text-red-600"
+							}
+						>
+							{riskProfile.verified_status ? "Verified" : "Unverified"}
+						</span>
+					</div>
+				);
+			},
+		},
+		{
+			id: "requestAge",
+			accessorFn: (row) => row.request_summary.request_age_days,
+			header: "Age",
+			cell: ({ row }) => {
+				const ageDays = row.original.request_summary.request_age_days;
+				return (
+					<div className="text-sm">
+						{ageDays === 0
+							? "Today"
+							: `${ageDays} day${ageDays > 1 ? "s" : ""}`}
 					</div>
 				);
 			},
@@ -152,7 +209,10 @@ export const QuotationRequestsTable: FC<QuotationRequestsTableProps> = ({
 				const quotation = row.original;
 				const { onViewDetails, onStatusChange } = table.options.meta as {
 					onViewDetails: (id: string) => void;
-					onStatusChange: (id: string, status: QuotationStatus) => void;
+					onStatusChange: (
+						id: string,
+						status: QuotationStatus,
+					) => void | Promise<void>;
 				};
 
 				return (
@@ -166,7 +226,9 @@ export const QuotationRequestsTable: FC<QuotationRequestsTableProps> = ({
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align="end">
 								<DropdownMenuLabel>Actions</DropdownMenuLabel>
-								<DropdownMenuItem onClick={() => onViewDetails(quotation.id)}>
+								<DropdownMenuItem
+									onClick={() => onViewDetails(quotation.id.toString())}
+								>
 									<Eye className="mr-2 h-4 w-4" />
 									View Details
 								</DropdownMenuItem>
@@ -174,14 +236,18 @@ export const QuotationRequestsTable: FC<QuotationRequestsTableProps> = ({
 								{quotation.status === "pending" && (
 									<>
 										<DropdownMenuItem
-											onClick={() => onStatusChange(quotation.id, "approved")}
+											onClick={() =>
+												onStatusChange(quotation.id.toString(), "approved")
+											}
 											className="text-green-600"
 										>
 											<CheckCircle className="mr-2 h-4 w-4" />
 											Approve
 										</DropdownMenuItem>
 										<DropdownMenuItem
-											onClick={() => onStatusChange(quotation.id, "rejected")}
+											onClick={() =>
+												onStatusChange(quotation.id.toString(), "rejected")
+											}
 											className="text-red-600"
 										>
 											<XCircle className="mr-2 h-4 w-4" />
@@ -198,22 +264,16 @@ export const QuotationRequestsTable: FC<QuotationRequestsTableProps> = ({
 	];
 
 	return (
-		<>
-			<DataTable
-				columns={columns}
-				data={quotations}
-				toolbarActionsPrefix={toolbarActionsPrefix}
-				meta={{
-					onViewDetails,
-					onStatusChange,
-				}}
-			/>
-			<Dialog open={isDetailsDialogOpen} onOpenChange={setIsDetailsDialogOpen}>
-				{/* DialogTrigger is not needed here as we are controlling the open state programmatically */}
-				{selectedQuotationId && (
-					<QuotationDetailsDialog quotationId={selectedQuotationId} />
-				)}
-			</Dialog>
-		</>
+		<div className="space-y-4">
+			<div className="flex flex-col gap-4">
+				<DataTable toolbarActionsPrefix={toolbarActionsPrefix} columns={columns} data={quotations} meta={meta} />
+			</div>
+
+			{selectedQuotationId !== null && (
+				<QuotationDetailsDialog
+					quotationId={selectedQuotationId.toString()}
+				/>
+			)}
+		</div>
 	);
 };

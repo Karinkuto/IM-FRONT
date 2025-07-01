@@ -50,7 +50,7 @@ function AppSidebar({
 	const navigate = useNavigate();
 
 	// Fetch live insurer data for logo_url if user is insurer
-	let insurerId: string | number | undefined = undefined;
+	let insurerId: string | number | undefined;
 	if (user?.role === "insurer" && user.insurer?.id) {
 		insurerId = user.insurer.id;
 	}

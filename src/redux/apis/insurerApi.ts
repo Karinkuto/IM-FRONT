@@ -31,7 +31,7 @@ export const insurerApi = createApi({
 				method: "GET",
 			}),
 			transformResponse: (response: any) => response.data,
-			providesTags: (result, error, id) => [{ type: TAG_TYPES.Insurer, id }],
+			providesTags: (_, __, id) => [{ type: TAG_TYPES.Insurer, id }],
 		}),
 		patchInsurer: builder.mutation<
 			Insurer,
@@ -46,9 +46,7 @@ export const insurerApi = createApi({
 				},
 			}),
 			transformResponse: (response: any) => response.data,
-			invalidatesTags: (result, error, { id }) => [
-				{ type: TAG_TYPES.Insurer, id },
-			],
+			invalidatesTags: (_, __, { id }) => [{ type: TAG_TYPES.Insurer, id }],
 		}),
 	}),
 });

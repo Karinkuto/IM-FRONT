@@ -29,7 +29,7 @@ export default function QuotationDetailsDialog({
 		data: responseData,
 		isLoading,
 		error,
-	} = useGetQuotationRequestByIdQuery(quotationId);
+	} = useGetQuotationRequestByIdQuery(Number(quotationId));
 
 	// The `useGetQuotationRequestByIdQuery` hook returns `QuotationRequest` directly.
 	const quotation = responseData;
@@ -59,41 +59,13 @@ export default function QuotationDetailsDialog({
 				{/* Left: Images stacked vertically */}
 				<div className="flex-shrink-0 bg-muted flex flex-col items-center justify-start max-w-[380px] min-w-[320px] w-fit overflow-y-auto border-r p-4">
 					<VehicleImages
-						frontViewPhotoUrl={
-							quotation.vehicle?.photos?.front_view_photo_url ??
-							quotation.vehicle?.front_view_photo_url ??
-							null
-						}
-						backViewPhotoUrl={
-							quotation.vehicle?.photos?.back_view_photo_url ??
-							quotation.vehicle?.back_view_photo_url ??
-							null
-						}
-						leftViewPhotoUrl={
-							quotation.vehicle?.photos?.left_view_photo_url ??
-							quotation.vehicle?.left_view_photo_url ??
-							null
-						}
-						rightViewPhotoUrl={
-							quotation.vehicle?.photos?.right_view_photo_url ??
-							quotation.vehicle?.right_view_photo_url ??
-							null
-						}
-						enginePhotoUrl={
-							quotation.vehicle?.photos?.engine_photo_url ??
-							quotation.vehicle?.engine_photo_url ??
-							null
-						}
-						chassisNumberPhotoUrl={
-							quotation.vehicle?.photos?.chassis_number_photo_url ??
-							quotation.vehicle?.chassis_number_photo_url ??
-							null
-						}
-						librePhotoUrl={
-							quotation.vehicle?.photos?.libre_photo_url ??
-							quotation.vehicle?.libre_photo_url ??
-							null
-						}
+						frontViewPhotoUrl={quotation.insured_entity_data?.front_view_photo_url ?? null}
+						backViewPhotoUrl={quotation.insured_entity_data?.back_view_photo_url ?? null}
+						leftViewPhotoUrl={quotation.insured_entity_data?.left_view_photo_url ?? null}
+						rightViewPhotoUrl={quotation.insured_entity_data?.right_view_photo_url ?? null}
+						enginePhotoUrl={quotation.insured_entity_data?.engine_photo_url ?? null}
+						chassisNumberPhotoUrl={quotation.insured_entity_data?.chassis_number_photo_url ?? null}
+						librePhotoUrl={quotation.insured_entity_data?.libre_photo_url ?? null}
 						stacked
 					/>
 				</div>

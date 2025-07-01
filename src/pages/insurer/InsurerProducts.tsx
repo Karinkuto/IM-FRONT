@@ -43,7 +43,7 @@ const AdminProducts: React.FC = () => {
 			const payload: CreateInsuranceProductPayload = {
 				name: newProduct.name,
 				description: newProduct.description || "",
-				estimated_price: newProduct.pricing || "0",
+				estimated_price: Number(newProduct.pricing) || 0,
 				customer_rating: 0, // Default value
 				status: "active", // Default value
 				coverage_type_id: newProduct.coverageType || "",
@@ -68,7 +68,7 @@ const AdminProducts: React.FC = () => {
 				: "",
 			coverageType: p.coverage_type?.id ? String(p.coverage_type.id) : "",
 			description: p.description || "",
-			pricing: p.estimated_price || "",
+			pricing: Number(p.estimated_price) || "",
 		};
 	}
 
@@ -82,17 +82,24 @@ const AdminProducts: React.FC = () => {
 	};
 
 	const handleProductUpdate = async (
-		updatedProduct: Partial<InsuranceProduct> & { id: string },
+		product: Product | Omit<Product, "id">,
 	) => {
+		// If product has no id, do nothing (should not happen in edit mode)
+		if (!("id" in product)) return;
+		const payload = {
+			id: product.id,
+			name: product.name,
+			description: product.description,
+			estimated_price: Number(product.pricing),
+			customer_rating: 0, // or the correct value if available
+			status: "active", // or the correct value if available
+			coverage_type_id: product.coverageType,
+		};
 		try {
-			const { id, ...payload } = updatedProduct;
-			await updateProduct({
-				id,
-				...payload,
-			}).unwrap();
+			await updateProduct(payload).unwrap();
 			refetch();
+			setIsEditDialogOpen(false);
 		} catch (err) {
-			// handle error (show toast, etc)
 			console.error("Failed to update product:", err);
 		}
 	};

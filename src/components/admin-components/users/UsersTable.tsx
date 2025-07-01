@@ -1,24 +1,9 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import { CheckCircle2, Info, Pencil, XCircle, ZapIcon } from "lucide-react";
+import { CheckCircle2, Pencil, XCircle } from "lucide-react";
 import { useState } from "react";
-import type { UseFormReturn } from "react-hook-form";
-import * as z from "zod";
-import { SmartForm, SmartFormField } from "@/components/smart-form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Combobox } from "@/components/ui/combobox";
 import { DataTable } from "@/components/ui/data-table";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { FormModal } from "@/components/ui/FormModal";
-import {
-	FormControl,
-	FormField,
-	FormItem,
-	FormLabel,
-	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import {
 	useCreateUserMutation,
 	useGetUsersQuery,
@@ -49,7 +34,7 @@ export default function UsersTable() {
 	const [updateUser, { isLoading: isUpdating }] = useUpdateUserMutation();
 	const [formError, setFormError] = useState<string | null>(null);
 
-	const handleAddUser = async (values: UserFormValues) => {
+	const handleAddUser = async (values: any) => {
 		setFormError(null);
 		try {
 			await createUser({
@@ -197,14 +182,12 @@ export default function UsersTable() {
 				open={openAddUser}
 				onOpenChange={setOpenAddUser}
 				onSubmit={handleAddUser}
-				isLoading={isCreating}
 				mode="create"
 			/>
 			<UserDialog
 				open={openEditUser}
 				onOpenChange={setOpenEditUser}
 				onSubmit={handleUpdateUser}
-				isLoading={isUpdating}
 				mode="edit"
 				initialValues={editUserInitial}
 			/>

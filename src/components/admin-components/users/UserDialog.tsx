@@ -17,7 +17,6 @@ interface UserDialogProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	onSubmit: (values: UserFormValues) => Promise<any>;
-	isLoading?: boolean;
 	mode?: Mode;
 	initialValues?: Partial<UserFormValues>;
 	userId?: string | number;
@@ -27,7 +26,6 @@ export default function UserDialog({
 	open,
 	onOpenChange,
 	onSubmit,
-	isLoading,
 	mode = "create",
 	initialValues,
 }: UserDialogProps) {

@@ -50,6 +50,38 @@ const onboardingSteps = [
 	{ text: "Finalizing setup..." },
 ];
 
+// Utility function to map user.ts User to auth.ts User
+function mapUserToAuthUser(
+	user: import("@/types/user").User,
+): import("@/types/auth").User {
+	return {
+		id: String(user.id),
+		role: (user.role ?? "customer") as "admin" | "customer" | "insurer",
+		name: user.name,
+		email: user.email,
+		phone_number: user.phone_number ?? undefined,
+		fin: user.fin ?? undefined,
+		temporary_password:
+			typeof user.temporary_password === "boolean"
+				? user.temporary_password
+				: undefined,
+		customer: user.customer
+			? {
+					first_name: user.customer.first_name,
+					middle_name: user.customer.middle_name,
+					last_name: user.customer.last_name,
+				}
+			: undefined,
+		insurer: user.insurer ? { name: user.insurer.name } : undefined,
+		roles: Array.isArray(user.roles)
+			? user.roles.map((r: any) => ({
+					id: r.id,
+					name: r.name as "admin" | "customer" | "insurer",
+				}))
+			: undefined,
+	};
+}
+
 export function InsurerOnboarding({
 	role,
 	isTemporaryPassword,
@@ -201,7 +233,7 @@ export function InsurerOnboarding({
 				dispatch(
 					setCredentials({
 						access_token: currentAccessToken,
-						user: updatedUserResponse,
+						user: mapUserToAuthUser(updatedUserResponse),
 					}),
 				);
 

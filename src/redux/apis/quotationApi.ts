@@ -1,9 +1,6 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { axiosBaseQuery } from "@/lib/axiosBaseQuery";
-import type {
-	CreateQuotationRequestPayload,
-	QuotationRequest,
-} from "@/types/quotation";
+import type { QuotationRequest } from "@/types/quotation";
 
 interface QuotationsResponse {
 	data: QuotationRequest[];
@@ -49,7 +46,7 @@ export const quotationApi = createApi({
 			}),
 			providesTags: ["Quotation"],
 		}),
-		getQuotationRequestById: builder.query<QuotationRequest, string>({
+		getQuotationRequestById: builder.query<QuotationRequest, number>({
 			query: (id) => ({
 				url: `/quotation_requests/${id}`,
 				method: "GET",
@@ -62,7 +59,7 @@ export const quotationApi = createApi({
 		}),
 		updateQuotationRequest: builder.mutation<
 			QuotationRequest,
-			{ id: string; payload: Partial<CreateQuotationRequestPayload> }
+			{ id: number; payload: Partial<QuotationRequest> }
 		>({
 			query: ({ id, payload }) => ({
 				url: `/quotation_requests/${id}`,
@@ -71,7 +68,7 @@ export const quotationApi = createApi({
 			}),
 			invalidatesTags: (_result, _error, { id }) => [{ type: "Quotation", id }],
 		}),
-		deleteQuotationRequest: builder.mutation<void, string>({
+		deleteQuotationRequest: builder.mutation<void, number>({
 			query: (id) => ({
 				url: `/quotation_requests/${id}`,
 				method: "DELETE",

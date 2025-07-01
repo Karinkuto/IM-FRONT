@@ -178,15 +178,6 @@ export function ProfileSettings() {
 	});
 
 	// Mutation function for SmartForm
-	function mapNullsToUndefined<T extends Record<string, any>>(obj: T): T {
-		const mapped: Record<string, any> = {};
-		for (const key in obj) {
-			if (obj[key] === null) mapped[key] = undefined;
-			else mapped[key] = obj[key];
-		}
-		return mapped as T;
-	}
-
 	const mutationFn = async (data: any) => {
 		if (!insurer) return;
 		const allowedKeys = [
@@ -324,21 +315,4 @@ export function ProfileSettings() {
 			)}
 		</div>
 	);
-}
-
-// Helper to convert dataURL to Blob for AvatarUploader preview
-function dataURLtoBlob(dataurl: string): Blob | null {
-	if (!dataurl) return null;
-	const arr = dataurl.split(",");
-	if (arr.length < 2) return null;
-	const mimeMatch = arr[0].match(/:(.*?);/);
-	if (!mimeMatch) return null;
-	const mime = mimeMatch[1];
-	const bstr = atob(arr[1]);
-	let n = bstr.length;
-	const u8arr = new Uint8Array(n);
-	while (n--) {
-		u8arr[n] = bstr.charCodeAt(n);
-	}
-	return new Blob([u8arr], { type: mime });
 }

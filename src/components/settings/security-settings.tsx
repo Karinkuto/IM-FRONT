@@ -1,18 +1,18 @@
 import { z } from "zod";
-import { useChangePasswordMutation } from "@/redux/apis/authApi";
 import {
+	FormSection,
 	SmartForm,
 	SmartFormField,
-	FormSection,
 } from "@/components/smart-form";
+import { PasswordStrengthMeter } from "@/components/strength-meter";
 import {
 	Card,
+	CardDescription,
 	CardHeader,
 	CardTitle,
-	CardDescription,
 } from "@/components/ui/card";
 import { PasswordInput } from "@/components/ui/password-input";
-import { PasswordStrengthMeter } from "@/components/strength-meter";
+import { useChangePasswordMutation } from "@/redux/apis/authApi";
 
 const passwordSchema = z
 	.object({

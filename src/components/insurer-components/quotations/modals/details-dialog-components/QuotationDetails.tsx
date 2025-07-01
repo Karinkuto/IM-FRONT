@@ -1,5 +1,5 @@
 import type React from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Rating } from "@/components/ui/rating";
 import type {
@@ -56,10 +56,6 @@ function AddressInformationCard({ address }: AddressInformationCardProps) {
 				<DescriptionItem
 					label="Kebele"
 					value={address?.kebele ? String(address.kebele) : "-"}
-				/>
-				<DescriptionItem
-					label="House Number"
-					value={address?.house_number ? String(address.house_number) : "-"}
 				/>
 			</div>
 		</div>
@@ -156,7 +152,6 @@ function CustomerProfileCard({ user }: CustomerProfileCardProps) {
 				.filter(Boolean)
 				.join(" ")
 		: "-";
-	const avatarUrl = customer?.avatar;
 	const initials = fullName
 		.split(" ")
 		.map((n) => n[0])
@@ -169,11 +164,7 @@ function CustomerProfileCard({ user }: CustomerProfileCardProps) {
 			{/* Profile Header: Avatar, Name, Status */}
 			<div className="flex flex-col sm:flex-row items-center gap-6 p-6 pb-4">
 				<Avatar className="h-20 w-20 rounded-md border-2 border-primary/20 shadow-sm">
-					{avatarUrl ? (
-						<AvatarImage src={avatarUrl} alt={fullName} />
-					) : (
-						<AvatarFallback className="text-2xl">{initials}</AvatarFallback>
-					)}
+					<AvatarFallback className="text-2xl">{initials}</AvatarFallback>
 				</Avatar>
 				<div className="flex-1 flex flex-col gap-2 mt-4 sm:mt-0 items-center sm:items-start">
 					<div className="flex items-center gap-2">
@@ -214,10 +205,6 @@ function CustomerProfileCard({ user }: CustomerProfileCardProps) {
 						<DescriptionItem label="Region" value={customer.region ?? "-"} />
 						<DescriptionItem label="Subcity" value={customer.subcity ?? "-"} />
 						<DescriptionItem label="Woreda" value={customer.woreda ?? "-"} />
-						<DescriptionItem
-							label="House No."
-							value={customer.house_number ?? "-"}
-						/>
 					</div>
 				</div>
 			)}
