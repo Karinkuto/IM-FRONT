@@ -1,31 +1,31 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import { CheckCircle2, XCircle, ZapIcon, Info, Pencil } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { DataTable } from "@/components/ui/data-table";
-import {
-	useGetUsersQuery,
-	useCreateUserMutation,
-	useUpdateUserMutation,
-} from "@/redux/apis/userApi";
-import type { User } from "@/types/user";
+import { CheckCircle2, Info, Pencil, XCircle, ZapIcon } from "lucide-react";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { FormModal } from "@/components/ui/FormModal";
+import type { UseFormReturn } from "react-hook-form";
 import * as z from "zod";
-import { Combobox } from "@/components/ui/combobox";
-import { Input } from "@/components/ui/input";
+import { SmartForm, SmartFormField } from "@/components/smart-form";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Combobox } from "@/components/ui/combobox";
+import { DataTable } from "@/components/ui/data-table";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { FormModal } from "@/components/ui/FormModal";
 import {
+	FormControl,
 	FormField,
 	FormItem,
 	FormLabel,
-	FormControl,
 	FormMessage,
 } from "@/components/ui/form";
-import type { UseFormReturn } from "react-hook-form";
-import { SmartForm, SmartFormField } from "@/components/smart-form";
+import { Input } from "@/components/ui/input";
+import {
+	useCreateUserMutation,
+	useGetUsersQuery,
+	useUpdateUserMutation,
+} from "@/redux/apis/userApi";
+import type { User } from "@/types/user";
 import UserDialog from "./UserDialog";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 const renderValue = (value: string | null | undefined | string[] | boolean) => {
 	if (

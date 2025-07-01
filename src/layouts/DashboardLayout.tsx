@@ -30,6 +30,7 @@ import {
 import { footerNavigation, navigationData } from "@/config/navigation"; // Added footerNavigation back
 import type { ValidRole } from "@/config/routes";
 import { useAuth } from "@/context/AuthContext"; // Import useAuth hook
+import { useGetInsurerQuery } from "@/redux/apis/insurerApi";
 
 interface AppSidebarProps {
 	role: ValidRole;
@@ -47,6 +48,15 @@ function AppSidebar({
 	currentPath,
 }: AppSidebarProps) {
 	const navigate = useNavigate();
+
+	// Fetch live insurer data for logo_url if user is insurer
+	let insurerId: string | number | undefined = undefined;
+	if (user?.role === "insurer" && user.insurer?.id) {
+		insurerId = user.insurer.id;
+	}
+	const { data: liveInsurer } = useGetInsurerQuery(insurerId!, {
+		skip: !insurerId,
+	});
 
 	const navSections = navigationData[role] || [];
 	// currentPath is now passed as a prop
@@ -147,7 +157,10 @@ function AppSidebar({
 							name: currentUserData.name,
 							email: user?.email || "", // Get email from the user object
 							role: currentUserData.role,
-							avatar: currentUserData.insurer?.logo_url,
+							avatar:
+								user?.role === "insurer"
+									? liveInsurer?.logo_url || currentUserData.insurer?.logo_url
+									: currentUserData.insurer?.logo_url,
 						}}
 					/>
 				)}

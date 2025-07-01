@@ -6,8 +6,9 @@ import type {
 } from "@/types/product";
 import type { InsuranceType } from "@/types/quotation";
 
-export interface UpdateProductPayload extends Partial<CreateInsuranceProductPayload> {
-  id: string;
+export interface UpdateProductPayload
+	extends Partial<CreateInsuranceProductPayload> {
+	id: string;
 }
 
 interface ProductsResponse {
@@ -69,14 +70,8 @@ export const productApi = createApi({
 			}),
 			providesTags: (_result, _error, id) => [{ type: "Product", id }],
 		}),
-		updateProduct: builder.mutation<
-			InsuranceProduct,
-			UpdateProductPayload
-		>({
-			query: ({
-				id,
-				...payload
-			}: UpdateProductPayload) => ({
+		updateProduct: builder.mutation<InsuranceProduct, UpdateProductPayload>({
+			query: ({ id, ...payload }: UpdateProductPayload) => ({
 				url: `/insurance_products/${id}`,
 				method: "PUT",
 				data: payload,

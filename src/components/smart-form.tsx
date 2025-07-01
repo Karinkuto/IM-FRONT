@@ -1,26 +1,17 @@
-import React from "react";
-import {
-	useForm,
-	UseFormReturn,
-	FieldPath,
-	FieldValues,
-} from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { AlertCircle, CheckCircle, Loader2 } from "lucide-react";
+import type React from "react";
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+	type FieldPath,
+	type FieldValues,
+	type UseFormReturn,
+	useForm,
+} from "react-hook-form";
+import type { z } from "zod";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
 	Form,
 	FormControl,
@@ -30,8 +21,18 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/ui/form";
-import { Loader2, CheckCircle, AlertCircle } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { useId } from "react";
 
 export interface FormFieldOption {
 	value: string;
@@ -71,6 +72,7 @@ export interface SmartFormFieldProps<T extends FieldValues = FieldValues> {
 	options?: FormFieldOption[];
 	disabled?: boolean;
 	className?: string;
+	render?: (props: { field: any; id: string }) => React.ReactNode;
 }
 
 export interface FormSectionProps {
@@ -168,8 +170,10 @@ export function SmartFormField<T extends FieldValues>({
 	options = [],
 	disabled,
 	className,
+	render,
 }: SmartFormFieldProps<T>) {
-	const renderField = (field: any) => {
+	const generatedId = useId();
+	const renderField = (field: any, id?: string) => {
 		switch (type) {
 			case "text":
 			case "email":
@@ -181,6 +185,7 @@ export function SmartFormField<T extends FieldValues>({
 						disabled={disabled}
 						{...field}
 						value={field.value || ""}
+						id={id}
 					/>
 				);
 
@@ -301,7 +306,11 @@ export function SmartFormField<T extends FieldValues>({
 				name={name}
 				render={({ field }) => (
 					<FormItem className={cn("space-y-2", className)}>
-						<FormControl>{renderField(field)}</FormControl>
+						<FormControl>
+							{render
+								? render({ field, id: generatedId })
+								: renderField(field, generatedId)}
+						</FormControl>
 						{description && <FormDescription>{description}</FormDescription>}
 						<FormMessage />
 					</FormItem>
@@ -314,14 +323,19 @@ export function SmartFormField<T extends FieldValues>({
 		<FormField
 			control={form.control}
 			name={name}
-			render={({ field }) => (
-				<FormItem className={className}>
-					{label && <FormLabel>{label}</FormLabel>}
-					<FormControl>{renderField(field)}</FormControl>
-					{description && <FormDescription>{description}</FormDescription>}
-					<FormMessage />
-				</FormItem>
-			)}
+			render={({ field }) => {
+				const id = generatedId;
+				return (
+					<FormItem className={className}>
+						{label && <FormLabel htmlFor={id}>{label}</FormLabel>}
+						<FormControl>
+							{render ? render({ field, id }) : renderField(field, id)}
+						</FormControl>
+						{description && <FormDescription>{description}</FormDescription>}
+						<FormMessage />
+					</FormItem>
+				);
+			}}
 		/>
 	);
 }

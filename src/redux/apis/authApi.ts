@@ -133,7 +133,11 @@ export const authApi = createApi({
 		}),
 		changePassword: builder.mutation<
 			void,
-			{ new_password: string; new_password_confirmation: string }
+			{
+				current_password?: string;
+				new_password: string;
+				new_password_confirmation: string;
+			}
 		>({
 			query: (data) => ({
 				url: "/auth/change_password",

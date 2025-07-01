@@ -1,10 +1,4 @@
-import {
-	Columns,
-	LogOut,
-	Settings,
-	ShieldCheck,
-	Users,
-} from "lucide-react";
+import { Columns, LogOut, Settings, ShieldCheck, Users } from "lucide-react";
 
 export type NavItem = {
 	link: string;

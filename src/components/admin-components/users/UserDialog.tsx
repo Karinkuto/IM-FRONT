@@ -1,7 +1,7 @@
 import { Info } from "lucide-react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { SmartForm, SmartFormField } from "@/components/smart-form";
 import * as z from "zod";
+import { SmartForm, SmartFormField } from "@/components/smart-form";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 const userFormSchema = z.object({
 	email: z.string().email("Invalid email address"),

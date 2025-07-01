@@ -2,10 +2,10 @@ import { configureStore } from "@reduxjs/toolkit";
 import type { TypedUseSelectorHook } from "react-redux";
 import { useDispatch, useSelector } from "react-redux";
 import { authApi } from "@/redux/apis/authApi";
+import { insurerApi } from "@/redux/apis/insurerApi";
 import { productApi } from "@/redux/apis/productApi";
 import { quotationApi } from "@/redux/apis/quotationApi";
 import { userApi } from "@/redux/apis/userApi";
-import { insurerApi } from "@/redux/apis/insurerApi";
 import authReducer from "./slices/authSlice";
 
 // 1. Define root reducer separately

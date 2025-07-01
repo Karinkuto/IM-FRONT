@@ -74,14 +74,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 			}
 
 			const apiUser = result.data.user;
+			console.log("API User data received from backend:", apiUser);
 
 			// Ensure user data is correctly extracted and formatted
 			const loggedInUser: User = {
 				...apiUser,
-				role: (apiUser.roles?.[0]?.name || "customer") as
-					| "admin"
-					| "customer"
-					| "insurer",
+				role:
+					apiUser.roles && apiUser.roles.length > 0
+						? (apiUser.roles[0].name as "admin" | "customer" | "insurer")
+						: "customer",
 				id: apiUser.id || "",
 				name: apiUser.name || apiUser.email || apiUser.phone_number || "User",
 				email: apiUser.email || "",
@@ -91,6 +92,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 				customer: apiUser.customer,
 				insurer: apiUser.insurer,
 			};
+
+			console.log("Frontend determined user role:", loggedInUser.role);
 
 			const newAccessToken = (result.data as { access_token: string })
 				.access_token;
@@ -124,7 +127,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	const refreshUser = async () => {
 		try {
 			if (!user?.id) return null;
-			
+
 			const { data } = await refetchUser();
 			if (data) {
 				const updatedUser = data;
