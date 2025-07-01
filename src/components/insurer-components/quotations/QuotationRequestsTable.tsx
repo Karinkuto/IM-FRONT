@@ -266,13 +266,16 @@ export const QuotationRequestsTable: FC<QuotationRequestsTableProps> = ({
 	return (
 		<div className="space-y-4">
 			<div className="flex flex-col gap-4">
-				<DataTable toolbarActionsPrefix={toolbarActionsPrefix} columns={columns} data={quotations} meta={meta} />
+				<DataTable
+					toolbarActionsPrefix={toolbarActionsPrefix}
+					columns={columns}
+					data={quotations}
+					meta={meta}
+				/>
 			</div>
 
 			{selectedQuotationId !== null && (
-				<QuotationDetailsDialog
-					quotationId={selectedQuotationId.toString()}
-				/>
+				<QuotationDetailsDialog quotationId={selectedQuotationId.toString()} />
 			)}
 		</div>
 	);

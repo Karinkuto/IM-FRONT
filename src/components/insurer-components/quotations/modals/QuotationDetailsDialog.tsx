@@ -59,13 +59,27 @@ export default function QuotationDetailsDialog({
 				{/* Left: Images stacked vertically */}
 				<div className="flex-shrink-0 bg-muted flex flex-col items-center justify-start max-w-[380px] min-w-[320px] w-fit overflow-y-auto border-r p-4">
 					<VehicleImages
-						frontViewPhotoUrl={quotation.insured_entity_data?.front_view_photo_url ?? null}
-						backViewPhotoUrl={quotation.insured_entity_data?.back_view_photo_url ?? null}
-						leftViewPhotoUrl={quotation.insured_entity_data?.left_view_photo_url ?? null}
-						rightViewPhotoUrl={quotation.insured_entity_data?.right_view_photo_url ?? null}
-						enginePhotoUrl={quotation.insured_entity_data?.engine_photo_url ?? null}
-						chassisNumberPhotoUrl={quotation.insured_entity_data?.chassis_number_photo_url ?? null}
-						librePhotoUrl={quotation.insured_entity_data?.libre_photo_url ?? null}
+						frontViewPhotoUrl={
+							quotation.insured_entity_data?.front_view_photo_url ?? null
+						}
+						backViewPhotoUrl={
+							quotation.insured_entity_data?.back_view_photo_url ?? null
+						}
+						leftViewPhotoUrl={
+							quotation.insured_entity_data?.left_view_photo_url ?? null
+						}
+						rightViewPhotoUrl={
+							quotation.insured_entity_data?.right_view_photo_url ?? null
+						}
+						enginePhotoUrl={
+							quotation.insured_entity_data?.engine_photo_url ?? null
+						}
+						chassisNumberPhotoUrl={
+							quotation.insured_entity_data?.chassis_number_photo_url ?? null
+						}
+						librePhotoUrl={
+							quotation.insured_entity_data?.libre_photo_url ?? null
+						}
 						stacked
 					/>
 				</div>

@@ -13,6 +13,7 @@ export interface Address {
 	woreda?: string;
 	zone?: string;
 	house_number: string;
+	kebele?: string;
 }
 
 export interface UserRiskProfile {
@@ -158,6 +159,13 @@ export interface InsuredEntity {
 
 export interface QuotationFormData {
 	additional_notes?: string;
+	vehicle_details?: {
+		vehicle_type?: string;
+		vehicle_usage?: string;
+		goods?: string;
+		number_of_passengers?: string | number;
+	};
+	current_residence_address?: Address;
 }
 
 export interface QuotationRequest {

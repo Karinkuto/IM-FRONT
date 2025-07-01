@@ -64,7 +64,7 @@ function AddressInformationCard({ address }: AddressInformationCardProps) {
 
 // VehicleDetailsCard
 interface VehicleDetailsCardProps {
-	vehicle: QuotationRequest["vehicle"];
+	vehicle?: QuotationRequest["insured_entity_data"];
 	formData?: QuotationRequest["form_data"];
 }
 
@@ -117,11 +117,11 @@ function VehicleDetailsCard({ vehicle, formData }: VehicleDetailsCardProps) {
 				/>
 				<DescriptionItem
 					label="Vehicle Type"
-					value={vehicleDetails?.vehicle_type ?? "-"}
+					value={vehicleDetails?.vehicle_type ?? vehicle?.vehicle_type ?? "-"}
 				/>
 				<DescriptionItem
 					label="Vehicle Usage"
-					value={vehicleDetails?.vehicle_usage ?? "-"}
+					value={vehicleDetails?.vehicle_usage ?? vehicle?.usage_type ?? "-"}
 				/>
 				<DescriptionItem label="Goods" value={vehicleDetails?.goods ?? "-"} />
 				<DescriptionItem
@@ -135,7 +135,22 @@ function VehicleDetailsCard({ vehicle, formData }: VehicleDetailsCardProps) {
 
 // CustomerProfileCard
 interface CustomerProfileCardProps {
-	user?: QuotationRequest["user"];
+	user?: QuotationRequest["user"] & { 
+		fin?: string | null;
+		customer?: {
+			first_name?: string;
+			middle_name?: string;
+			last_name?: string;
+			region?: string;
+			subcity?: string;
+			woreda?: string;
+			registration_address?: {
+				region: string;
+				subcity: string;
+				woreda: string;
+			};
+		};
+	};
 }
 
 function CustomerProfileCard({ user }: CustomerProfileCardProps) {
@@ -148,13 +163,17 @@ function CustomerProfileCard({ user }: CustomerProfileCardProps) {
 	}
 	const customer = user.customer;
 	const fullName = customer
-		? [customer.first_name, customer.middle_name, customer.last_name]
-				.filter(Boolean)
-				.join(" ")
-		: "-";
+		? [
+			customer.first_name,
+			customer.middle_name,
+			customer.last_name,
+		  ]
+			.filter(Boolean)
+			.join(" ")
+		: user.email?.split("@")[0] || "-";
 	const initials = fullName
 		.split(" ")
-		.map((n) => n[0])
+		.map((n: string) => n[0])
 		.join("")
 		.toUpperCase()
 		.slice(0, 2);
@@ -202,9 +221,18 @@ function CustomerProfileCard({ user }: CustomerProfileCardProps) {
 				<div className="px-6 py-4">
 					<h4 className="text-lg font-semibold mb-2">Address Information</h4>
 					<div className="grid grid-cols-1 sm:grid-cols-4 gap-x-8 gap-y-4 text-muted-foreground">
-						<DescriptionItem label="Region" value={customer.region ?? "-"} />
-						<DescriptionItem label="Subcity" value={customer.subcity ?? "-"} />
-						<DescriptionItem label="Woreda" value={customer.woreda ?? "-"} />
+						<DescriptionItem 
+							label="Region" 
+							value={customer.registration_address?.region ?? customer.region ?? "-"} 
+						/>
+						<DescriptionItem 
+							label="Subcity" 
+							value={customer.registration_address?.subcity ?? customer.subcity ?? "-"} 
+						/>
+						<DescriptionItem 
+							label="Woreda" 
+							value={customer.registration_address?.woreda ?? customer.woreda ?? "-"} 
+						/>
 					</div>
 				</div>
 			)}
@@ -336,7 +364,7 @@ export default function QuotationDetails({ quotation }: QuotationDetailsProps) {
 				coverageType={quotation.coverage_type}
 			/>
 			<VehicleDetailsCard
-				vehicle={quotation.vehicle}
+				vehicle={quotation.insured_entity_data}
 				formData={quotation.form_data}
 			/>
 			<AddressInformationCard
