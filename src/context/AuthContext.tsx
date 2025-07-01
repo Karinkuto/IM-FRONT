@@ -13,6 +13,11 @@ import { useGetUserByIdQuery } from "@/redux/apis/userApi";
 import { setCredentials } from "@/redux/slices/authSlice";
 import { logoutUser } from "@/services/authService";
 import type { AuthContextType, LoginCredentials, User } from "@/types/auth";
+import {
+	setItem as setSessionItem,
+	getItem as getSessionItem,
+	removeItem as removeSessionItem,
+} from "@/lib/secureSessionStorage";
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
@@ -60,6 +65,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		skip: !user?.id, // Skip if no user ID is available
 	});
 
+	// Restore auth state from sessionStorage on mount
+	useEffect(() => {
+		(async () => {
+			const stored = await getSessionItem("auth");
+			if (stored) {
+				try {
+					const parsed = JSON.parse(stored);
+					if (parsed && parsed.user && parsed.access_token) {
+						setUser(parsed.user);
+						setIsAuthenticated(true);
+						dispatch(
+							setCredentials({
+								user: parsed.user,
+								access_token: parsed.access_token,
+							}),
+						);
+					}
+				} catch {}
+			}
+			setIsLoading(false);
+		})();
+	}, [dispatch]);
+
 	const currentUserData = useMemo(() => {
 		if (!user) {
 			return null;
@@ -84,13 +112,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 			insurer: user.insurer, // Include the insurer data
 		};
 	}, [user]);
-
-	useEffect(() => {
-		setIsLoading(false);
-
-		// In a real application, you might try to load a persisted user from storage
-		// and set isAuthenticated based on that.
-	}, []);
 
 	const login = async (userData: LoginCredentials) => {
 		try {
@@ -138,6 +159,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 			);
 			setUser(loggedInUser);
 			setIsAuthenticated(true);
+			// Persist to sessionStorage
+			await setSessionItem(
+				"auth",
+				JSON.stringify({ user: loggedInUser, access_token: newAccessToken }),
+			);
 			toast.success("Login successful!");
 		} catch (error: unknown) {
 			let errorMessage = "Login failed. Please check your credentials.";
@@ -171,6 +197,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 						access_token: "",
 					}),
 				);
+				// Update sessionStorage with new user info (keep access_token)
+				const stored = await getSessionItem("auth");
+				if (stored) {
+					try {
+						const parsed = JSON.parse(stored);
+						await setSessionItem(
+							"auth",
+							JSON.stringify({
+								user: updatedUser,
+								access_token: parsed.access_token,
+							}),
+						);
+					} catch {}
+				}
 				return updatedUser;
 			}
 		} catch (error) {
@@ -184,6 +224,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 			await logoutUser();
 			setUser(null);
 			setIsAuthenticated(false);
+			await removeSessionItem("auth");
 			toast.success("Logged out successfully!");
 			console.log("Logout successful");
 		} catch (error) {
