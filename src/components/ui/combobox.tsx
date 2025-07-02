@@ -46,12 +46,12 @@ export function Combobox({
 	const [open, setOpen] = React.useState(false);
 
 	return (
-		<Popover open={open} onOpenChange={setOpen}>
+		<Popover onOpenChange={setOpen} open={open}>
 			<PopoverTrigger asChild>
 				<Button
-					variant="outline"
 					aria-expanded={open}
 					className={cn("w-[200px] justify-between", className)}
+					variant="outline"
 				>
 					{value
 						? options.find((option) => option.value === value)?.label
@@ -68,16 +68,16 @@ export function Combobox({
 							{options.map((option) => (
 								<CommandItem
 									key={option.value}
-									value={option.value}
 									onSelect={(currentValue) => {
 										onValueChange(currentValue === value ? "" : currentValue);
 										setOpen(false);
 									}}
+									value={option.value}
 								>
 									<CheckIcon
 										className={cn(
 											"mr-2 h-4 w-4",
-											value === option.value ? "opacity-100" : "opacity-0",
+											value === option.value ? "opacity-100" : "opacity-0"
 										)}
 									/>
 									{option.label}

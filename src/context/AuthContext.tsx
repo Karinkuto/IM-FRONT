@@ -47,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 			return response.data as unknown as ApiUser | undefined;
 		} catch (error) {
 			console.error("Error refetching user:", error);
-			return undefined;
+			return;
 		}
 	};
 
@@ -66,7 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 							setCredentials({
 								user: parsed.user,
 								access_token: parsed.access_token,
-							}),
+							})
 						);
 					}
 				}
@@ -98,7 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		}
 
 		return {
-			name: name,
+			name,
 			role: user.role,
 			isTemporaryPassword: user.temporary_password,
 			insurer: user.insurer, // Include the insurer data
@@ -109,11 +109,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		try {
 			const result = await loginMutation(userData).unwrap();
 
-			if (!result.data || !result.data.user) {
+			if (!(result.data && result.data.user)) {
 				toast.error("Login failed: User data not received from server.");
 				console.error(
 					"Login failed: User data is undefined or missing in API response.",
-					result,
+					result
 				);
 				throw new Error("User data missing from login response.");
 			}
@@ -134,14 +134,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 				setCredentials({
 					user: loggedInUser,
 					access_token: newAccessToken,
-				}),
+				})
 			);
 			setUser(loggedInUser);
 			setIsAuthenticated(true);
 			// Persist to sessionStorage
 			await setSessionItem(
 				"auth",
-				JSON.stringify({ user: loggedInUser, access_token: newAccessToken }),
+				JSON.stringify({ user: loggedInUser, access_token: newAccessToken })
 			);
 			toast.success("Login successful!");
 		} catch (error: unknown) {
@@ -182,7 +182,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 							JSON.stringify({
 								user: updatedUser,
 								access_token: parsed.access_token,
-							}),
+							})
 						);
 
 						// Update Redux store with the new user data
@@ -190,14 +190,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 							setCredentials({
 								user: updatedUser,
 								access_token: parsed.access_token,
-							}),
+							})
 						);
 
 						return updatedUser;
 					} catch (error) {
 						console.error(
 							"Failed to update session storage with new user data:",
-							error,
+							error
 						);
 						throw error;
 					}

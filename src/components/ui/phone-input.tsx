@@ -31,21 +31,21 @@ export function PhoneNumberInput<TFieldValues extends FieldValues>({
 
 	return (
 		<Controller
-			name={name}
 			control={control}
+			name={name}
 			render={({ field }) => (
 				<div className="*:not-first:mt-2" dir="ltr">
 					<Label htmlFor={id}>{label}</Label>
 					<RPNInput.default
 						className="flex rounded-md shadow-xs"
+						countrySelectComponent={CountrySelect}
 						defaultCountry="ET"
 						flagComponent={FlagComponent}
-						countrySelectComponent={CountrySelect}
-						inputComponent={CustomPhoneInput}
 						id={id}
+						inputComponent={CustomPhoneInput}
+						onChange={(value) => field.onChange(value ?? "")}
 						placeholder={placeholder}
 						value={field.value}
-						onChange={(value) => field.onChange(value ?? "")}
 					/>
 				</div>
 			)}
@@ -59,12 +59,12 @@ const CustomPhoneInput = React.forwardRef<
 >(({ className, ...props }, ref) => {
 	return (
 		<Input
-			ref={ref}
-			data-slot="phone-input"
 			className={cn(
 				"-ms-px rounded-s-none shadow-none focus-visible:z-10",
-				className,
+				className
 			)}
+			data-slot="phone-input"
+			ref={ref}
 			{...props}
 		/>
 	);
@@ -90,22 +90,22 @@ const CountrySelect = ({
 	};
 
 	return (
-		<div className="border-input bg-background text-muted-foreground focus-within:border-ring focus-within:ring-ring/50 hover:bg-accent hover:text-foreground has-aria-invalid:border-destructive/60 has-aria-invalid:ring-destructive/20 dark:has-aria-invalid:ring-destructive/40 relative inline-flex h-10 items-center rounded-s-md border ps-3 pe-2 transition-[color,box-shadow] outline-none focus-within:z-10 focus-within:ring-[3px] has-disabled:pointer-events-none has-disabled:opacity-50">
-			<div className="inline-flex items-center gap-2" aria-hidden="true">
-				<FlagComponent country={value} countryName={value} aria-hidden="true" />
-				<span className="text-sm font-semibold">
+		<div className="relative inline-flex h-10 items-center rounded-s-md border border-input bg-background ps-3 pe-2 text-muted-foreground outline-none transition-[color,box-shadow] focus-within:z-10 focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50 hover:bg-accent hover:text-foreground has-disabled:pointer-events-none has-aria-invalid:border-destructive/60 has-disabled:opacity-50 has-aria-invalid:ring-destructive/20 dark:has-aria-invalid:ring-destructive/40">
+			<div aria-hidden="true" className="inline-flex items-center gap-2">
+				<FlagComponent aria-hidden="true" country={value} countryName={value} />
+				<span className="font-semibold text-sm">
 					+{RPNInput.getCountryCallingCode(value)}
 				</span>
 				<span className="text-muted-foreground/80">
-					<ChevronDownIcon size={16} aria-hidden="true" />
+					<ChevronDownIcon aria-hidden="true" size={16} />
 				</span>
 			</div>
 			<select
-				disabled={disabled}
-				value={value}
-				onChange={handleSelect}
-				className="absolute inset-0 text-sm opacity-0"
 				aria-label="Select country"
+				className="absolute inset-0 text-sm opacity-0"
+				disabled={disabled}
+				onChange={handleSelect}
+				value={value}
 			>
 				<option key="default" value="">
 					Select a country
@@ -132,7 +132,7 @@ const FlagComponent = ({ country, countryName }: RPNInput.FlagProps) => {
 			{Flag ? (
 				<Flag title={countryName} />
 			) : (
-				<PhoneIcon size={16} aria-hidden="true" />
+				<PhoneIcon aria-hidden="true" size={16} />
 			)}
 		</span>
 	);

@@ -30,41 +30,41 @@ export default function App() {
 						<BrowserRouter>
 							<Toaster />
 							<Routes>
-								<Route path="/login" element={<LoginPage />} />
+								<Route element={<LoginPage />} path="/login" />
 								<Route element={<ProtectedRoute />}>
 									{/* Redirect root path to the authenticated user's default role path */}
-									<Route path="/" element={<HomeRedirectByRole />} />
+									<Route element={<HomeRedirectByRole />} path="/" />
 
 									{VALID_ROLES.map((role) => {
 										const routesForRole = roleSpecificRoutes[role];
 										const defaultRouteForRole = routesForRole.find(
-											(r) => r.isIndex,
+											(r) => r.isIndex
 										)?.path;
 
 										return (
 											<Route
+												element={<RoleLayout />}
 												key={role}
 												path={`/${role}`}
-												element={<RoleLayout />}
 											>
 												{defaultRouteForRole && (
 													<Route
-														index
 														element={
-															<Navigate to={defaultRouteForRole} replace />
+															<Navigate replace to={defaultRouteForRole} />
 														}
+														index
 													/>
 												)}
 												{routesForRole.map((routeConfig) => (
 													<Route
+														element={routeConfig.element}
 														key={routeConfig.path}
 														path={routeConfig.path}
-														element={routeConfig.element}
 													/>
 												))}
 												<Route
+													element={<Navigate replace to={`/${role}`} />}
 													path="*"
-													element={<Navigate to={`/${role}`} replace />}
 												/>
 											</Route>
 										);
@@ -88,7 +88,7 @@ function ProtectedRoute() {
 	}
 
 	if (!isAuthenticated) {
-		return <Navigate to="/login" replace />;
+		return <Navigate replace to="/login" />;
 	}
 
 	return <Outlet />;
@@ -100,5 +100,5 @@ function HomeRedirectByRole() {
 	// This component will only render if isAuthenticated is true due to ProtectedRoute
 	const redirectTo = user?.role ? defaultRoleRedirects[user.role] : "/login"; // Fallback, though should be covered by isAuthenticated
 
-	return <Navigate to={redirectTo} replace />;
+	return <Navigate replace to={redirectTo} />;
 }

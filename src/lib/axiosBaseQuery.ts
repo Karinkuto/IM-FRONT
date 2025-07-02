@@ -25,12 +25,10 @@ const processQueue = (error: unknown, token: string | null = null) => {
 	failedQueue.forEach((prom) => {
 		if (error) {
 			prom.reject(error);
+		} else if (token) {
+			prom.resolve(token);
 		} else {
-			if (token) {
-				prom.resolve(token);
-			} else {
-				prom.reject(new Error("No token provided"));
-			}
+			prom.reject(new Error("No token provided"));
 		}
 	});
 	failedQueue = [];
@@ -47,7 +45,7 @@ api.interceptors.request.use(
 	},
 	(error) => {
 		return Promise.reject(error);
-	},
+	}
 );
 
 // Add a response interceptor to handle token refresh
@@ -105,7 +103,7 @@ api.interceptors.response.use(
 		}
 
 		return Promise.reject(error);
-	},
+	}
 );
 
 export const axiosBaseQuery = (): BaseQueryFn<

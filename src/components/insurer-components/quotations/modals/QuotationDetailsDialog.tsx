@@ -54,37 +54,37 @@ export default function QuotationDetailsDialog({
 	console.log("[QuotationDetailsDialog] Quotation data:", quotation);
 
 	return (
-		<DialogContent className="max-h-[90vh] overflow-hidden sm:max-w-[90vw] lg:max-w-[80vw] xl:max-w-[80vw] p-0">
+		<DialogContent className="max-h-[90vh] overflow-hidden p-0 sm:max-w-[90vw] lg:max-w-[80vw] xl:max-w-[80vw]">
 			<div className="flex h-[80vh] w-full">
 				{/* Left: Images stacked vertically */}
-				<div className="flex-shrink-0 bg-muted flex flex-col items-center justify-start max-w-[380px] min-w-[320px] w-fit overflow-y-auto border-r p-4">
+				<div className="flex w-fit min-w-[320px] max-w-[380px] flex-shrink-0 flex-col items-center justify-start overflow-y-auto border-r bg-muted p-4">
 					<VehicleImages
-						frontViewPhotoUrl={
-							quotation.insured_entity_data?.front_view_photo_url ?? null
-						}
 						backViewPhotoUrl={
 							quotation.insured_entity_data?.back_view_photo_url ?? null
-						}
-						leftViewPhotoUrl={
-							quotation.insured_entity_data?.left_view_photo_url ?? null
-						}
-						rightViewPhotoUrl={
-							quotation.insured_entity_data?.right_view_photo_url ?? null
-						}
-						enginePhotoUrl={
-							quotation.insured_entity_data?.engine_photo_url ?? null
 						}
 						chassisNumberPhotoUrl={
 							quotation.insured_entity_data?.chassis_number_photo_url ?? null
 						}
+						enginePhotoUrl={
+							quotation.insured_entity_data?.engine_photo_url ?? null
+						}
+						frontViewPhotoUrl={
+							quotation.insured_entity_data?.front_view_photo_url ?? null
+						}
+						leftViewPhotoUrl={
+							quotation.insured_entity_data?.left_view_photo_url ?? null
+						}
 						librePhotoUrl={
 							quotation.insured_entity_data?.libre_photo_url ?? null
+						}
+						rightViewPhotoUrl={
+							quotation.insured_entity_data?.right_view_photo_url ?? null
 						}
 						stacked
 					/>
 				</div>
 				{/* Right: Details handled by QuotationDetails */}
-				<div className="flex-1 min-w-0">
+				<div className="min-w-0 flex-1">
 					<ScrollArea className="h-full p-8">
 						<DialogHeader>
 							<DialogTitle className="flex items-center gap-2">

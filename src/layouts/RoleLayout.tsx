@@ -15,18 +15,18 @@ export function RoleLayout() {
 	// If not authenticated, redirect to login page
 	// We check for user role after authentication
 	if (!isAuthenticated) {
-		return <Navigate to="/login" replace />;
+		return <Navigate replace to="/login" />;
 	}
 
 	// If authenticated, but the route's role doesn't match the user's role, redirect to the user's default role path.
 	if (user && user.role !== (role as ValidRole)) {
 		const userDefaultPath = defaultRoleRedirects[user.role];
-		return <Navigate to={userDefaultPath} replace />;
+		return <Navigate replace to={userDefaultPath} />;
 	}
 
 	// If authenticated but role is invalid for the route, redirect to login
 	if (!VALID_ROLES.includes(role as ValidRole)) {
-		return <Navigate to="/login" replace />;
+		return <Navigate replace to="/login" />;
 	}
 
 	return <DashboardLayout role={role as ValidRole} />;

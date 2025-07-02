@@ -73,60 +73,60 @@ export const QuotationFilterDialog: React.FC<QuotationFilterDialogProps> = ({
 	};
 
 	return (
-		<Dialog open={isOpen} onOpenChange={onOpenChange}>
-			<DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+		<Dialog onOpenChange={onOpenChange} open={isOpen}>
+			<DialogContent className="max-h-[80vh] max-w-4xl overflow-y-auto">
 				<DialogHeader>
 					<DialogTitle>Filter Quotations</DialogTitle>
 				</DialogHeader>
 
 				<SmartForm<FormValues>
-					schema={filterSchema}
+					card={false}
+					className="space-y-6"
 					defaultValues={currentFilters as FormValues}
 					mutationFn={handleFormSubmit}
+					schema={filterSchema}
 					submitText="Apply Filters"
-					className="space-y-6"
-					card={false}
 				>
 					{(form) => (
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+						<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
 							<SmartFormField
 								form={form}
-								name="status"
-								type="select"
 								label="Status"
+								name="status"
 								options={statusOptions}
+								type="select"
 							/>
 
 							<SmartFormField
 								form={form}
-								name="insuranceType"
-								type="select"
 								label="Insurance Type"
+								name="insuranceType"
 								options={insuranceTypeOptions}
-							/>
-
-							<SmartFormField
-								form={form}
-								name="coverageType"
 								type="select"
+							/>
+
+							<SmartFormField
+								form={form}
 								label="Coverage Type"
+								name="coverageType"
 								options={coverageTypeOptions}
+								type="select"
 							/>
 
 							<SmartFormField
 								form={form}
-								name="vehicleType"
-								type="text"
 								label="Vehicle Type"
+								name="vehicleType"
 								placeholder="Enter vehicle type"
+								type="text"
 							/>
 
 							<SmartFormField
 								form={form}
-								name="region"
-								type="text"
 								label="Region"
+								name="region"
 								placeholder="Enter region"
+								type="text"
 							/>
 						</div>
 					)}

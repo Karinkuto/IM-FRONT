@@ -55,29 +55,29 @@ export function VehicleImages({
 	];
 
 	return (
-		<div className="space-y-4 w-full">
+		<div className="w-full space-y-4">
 			<div className={containerClass}>
 				{images.map((img) => {
 					return img.url ? (
 						<div
-							key={img.label}
 							className="group relative overflow-hidden rounded-lg"
+							key={img.label}
 						>
 							<img
-								src={img.url}
 								alt={img.label}
-								className="w-full h-80 object-cover transition-transform duration-300 group-hover:scale-105 rounded-lg"
+								className="h-80 w-full rounded-lg object-cover transition-transform duration-300 group-hover:scale-105"
+								src={img.url}
 							/>
-							<div className="absolute inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg">
-								<p className="text-white text-lg font-semibold">{img.label}</p>
+							<div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/30 opacity-0 backdrop-blur-sm transition-opacity duration-300 group-hover:opacity-100">
+								<p className="font-semibold text-lg text-white">{img.label}</p>
 							</div>
 						</div>
 					) : (
 						<div
+							className="flex h-80 w-full items-center justify-center rounded-lg border border-gray-300 border-dashed bg-muted"
 							key={img.label}
-							className="w-full h-80 bg-muted flex items-center justify-center rounded-lg border border-dashed border-gray-300"
 						>
-							<span className="text-gray-400 text-lg font-semibold">
+							<span className="font-semibold text-gray-400 text-lg">
 								{img.label}
 							</span>
 						</div>

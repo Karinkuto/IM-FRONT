@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 const strengthMeterVariants = cva(
-	"transition-all w-full h-2 rounded-full bg-gray-200 dark:bg-gray-700 mt-1 flex gap-1",
+	"mt-1 flex h-2 w-full gap-1 rounded-full bg-gray-200 transition-all dark:bg-gray-700",
 	{
 		variants: {
 			size: {
@@ -22,7 +22,7 @@ const strengthMeterVariants = cva(
 			size: "default",
 			animated: true,
 		},
-	},
+	}
 );
 
 const strengthBarSegmentVariants = cva(
@@ -45,7 +45,7 @@ const strengthBarSegmentVariants = cva(
 			strength: "empty",
 			animated: false,
 		},
-	},
+	}
 );
 
 export type StrengthLevel = "empty" | "weak" | "fair" | "good" | "strong";
@@ -144,7 +144,7 @@ export function PasswordStrengthMeter({
 	}, [value]);
 
 	const generateStrongPassword = (
-		length: number = autoGenerateLength,
+		length: number = autoGenerateLength
 	): string => {
 		const lowercase = "abcdefghijklmnopqrstuvwxyz";
 		const uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -235,7 +235,7 @@ export function PasswordStrengthMeter({
 
 	const getPassedRequirements = (): PasswordStrengthRequirement[] => {
 		return requirements.filter((requirement) =>
-			requirement.validator(password),
+			requirement.validator(password)
 		);
 	};
 
@@ -258,37 +258,37 @@ export function PasswordStrengthMeter({
 		<div className={cn("space-y-2", className)} {...props}>
 			<div className="relative">
 				<Input
-					type={showPassword ? "text" : "password"}
-					value={password}
-					onChange={handleChange}
 					className={cn(
 						showPasswordToggle && enableAutoGenerate
 							? "pr-20"
 							: showPasswordToggle || enableAutoGenerate
 								? "pr-10"
 								: "",
-						inputClassName,
+						inputClassName
 					)}
+					onChange={handleChange}
 					placeholder={placeholder}
+					type={showPassword ? "text" : "password"}
+					value={password}
 				/>
-				<div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
+				<div className="-translate-y-1/2 absolute top-1/2 right-3 flex items-center gap-1">
 					{enableAutoGenerate && (
 						<button
-							type="button"
-							onClick={handleGeneratePassword}
-							className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 transition-colors"
 							aria-label="Generate strong password"
+							className="text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+							onClick={handleGeneratePassword}
 							title="Generate strong password"
+							type="button"
 						>
 							<RefreshCw className="h-4 w-4" />
 						</button>
 					)}
 					{showPasswordToggle && (
 						<button
-							type="button"
-							onClick={togglePasswordVisibility}
-							className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 transition-colors"
 							aria-label={showPassword ? "Hide password" : "Show password"}
+							className="text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+							onClick={togglePasswordVisibility}
+							type="button"
 						>
 							{showPassword ? (
 								<EyeOff className="h-4 w-4" />
@@ -303,12 +303,11 @@ export function PasswordStrengthMeter({
 			<div
 				className={cn(
 					strengthMeterVariants({ size, animated }),
-					meterClassName,
+					meterClassName
 				)}
 			>
 				{Array.from({ length: segments }).map((_, i) => (
 					<div
-						key={i}
 						className={cn(
 							strengthBarSegmentVariants({
 								strength: getSegmentStrength(i),
@@ -317,8 +316,9 @@ export function PasswordStrengthMeter({
 									getSegmentStrength(i) !== "empty" &&
 									strengthLevel !== "strong",
 							}),
-							"flex-1",
+							"flex-1"
 						)}
+						key={i}
 						style={{
 							transitionDelay: `${i * 75}ms`,
 						}}
@@ -328,10 +328,10 @@ export function PasswordStrengthMeter({
 
 			{showText && password && (
 				<div className="flex items-center">
-					<span className={cn("text-sm font-medium", getStrengthColor())}>
+					<span className={cn("font-medium text-sm", getStrengthColor())}>
 						{strengthLabels[strengthLevel]}
 					</span>
-					<span className="ml-auto text-xs text-gray-500 dark:text-gray-400">
+					<span className="ml-auto text-gray-500 text-xs dark:text-gray-400">
 						{getPassedRequirements().length} of {requirements.length}{" "}
 						requirements met
 					</span>
@@ -341,17 +341,17 @@ export function PasswordStrengthMeter({
 			{showRequirements && (
 				<div className="space-y-3">
 					{enableAutoGenerate && (
-						<div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
+						<div className="flex items-center justify-between rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-950/30">
 							<div className="flex items-center gap-2">
 								<RefreshCw className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-								<span className="text-sm font-medium text-blue-800 dark:text-blue-200">
+								<span className="font-medium text-blue-800 text-sm dark:text-blue-200">
 									Auto-generate strong password
 								</span>
 							</div>
 							<button
-								type="button"
+								className="rounded-md bg-blue-100 px-3 py-1 font-medium text-blue-700 text-xs transition-colors hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-300 dark:hover:bg-blue-800"
 								onClick={handleGeneratePassword}
-								className="px-3 py-1 text-xs font-medium text-blue-700 bg-blue-100 hover:bg-blue-200 dark:text-blue-300 dark:bg-blue-900 dark:hover:bg-blue-800 rounded-md transition-colors"
+								type="button"
 							>
 								Generate
 							</button>
@@ -362,13 +362,13 @@ export function PasswordStrengthMeter({
 							const passed = requirement.validator(password);
 							return (
 								<li
-									key={index}
 									className={cn(
 										"flex items-center gap-2 text-sm",
 										passed
 											? "text-green-600 dark:text-green-500"
-											: "text-gray-500 dark:text-gray-400",
+											: "text-gray-500 dark:text-gray-400"
 									)}
+									key={index}
 								>
 									{passed ? (
 										<Check className="h-4 w-4 text-green-500" />
@@ -404,18 +404,18 @@ export function PasswordInput({
 	return (
 		<div className="relative">
 			<Input
-				type={showPassword ? "text" : "password"}
 				className={cn("pr-10", className)}
-				value={value}
 				onChange={onChange}
+				type={showPassword ? "text" : "password"}
+				value={value}
 				{...props}
 			/>
 			{showToggle && (
 				<button
-					type="button"
-					onClick={togglePasswordVisibility}
-					className="absolute right-3 top-1/2 -translate-y-1/2 "
 					aria-label={showPassword ? "Hide password" : "Show password"}
+					className="-translate-y-1/2 absolute top-1/2 right-3 "
+					onClick={togglePasswordVisibility}
+					type="button"
 				>
 					{showPassword ? (
 						<EyeOff className="h-4 w-4" />

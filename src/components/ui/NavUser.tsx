@@ -26,12 +26,12 @@ export function NavUser({ user }: NavUserProps) {
 		<SidebarMenu className="mt-auto mb-4">
 			<SidebarMenuItem>
 				<SidebarMenuButton
-					size="lg"
 					className="hover:bg-transparent dark:hover:bg-transparent"
+					size="lg"
 				>
 					<Avatar className="h-10 w-10 rounded-md">
 						{user.avatar ? (
-							<AvatarImage src={user.avatar} alt={user.name} />
+							<AvatarImage alt={user.name} src={user.avatar} />
 						) : (
 							<AvatarFallback className="rounded-md bg-black text-white">
 								{userInitials}
@@ -42,7 +42,7 @@ export function NavUser({ user }: NavUserProps) {
 						<span className="truncate font-medium text-primary">
 							{user.name}
 						</span>
-						<span className="truncate text-xs text-muted-foreground capitalize">
+						<span className="truncate text-muted-foreground text-xs capitalize">
 							{user.role}
 						</span>
 					</div>

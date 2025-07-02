@@ -15,7 +15,7 @@ export function mapApiUserToAuthUser(apiUser: ApiUser): AuthUser {
 				typeof r === "object" &&
 				r !== null &&
 				"name" in r &&
-				["admin", "customer", "insurer"].includes(String(r.name)),
+				["admin", "customer", "insurer"].includes(String(r.name))
 		);
 
 		if (roleObj && typeof roleObj === "object" && "name" in roleObj) {
@@ -29,7 +29,7 @@ export function mapApiUserToAuthUser(apiUser: ApiUser): AuthUser {
 				user_id:
 					typeof apiUser.id === "number"
 						? apiUser.id
-						: parseInt(apiUser.id || "0", 10) || 0,
+						: Number.parseInt(apiUser.id || "0", 10) || 0,
 				first_name: apiUser.customer.first_name || "",
 				middle_name: apiUser.customer.middle_name || "",
 				last_name: apiUser.customer.last_name || "",

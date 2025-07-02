@@ -132,11 +132,11 @@ export default function Stepper({
 		<div className="flex min-h-full flex-1 flex-col items-center justify-center">
 			{isSubmitting ? (
 				<MultiStepLoader
-					loadingStates={loadingStates}
-					loading={loaderProps?.loading || isSubmitting}
 					currentState={loaderProps?.currentState || 0}
-					errorStep={loaderProps?.errorStep}
 					errorMessage={loaderProps?.errorMessage}
+					errorStep={loaderProps?.errorStep}
+					loading={loaderProps?.loading || isSubmitting}
+					loadingStates={loadingStates}
 					loop={false}
 					onComplete={() => {
 						setIsSubmitting(false);
@@ -170,13 +170,13 @@ export default function Stepper({
 											})
 										) : (
 											<StepIndicator
-												step={stepNumber}
-												disableStepIndicators={disableStepIndicators}
 												currentStep={currentStep}
+												disableStepIndicators={disableStepIndicators}
 												onClickStep={(clicked) => {
 													setDirection(clicked > currentStep ? 1 : -1);
 													updateStep(clicked);
 												}}
+												step={stepNumber}
 											/>
 										)}
 										{isNotLastStep && (
@@ -188,9 +188,9 @@ export default function Stepper({
 						</CardHeader>
 						<CardContent className={`space-y-2 ${contentClassName}`}>
 							<StepContentWrapper
-								isCompleted={isCompleted}
 								currentStep={currentStep}
 								direction={direction}
+								isCompleted={isCompleted}
 							>
 								{stepsArray[currentStep - 1]}
 							</StepContentWrapper>
@@ -250,16 +250,16 @@ function StepContentWrapper({
 
 	return (
 		<motion.div
-			style={{ position: "relative", overflow: "hidden" }}
 			animate={{ height: isCompleted ? 0 : parentHeight }}
-			transition={{ type: "spring", stiffness: 300, damping: 30 }}
 			className={className}
+			style={{ position: "relative", overflow: "hidden" }}
+			transition={{ type: "spring", stiffness: 300, damping: 30 }}
 		>
-			<AnimatePresence initial={false} mode="sync" custom={direction}>
+			<AnimatePresence custom={direction} initial={false} mode="sync">
 				{!isCompleted && (
 					<SlideTransition
-						key={currentStep}
 						direction={direction}
+						key={currentStep}
 						onHeightReady={setParentHeight}
 					>
 						{children}
@@ -297,17 +297,17 @@ function SlideTransition({
 
 	return (
 		<motion.div
-			ref={containerRef}
-			custom={direction}
-			variants={stepVariants}
-			initial="enter"
 			animate="center"
+			custom={direction}
 			exit="exit"
+			initial="enter"
+			ref={containerRef}
+			style={{ position: "absolute", left: 0, right: 0, top: 0 }}
 			transition={{
 				x: { type: "spring", stiffness: 300, damping: 30 },
 				opacity: { duration: 0.2 },
 			}}
-			style={{ position: "absolute", left: 0, right: 0, top: 0 }}
+			variants={stepVariants}
 		>
 			{children}
 		</motion.div>
@@ -365,12 +365,14 @@ function StepIndicator({
 
 	return (
 		<motion.div
-			onClick={handleClick}
-			className="relative cursor-pointer outline-none focus:outline-none"
 			animate={status}
+			className="relative cursor-pointer outline-none focus:outline-none"
 			initial={false}
+			onClick={handleClick}
 		>
 			<motion.div
+				className="flex h-8 w-8 items-center justify-center rounded-full font-semibold"
+				transition={{ duration: 0.3 }}
 				variants={{
 					inactive: {
 						scale: 1,
@@ -388,8 +390,6 @@ function StepIndicator({
 						color: "var(--color-primary-foreground)",
 					},
 				}}
-				transition={{ duration: 0.3 }}
-				className="flex h-8 w-8 items-center justify-center rounded-full font-semibold"
 			>
 				{status === "complete" ? (
 					<CheckIcon className="h-4 w-4 text-primary-foreground" />
@@ -416,11 +416,11 @@ function StepConnector({ isComplete }: StepConnectorProps) {
 	return (
 		<div className="relative mx-2 h-0.5 flex-1 overflow-hidden rounded bg-muted">
 			<motion.div
-				className="absolute left-0 top-0 h-full"
-				variants={lineVariants}
-				initial={false}
 				animate={isComplete ? "complete" : "incomplete"}
+				className="absolute top-0 left-0 h-full"
+				initial={false}
 				transition={{ duration: 0.4 }}
+				variants={lineVariants}
 			/>
 		</div>
 	);
@@ -432,24 +432,24 @@ function CheckIcon(props: CheckIconProps) {
 	return (
 		<svg
 			{...props}
+			aria-hidden={true}
 			fill="none"
 			stroke="currentColor"
 			strokeWidth={2}
 			viewBox="0 0 24 24"
-			aria-hidden={true}
 		>
 			<motion.path
-				initial={{ pathLength: 0 }}
 				animate={{ pathLength: 1 }}
+				d="M5 13l4 4L19 7"
+				initial={{ pathLength: 0 }}
+				strokeLinecap="round"
+				strokeLinejoin="round"
 				transition={{
 					delay: 0.1,
 					type: "tween",
 					ease: "easeOut",
 					duration: 0.3,
 				}}
-				strokeLinecap="round"
-				strokeLinejoin="round"
-				d="M5 13l4 4L19 7"
 			/>
 		</svg>
 	);

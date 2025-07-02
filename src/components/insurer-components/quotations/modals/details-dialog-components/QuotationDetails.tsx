@@ -17,15 +17,15 @@ interface DescriptionItemProps {
 function DescriptionItem({ label, value }: DescriptionItemProps) {
 	return (
 		<div className="flex flex-col space-y-0.5">
-			<span className="text-sm text-muted-foreground">{label}</span>
-			<span className="text-base font-medium text-foreground">{value}</span>
+			<span className="text-muted-foreground text-sm">{label}</span>
+			<span className="font-medium text-base text-foreground">{value}</span>
 		</div>
 	);
 }
 
 // Add a simple divider component for visual separation
 function CardDivider() {
-	return <div className="my-2 border-t border-muted" />;
+	return <div className="my-2 border-muted border-t" />;
 }
 
 // AddressInformationCard
@@ -35,12 +35,12 @@ interface AddressInformationCardProps {
 
 function AddressInformationCard({ address }: AddressInformationCardProps) {
 	return (
-		<div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6 flex flex-col gap-4">
-			<div className="flex items-center gap-3 mb-2">
-				<h3 className="text-xl font-semibold">Address Information</h3>
+		<div className="flex flex-col gap-4 rounded-lg border bg-card p-6 text-card-foreground shadow-sm">
+			<div className="mb-2 flex items-center gap-3">
+				<h3 className="font-semibold text-xl">Address Information</h3>
 			</div>
 			<CardDivider />
-			<div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+			<div className="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2">
 				<DescriptionItem
 					label="Region"
 					value={address?.region ? String(address.region) : "-"}
@@ -71,21 +71,21 @@ interface VehicleDetailsCardProps {
 function VehicleDetailsCard({ vehicle, formData }: VehicleDetailsCardProps) {
 	const vehicleDetails = formData?.vehicle_details;
 
-	if (!vehicle && !vehicleDetails) {
+	if (!(vehicle || vehicleDetails)) {
 		return (
-			<div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
+			<div className="rounded-lg border bg-card p-6 text-card-foreground shadow-sm">
 				<p className="text-muted-foreground">No vehicle details available.</p>
 			</div>
 		);
 	}
 
 	return (
-		<div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6 flex flex-col gap-4">
-			<div className="flex items-center gap-3 mb-2">
-				<h3 className="text-xl font-semibold">Vehicle Details</h3>
+		<div className="flex flex-col gap-4 rounded-lg border bg-card p-6 text-card-foreground shadow-sm">
+			<div className="mb-2 flex items-center gap-3">
+				<h3 className="font-semibold text-xl">Vehicle Details</h3>
 			</div>
 			<CardDivider />
-			<div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+			<div className="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2">
 				<DescriptionItem label="Make" value={vehicle?.make ?? "-"} />
 				<DescriptionItem label="Model" value={vehicle?.model ?? "-"} />
 				<DescriptionItem
@@ -156,7 +156,7 @@ interface CustomerProfileCardProps {
 function CustomerProfileCard({ user }: CustomerProfileCardProps) {
 	if (!user) {
 		return (
-			<div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
+			<div className="rounded-lg border bg-card p-6 text-card-foreground shadow-sm">
 				<p className="text-muted-foreground">No user information available.</p>
 			</div>
 		);
@@ -175,15 +175,15 @@ function CustomerProfileCard({ user }: CustomerProfileCardProps) {
 		.slice(0, 2);
 
 	return (
-		<div className="rounded-lg border bg-card text-card-foreground shadow-sm p-0 overflow-hidden">
+		<div className="overflow-hidden rounded-lg border bg-card p-0 text-card-foreground shadow-sm">
 			{/* Profile Header: Avatar, Name, Status */}
-			<div className="flex flex-col sm:flex-row items-center gap-6 p-6 pb-4">
+			<div className="flex flex-col items-center gap-6 p-6 pb-4 sm:flex-row">
 				<Avatar className="h-20 w-20 rounded-md border-2 border-primary/20 shadow-sm">
 					<AvatarFallback className="text-2xl">{initials}</AvatarFallback>
 				</Avatar>
-				<div className="flex-1 flex flex-col gap-2 mt-4 sm:mt-0 items-center sm:items-start">
+				<div className="mt-4 flex flex-1 flex-col items-center gap-2 sm:mt-0 sm:items-start">
 					<div className="flex items-center gap-2">
-						<p className="text-xl font-semibold leading-tight truncate">
+						<p className="truncate font-semibold text-xl leading-tight">
 							{fullName}
 						</p>
 						{user.verified !== undefined && (
@@ -199,8 +199,8 @@ function CustomerProfileCard({ user }: CustomerProfileCardProps) {
 
 			{/* Personal Information Section */}
 			<div className="px-6 py-4">
-				<h4 className="text-lg font-semibold mb-2">Personal Information</h4>
-				<div className="grid grid-cols-1 sm:grid-cols-3 gap-x-8 gap-y-4">
+				<h4 className="mb-2 font-semibold text-lg">Personal Information</h4>
+				<div className="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-3">
 					<DescriptionItem label="FIN" value={user.fin ?? "-"} />
 					<DescriptionItem label="Gender" value={customer?.gender ?? "-"} />
 					<DescriptionItem
@@ -215,8 +215,8 @@ function CustomerProfileCard({ user }: CustomerProfileCardProps) {
 			{/* Address Information Section */}
 			{customer && (
 				<div className="px-6 py-4">
-					<h4 className="text-lg font-semibold mb-2">Address Information</h4>
-					<div className="grid grid-cols-1 sm:grid-cols-4 gap-x-8 gap-y-4 text-muted-foreground">
+					<h4 className="mb-2 font-semibold text-lg">Address Information</h4>
+					<div className="grid grid-cols-1 gap-x-8 gap-y-4 text-muted-foreground sm:grid-cols-4">
 						<DescriptionItem
 							label="Region"
 							value={
@@ -245,8 +245,8 @@ function CustomerProfileCard({ user }: CustomerProfileCardProps) {
 
 			{/* Contact Information Section */}
 			<div className="px-6 py-4">
-				<h4 className="text-lg font-semibold mb-2">Contact Information</h4>
-				<div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+				<h4 className="mb-2 font-semibold text-lg">Contact Information</h4>
+				<div className="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2">
 					<DescriptionItem
 						label="Email"
 						value={
@@ -262,7 +262,7 @@ function CustomerProfileCard({ user }: CustomerProfileCardProps) {
 				<>
 					<CardDivider />
 					<div className="px-6 py-4">
-						<h4 className="text-lg font-semibold mb-2">Roles</h4>
+						<h4 className="mb-2 font-semibold text-lg">Roles</h4>
 						<DescriptionItem label="Roles" value={user.roles.join(", ")} />
 					</div>
 				</>
@@ -284,9 +284,9 @@ function ProductDetailsCard({
 	coverageType,
 }: ProductDetailsCardProps) {
 	return (
-		<div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6 flex flex-col gap-4">
-			<div className="flex items-center gap-3 mb-2">
-				<h3 className="text-xl font-semibold">Product Details</h3>
+		<div className="flex flex-col gap-4 rounded-lg border bg-card p-6 text-card-foreground shadow-sm">
+			<div className="mb-2 flex items-center gap-3">
+				<h3 className="font-semibold text-xl">Product Details</h3>
 				{insuranceProduct?.status && (
 					<Badge
 						variant={
@@ -303,7 +303,7 @@ function ProductDetailsCard({
 				)}
 			</div>
 			<CardDivider />
-			<div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+			<div className="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2">
 				<DescriptionItem
 					label="Product Name"
 					value={insuranceProduct?.name ?? "-"}
@@ -336,8 +336,8 @@ function ProductDetailsCard({
 					label="Coverage Type"
 					value={coverageType?.name ?? "-"}
 				/>
-				<span className="flex items-center gap-2 col-span-1 sm:col-span-2">
-					<span className="text-sm text-muted-foreground">Customer Rating</span>
+				<span className="col-span-1 flex items-center gap-2 sm:col-span-2">
+					<span className="text-muted-foreground text-sm">Customer Rating</span>
 					{insuranceProduct?.customer_rating !== undefined &&
 					insuranceProduct?.customer_rating !== null ? (
 						<Rating
@@ -346,7 +346,7 @@ function ProductDetailsCard({
 							size="sm"
 						/>
 					) : (
-						<span className="text-xs text-gray-400">No ratings yet</span>
+						<span className="text-gray-400 text-xs">No ratings yet</span>
 					)}
 				</span>
 			</div>
@@ -360,16 +360,16 @@ interface QuotationDetailsProps {
 
 export default function QuotationDetails({ quotation }: QuotationDetailsProps) {
 	return (
-		<div className="flex flex-col gap-8 mt-6">
+		<div className="mt-6 flex flex-col gap-8">
 			<CustomerProfileCard user={quotation.user} />
 			<ProductDetailsCard
+				coverageType={quotation.coverage_type}
 				insuranceProduct={quotation.insurance_product}
 				insuranceType={quotation.coverage_type?.insurance_type}
-				coverageType={quotation.coverage_type}
 			/>
 			<VehicleDetailsCard
-				vehicle={quotation.insured_entity_data}
 				formData={quotation.form_data}
+				vehicle={quotation.insured_entity_data}
 			/>
 			<AddressInformationCard
 				address={quotation.form_data?.current_residence_address}

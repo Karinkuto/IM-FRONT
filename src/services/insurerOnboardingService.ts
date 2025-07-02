@@ -20,7 +20,7 @@ export type InsurerOnboardingFormValues = z.infer<
 type InsurerOnboardingPayload = Omit<InsurerOnboardingFormValues, "logo">;
 
 export function buildInsurerOnboardingFormData(
-	values: InsurerOnboardingFormValues,
+	values: InsurerOnboardingFormValues
 ): FormData {
 	const formData = new FormData();
 	const payload: InsurerOnboardingPayload = {

@@ -22,7 +22,7 @@ export interface QuotationRequestsTableProps {
 	onViewDetails?: (quotationId: number) => void;
 	onStatusChange: (
 		id: number,
-		newStatus: QuotationStatus,
+		newStatus: QuotationStatus
 	) => void | Promise<void>;
 	toolbarActionsPrefix?: React.ReactNode;
 }
@@ -33,7 +33,7 @@ export const QuotationRequestsTable: FC<QuotationRequestsTableProps> = ({
 	toolbarActionsPrefix,
 }) => {
 	const [selectedQuotationId, setSelectedQuotationId] = useState<number | null>(
-		null,
+		null
 	);
 
 	const onViewDetails = (id: string | number) => {
@@ -84,7 +84,7 @@ export const QuotationRequestsTable: FC<QuotationRequestsTableProps> = ({
 						</Avatar>
 						<div className="flex flex-col">
 							<span className="font-medium">{fullName}</span>
-							<span className="text-sm text-muted-foreground">
+							<span className="text-muted-foreground text-sm">
 								{phone_number}
 							</span>
 						</div>
@@ -112,7 +112,7 @@ export const QuotationRequestsTable: FC<QuotationRequestsTableProps> = ({
 						<span className="font-medium">
 							{entity.make} {entity.model} ({entity.year_of_manufacture})
 						</span>
-						<span className="text-sm text-muted-foreground font-mono">
+						<span className="font-mono text-muted-foreground text-sm">
 							{entity.plate_number}
 						</span>
 					</div>
@@ -123,7 +123,9 @@ export const QuotationRequestsTable: FC<QuotationRequestsTableProps> = ({
 			id: "estimatedValue",
 			header: "Estimated Value",
 			cell: ({ row }) => {
-				const value = parseFloat(row.original.request_summary.estimated_value);
+				const value = Number.parseFloat(
+					row.original.request_summary.estimated_value
+				);
 				return <div className="font-medium">ETB {value.toLocaleString()}</div>;
 			},
 		},
@@ -136,10 +138,10 @@ export const QuotationRequestsTable: FC<QuotationRequestsTableProps> = ({
 				return (
 					<div className="flex flex-col">
 						<span className="font-medium">{insurer.name}</span>
-						<span className="text-sm text-muted-foreground">
+						<span className="text-muted-foreground text-sm">
 							ETB{" "}
-							{parseFloat(
-								row.original.insurance_product.estimated_price,
+							{Number.parseFloat(
+								row.original.insurance_product.estimated_price
 							).toLocaleString()}
 						</span>
 					</div>
@@ -211,7 +213,7 @@ export const QuotationRequestsTable: FC<QuotationRequestsTableProps> = ({
 					onViewDetails: (id: string) => void;
 					onStatusChange: (
 						id: string,
-						status: QuotationStatus,
+						status: QuotationStatus
 					) => void | Promise<void>;
 				};
 
@@ -219,7 +221,7 @@ export const QuotationRequestsTable: FC<QuotationRequestsTableProps> = ({
 					<div className="text-center">
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
-								<Button variant="ghost" className="h-8 w-8 p-0">
+								<Button className="h-8 w-8 p-0" variant="ghost">
 									<span className="sr-only">Open menu</span>
 									<MoreHorizontal className="h-4 w-4" />
 								</Button>
@@ -236,19 +238,19 @@ export const QuotationRequestsTable: FC<QuotationRequestsTableProps> = ({
 								{quotation.status === "pending" && (
 									<>
 										<DropdownMenuItem
+											className="text-green-600"
 											onClick={() =>
 												onStatusChange(quotation.id.toString(), "approved")
 											}
-											className="text-green-600"
 										>
 											<CheckCircle className="mr-2 h-4 w-4" />
 											Approve
 										</DropdownMenuItem>
 										<DropdownMenuItem
+											className="text-red-600"
 											onClick={() =>
 												onStatusChange(quotation.id.toString(), "rejected")
 											}
-											className="text-red-600"
 										>
 											<XCircle className="mr-2 h-4 w-4" />
 											Reject
@@ -267,10 +269,10 @@ export const QuotationRequestsTable: FC<QuotationRequestsTableProps> = ({
 		<div className="space-y-4">
 			<div className="flex flex-col gap-4">
 				<DataTable
-					toolbarActionsPrefix={toolbarActionsPrefix}
 					columns={columns}
 					data={quotations}
 					meta={meta}
+					toolbarActionsPrefix={toolbarActionsPrefix}
 				/>
 			</div>
 

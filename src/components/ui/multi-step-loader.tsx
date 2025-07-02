@@ -10,16 +10,16 @@ const RED = "var(--badge-rejected-background)";
 const CheckFilled = ({ className }: { className?: string }) => {
 	return (
 		<svg
-			xmlns="http://www.w3.org/2000/svg"
-			viewBox="0 0 24 24"
-			fill={GREEN}
-			className={cn("w-6 h-6 ", className)}
 			aria-hidden="true"
+			className={cn("h-6 w-6 ", className)}
+			fill={GREEN}
+			viewBox="0 0 24 24"
+			xmlns="http://www.w3.org/2000/svg"
 		>
 			<path
-				fillRule="evenodd"
-				d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 0 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.14-.094l3.75-5.25Z"
 				clipRule="evenodd"
+				d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 0 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.14-.094l3.75-5.25Z"
+				fillRule="evenodd"
 			/>
 		</svg>
 	);
@@ -27,10 +27,10 @@ const CheckFilled = ({ className }: { className?: string }) => {
 
 const Spinner = ({ className }: { className?: string }) => (
 	<svg
-		className={cn("w-6 h-6 animate-spin", className)}
-		xmlns="http://www.w3.org/2000/svg"
+		className={cn("h-6 w-6 animate-spin", className)}
 		fill="none"
 		viewBox="0 0 24 24"
+		xmlns="http://www.w3.org/2000/svg"
 	>
 		<title>Loading spinner</title>
 		<circle
@@ -43,26 +43,26 @@ const Spinner = ({ className }: { className?: string }) => (
 		/>
 		<path
 			className="opacity-75"
-			fill="currentColor"
 			d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+			fill="currentColor"
 		/>
 	</svg>
 );
 
 const XCircle = ({ className }: { className?: string }) => (
 	<svg
-		xmlns="http://www.w3.org/2000/svg"
+		className={cn("h-6 w-6", className)}
 		fill="none"
-		viewBox="0 0 24 24"
-		strokeWidth={1.5}
 		stroke={RED}
-		className={cn("w-6 h-6", className)}
+		strokeWidth={1.5}
+		viewBox="0 0 24 24"
+		xmlns="http://www.w3.org/2000/svg"
 	>
 		<title>Error icon</title>
 		<path
+			d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
 			strokeLinecap="round"
 			strokeLinejoin="round"
-			d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
 		/>
 	</svg>
 );
@@ -72,14 +72,14 @@ const OrangeBeacon = ({ className }: { className?: string }) => (
 	<span
 		className={cn(
 			"relative flex h-3 w-3 items-center justify-center",
-			className,
+			className
 		)}
 	>
 		<span
-			className="absolute inline-flex h-full w-full rounded-full bg-orange-300 opacity-30 animate-ping"
+			className="absolute inline-flex h-full w-full animate-ping rounded-full bg-orange-300 opacity-30"
 			style={{ animationDuration: "1.6s", transform: "scale(1.4)" }}
-		></span>
-		<span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-orange-300" />
+		/>
+		<span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-orange-300" />
 	</span>
 );
 
@@ -101,7 +101,7 @@ const LoaderCore = ({
 	errorMessage?: string | null;
 }) => {
 	return (
-		<div className="flex relative justify-start max-w-xl mx-auto flex-col mt-40">
+		<div className="relative mx-auto mt-40 flex max-w-xl flex-col justify-start">
 			{loadingStates.map((loadingState, index) => {
 				const distance = Math.abs(index - value);
 				const opacity = Math.max(1 - distance * 0.2, 0);
@@ -114,17 +114,17 @@ const LoaderCore = ({
 
 				return (
 					<motion.div
-						key={`${loadingState.text}-${index}`}
-						className={cn("flex gap-2 items-start mb-4")}
+						animate={{ opacity, y: -(value * 40) }}
+						className={cn("mb-4 flex items-start gap-2")}
 						initial={{ opacity: 0, y: -(value * 40) }}
-						animate={{ opacity: opacity, y: -(value * 40) }}
+						key={`${loadingState.text}-${index}`}
 						transition={{ duration: 0.5 }}
 					>
 						{/* Icon and vertical rail column */}
-						<div className="flex flex-col items-center min-w-[2rem] relative">
+						<div className="relative flex min-w-[2rem] flex-col items-center">
 							<div
 								className={cn(
-									"flex items-center justify-center rounded-full h-8 w-8",
+									"flex h-8 w-8 items-center justify-center rounded-full"
 								)}
 							>
 								{isError ? (
@@ -141,25 +141,25 @@ const LoaderCore = ({
 							{isError && index < loadingStates.length - 1 && (
 								<div
 									className={cn(
-										"w-0.5 bg-neutral-200 dark:bg-neutral-700 absolute left-1/2 -translate-x-1/2",
-										"h-[78px]", // Fixed height for error connection
+										"-translate-x-1/2 absolute left-1/2 w-0.5 bg-neutral-200 dark:bg-neutral-700",
+										"h-[78px]" // Fixed height for error connection
 									)}
 									style={{ top: "16px" }} // Starts at icon's center
 								/>
 							)}
 						</div>
 						{/* Step text and optional error message column */}
-						<div className="flex flex-col flex-grow">
+						<div className="flex flex-grow flex-col">
 							<span
 								className={cn(
-									"text-base font-medium",
-									"text-black dark:text-white",
+									"font-medium text-base",
+									"text-black dark:text-white"
 								)}
 							>
 								{loadingState.text}
 							</span>
 							{isError && displayError && (
-								<p className="text-red-400 text-sm font-semibold whitespace-pre-line mt-1">
+								<p className="mt-1 whitespace-pre-line font-semibold text-red-400 text-sm">
 									{displayError}
 								</p>
 							)}
@@ -214,7 +214,7 @@ export const MultiStepLoader = ({
 						? prevState === loadingStates.length - 1
 							? 0
 							: prevState + 1
-						: Math.min(prevState + 1, loadingStates.length - 1),
+						: Math.min(prevState + 1, loadingStates.length - 1)
 				);
 			}, duration);
 			return () => clearTimeout(timeout);
@@ -234,23 +234,23 @@ export const MultiStepLoader = ({
 		<AnimatePresence mode="wait">
 			{loading && (
 				<motion.div
-					initial={{
-						opacity: 0,
-					}}
 					animate={{
 						opacity: 1,
 					}}
+					className="flex items-center justify-center"
 					exit={{
 						opacity: 0,
 					}}
-					className="flex items-center justify-center"
+					initial={{
+						opacity: 0,
+					}}
 				>
-					<div className="h-96  relative">
+					<div className="relative h-96">
 						<LoaderCore
-							value={currentState}
-							loadingStates={loadingStates}
-							errorStep={errorStep}
 							errorMessage={errorMessage}
+							errorStep={errorStep}
+							loadingStates={loadingStates}
+							value={currentState}
 						/>
 					</div>
 				</motion.div>

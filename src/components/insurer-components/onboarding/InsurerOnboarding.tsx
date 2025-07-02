@@ -52,13 +52,13 @@ const onboardingSteps = [
 
 // Utility function to map user.ts User to auth.ts User
 const mapUserToAuthUser = (
-	user: import("@/types/user").User,
+	user: import("@/types/user").User
 ): import("@/types/auth").User => {
 	// Helper function to normalize roles to the expected format
 	const normalizeRoles = (
-		roles: unknown,
+		roles: unknown
 	): { id: number; name: "admin" | "customer" | "insurer" }[] | undefined => {
-		if (!roles) return undefined;
+		if (!roles) return;
 
 		if (Array.isArray(roles)) {
 			return roles.map((role) => {
@@ -67,7 +67,8 @@ const mapUserToAuthUser = (
 						id: 0, // Default ID for string roles
 						name: role as "admin" | "customer" | "insurer",
 					};
-				} else if (role && typeof role === "object" && "name" in role) {
+				}
+				if (role && typeof role === "object" && "name" in role) {
 					return {
 						id: "id" in role ? Number(role.id) : 0,
 						name: String(role.name) as "admin" | "customer" | "insurer",
@@ -76,7 +77,7 @@ const mapUserToAuthUser = (
 				return { id: 0, name: "customer" as const }; // Default fallback
 			});
 		}
-		return undefined;
+		return;
 	};
 
 	// Determine the user's role
@@ -125,7 +126,7 @@ export function InsurerOnboarding({
 	const [loaderState, setLoaderState] = useState(0);
 	const [loaderErrorStep, setLoaderErrorStep] = useState<number | null>(null);
 	const [loaderErrorMessage, setLoaderErrorMessage] = useState<string | null>(
-		null,
+		null
 	);
 	const [showWelcome, setShowWelcome] = useState(false);
 	const [welcomeVisible, setWelcomeVisible] = useState(false);
@@ -138,7 +139,7 @@ export function InsurerOnboarding({
 
 	const userId = user?.id;
 	const currentAccessToken = useSelector(
-		(state: RootState) => state.auth.access_token,
+		(state: RootState) => state.auth.access_token
 	);
 
 	const { refetch: refetchUser } = useGetUserByIdQuery(userId || "", {
@@ -265,7 +266,7 @@ export function InsurerOnboarding({
 					setCredentials({
 						access_token: currentAccessToken,
 						user: mapUserToAuthUser(updatedUserResponse),
-					}),
+					})
 				);
 
 				if (isPasswordUpdated && isProfileUpdated) {
@@ -308,46 +309,40 @@ export function InsurerOnboarding({
 	};
 
 	// Exit early if not showing onboarding and overlay is not visible
-	if (!showInsurerOnboarding && !showWelcome && !overlayVisible) return null;
+	if (!(showInsurerOnboarding || showWelcome || overlayVisible)) return null;
 
 	return (
 		<AnimatePresence>
 			{(showInsurerOnboarding || showWelcome || overlayVisible) && (
 				<motion.div
-					initial={{ opacity: 0 }}
 					animate={{
 						opacity: 1,
 						transition: { duration: 0.5, ease: "easeIn" },
 					}}
+					className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/40 backdrop-blur-sm"
 					exit={{ opacity: 0, transition: { duration: 0.8, ease: "easeOut" } }}
-					className="fixed inset-0 z-[1000] flex items-center justify-center backdrop-blur-sm bg-black/40"
+					initial={{ opacity: 0 }}
 				>
 					<AnimatePresence mode="wait">
 						{!showWelcome && showInsurerOnboarding && (
 							<motion.div
-								key="onboarding-loader"
-								initial={{ opacity: 0, scale: 0.98 }}
 								animate={{
 									opacity: 1,
 									scale: 1,
 									transition: { duration: 0.4, ease: "easeInOut" },
 								}}
+								className="flex h-full w-full items-center justify-center"
 								exit={{
 									opacity: 0,
 									scale: 1.02,
 									transition: { duration: 0.4, ease: "easeInOut" },
 								}}
-								className="flex items-center justify-center w-full h-full"
+								initial={{ opacity: 0, scale: 0.98 }}
+								key="onboarding-loader"
 							>
 								<Form {...form}>
 									<Stepper
 										initialStep={currentStep}
-										onStepChange={setCurrentStep}
-										validate={triggerStepValidation}
-										onComplete={form.handleSubmit(handleOnboardingSubmit)}
-										stepCircleContainerClassName="bg-white dark:bg-neutral-900 shadow-2xl border border-neutral-200 dark:border-neutral-800"
-										onFinalStepCompleted={() => {}}
-										onLoaderComplete={handleLoaderComplete}
 										loaderProps={{
 											loadingStates: onboardingSteps,
 											loading: form.formState.isSubmitting,
@@ -358,21 +353,27 @@ export function InsurerOnboarding({
 										nextButtonProps={{
 											disabled: isChangingPassword || isOnboardingInsurer,
 										}}
+										onComplete={form.handleSubmit(handleOnboardingSubmit)}
+										onFinalStepCompleted={() => {}}
+										onLoaderComplete={handleLoaderComplete}
+										onStepChange={setCurrentStep}
+										stepCircleContainerClassName="bg-white dark:bg-neutral-900 shadow-2xl border border-neutral-200 dark:border-neutral-800"
+										validate={triggerStepValidation}
 									>
 										{/* Step 1: Change Password */}
 										<Step>
 											<StepChangePassword
-												newPasswordId={newPasswordId}
 												confirmPasswordId={confirmPasswordId}
 												form={form}
+												newPasswordId={newPasswordId}
 											/>
 										</Step>
 										{/* Step 2: Basic Info */}
 										<Step>
 											<StepBasicInfo
-												nameId={nameId}
 												descId={descId}
 												form={form}
+												nameId={nameId}
 											/>
 										</Step>
 										{/* Step 3: Contact Info */}
@@ -390,8 +391,8 @@ export function InsurerOnboarding({
 										{/* Step 5: Logo Upload */}
 										<Step>
 											<StepLogoUpload
-												logoId={logoId}
 												form={form}
+												logoId={logoId}
 												onLogoChange={setLogoPreview}
 											/>
 										</Step>
@@ -407,21 +408,21 @@ export function InsurerOnboarding({
 					<AnimatePresence>
 						{showWelcome && (
 							<motion.div
-								key="onboarding-welcome"
-								initial={{ opacity: 0, scale: 0.98 }}
 								animate={{
 									opacity: welcomeVisible ? 1 : 0,
 									scale: 1,
 									transition: { duration: 1, ease: "easeInOut" },
 								}}
+								className="absolute inset-0 z-[1100] flex items-center justify-center"
 								exit={{
 									opacity: 0,
 									scale: 1.02,
 									transition: { duration: 1, ease: "easeInOut" },
 								}}
-								className="absolute inset-0 flex items-center justify-center z-[1100]"
+								initial={{ opacity: 0, scale: 0.98 }}
+								key="onboarding-welcome"
 							>
-								<h1 className="text-3xl font-bold text-white drop-shadow-lg">
+								<h1 className="font-bold text-3xl text-white drop-shadow-lg">
 									Welcome to the Insurance Dashboard!
 								</h1>
 							</motion.div>

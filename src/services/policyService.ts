@@ -45,7 +45,7 @@ export const updatePolicy = (updatedPolicy: Policy): Promise<Policy> => {
 	return new Promise((resolve, reject) => {
 		setTimeout(() => {
 			const index = mockPolicies.findIndex(
-				(p) => p.policyNumber === updatedPolicy.policyNumber,
+				(p) => p.policyNumber === updatedPolicy.policyNumber
 			);
 			if (index !== -1) {
 				mockPolicies[index] = updatedPolicy;
@@ -62,7 +62,7 @@ export const deletePolicy = (policyNumber: string): Promise<boolean> => {
 		setTimeout(() => {
 			const initialLength = mockPolicies.length;
 			const newPolicies = mockPolicies.filter(
-				(p) => p.policyNumber !== policyNumber,
+				(p) => p.policyNumber !== policyNumber
 			);
 			if (newPolicies.length < initialLength) {
 				mockPolicies.splice(0, mockPolicies.length, ...newPolicies);

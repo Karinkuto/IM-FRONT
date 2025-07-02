@@ -27,7 +27,7 @@ export const store = configureStore({
 			productApi.middleware,
 			quotationApi.middleware,
 			userApi.middleware,
-			insurerApi.middleware,
+			insurerApi.middleware
 		),
 	devTools: process.env.NODE_ENV !== "production",
 });

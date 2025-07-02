@@ -55,7 +55,7 @@ export function DataTable<TData, TValue>({
 }: DataTableProps<TData, TValue>) {
 	const [sorting, setSorting] = React.useState<SortingState>([]);
 	const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-		[],
+		[]
 	);
 	const [columnVisibility, setColumnVisibility] =
 		React.useState<VisibilityState>({}); // Control column visibility
@@ -104,19 +104,19 @@ export function DataTable<TData, TValue>({
 		<div>
 			{/* Toolbar: Create Button, Filtering Input, and Column Visibility Dropdown */}
 			<div className="flex items-center justify-between py-4">
-				<div className="flex items-center gap-2 flex-1">
+				<div className="flex flex-1 items-center gap-2">
 					<Input
-						placeholder="Search all columns..." // Updated placeholder
-						value={globalFilter ?? ""} // Use globalFilter state
-						onChange={(event) => setGlobalFilter(event.target.value)} // Update globalFilter
-						className="max-w-sm h-10"
+						className="h-10 max-w-sm" // Updated placeholder
+						onChange={(event) => setGlobalFilter(event.target.value)} // Use globalFilter state
+						placeholder="Search all columns..." // Update globalFilter
+						value={globalFilter ?? ""}
 					/>
 				</div>
 				<div className="flex items-center gap-2">
 					{toolbarActionsPrefix && <div>{toolbarActionsPrefix}</div>}
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
-							<Button variant="outline" className="ml-auto">
+							<Button className="ml-auto" variant="outline">
 								Columns <ChevronDown className="ml-2 h-4 w-4" />
 							</Button>
 						</DropdownMenuTrigger>
@@ -127,9 +127,9 @@ export function DataTable<TData, TValue>({
 								.map((column) => {
 									return (
 										<DropdownMenuCheckboxItem
-											key={column.id}
-											className="capitalize"
 											checked={column.getIsVisible()}
+											className="capitalize"
+											key={column.id}
 											onCheckedChange={(value) =>
 												column.toggleVisibility(!!value)
 											}
@@ -156,7 +156,7 @@ export function DataTable<TData, TValue>({
 												? null
 												: flexRender(
 														header.column.columnDef.header,
-														header.getContext(),
+														header.getContext()
 													)}
 										</TableHead>
 									);
@@ -168,14 +168,14 @@ export function DataTable<TData, TValue>({
 						{table.getRowModel().rows?.length ? (
 							table.getRowModel().rows.map((row) => (
 								<TableRow
-									key={row.id}
 									data-state={row.getIsSelected() && "selected"}
+									key={row.id}
 								>
 									{row.getVisibleCells().map((cell) => (
 										<TableCell key={cell.id}>
 											{flexRender(
 												cell.column.columnDef.cell,
-												cell.getContext(),
+												cell.getContext()
 											)}
 										</TableCell>
 									))}
@@ -184,8 +184,8 @@ export function DataTable<TData, TValue>({
 						) : (
 							<TableRow>
 								<TableCell
-									colSpan={columns.length}
 									className="h-24 text-center"
+									colSpan={columns.length}
 								>
 									No results.
 								</TableCell>
@@ -198,18 +198,18 @@ export function DataTable<TData, TValue>({
 			{/* Pagination Controls */}
 			<div className="flex items-center justify-end space-x-2 py-4">
 				<Button
-					variant="outline"
-					size="sm"
-					onClick={() => table.previousPage()}
 					disabled={!table.getCanPreviousPage()}
+					onClick={() => table.previousPage()}
+					size="sm"
+					variant="outline"
 				>
 					Previous
 				</Button>
 				<Button
-					variant="outline"
-					size="sm"
-					onClick={() => table.nextPage()}
 					disabled={!table.getCanNextPage()}
+					onClick={() => table.nextPage()}
+					size="sm"
+					variant="outline"
 				>
 					Next
 				</Button>

@@ -88,18 +88,18 @@ export default function UsersTable() {
 				return verified ? (
 					<Badge variant="outline">
 						<CheckCircle2
-							className="-ms-0.5 opacity-60 text-green-500"
-							size={12}
 							aria-hidden="true"
+							className="-ms-0.5 text-green-500 opacity-60"
+							size={12}
 						/>
 						Verified
 					</Badge>
 				) : (
 					<Badge variant="outline">
 						<XCircle
-							className="-ms-0.5 opacity-60 text-red-500"
-							size={12}
 							aria-hidden="true"
+							className="-ms-0.5 text-red-500 opacity-60"
+							size={12}
 						/>
 						Not Verified
 					</Badge>
@@ -140,7 +140,7 @@ export default function UsersTable() {
 				if (!value) return <span style={{ color: "#aaa" }}>-</span>;
 				const date = new Date(value as string);
 				return (
-					<span className="font-mono text-sm text-muted-foreground dark:text-foreground">
+					<span className="font-mono text-muted-foreground text-sm dark:text-foreground">
 						{date.toISOString().slice(0, 10)}
 					</span>
 				);
@@ -153,11 +153,11 @@ export default function UsersTable() {
 				const user = row.original;
 				return (
 					<Button
+						onClick={() => handleEditUser(user)}
 						size="icon"
 						variant="ghost"
-						onClick={() => handleEditUser(user)}
 					>
-						<Pencil className="w-4 h-4 text-primary" />
+						<Pencil className="h-4 w-4 text-primary" />
 					</Button>
 				);
 			},
@@ -179,19 +179,19 @@ export default function UsersTable() {
 				}
 			/>
 			<UserDialog
-				open={openAddUser}
+				mode="create"
 				onOpenChange={setOpenAddUser}
 				onSubmit={handleAddUser}
-				mode="create"
+				open={openAddUser}
 			/>
 			<UserDialog
-				open={openEditUser}
+				initialValues={editUserInitial}
+				mode="edit"
 				onOpenChange={setOpenEditUser}
 				onSubmit={handleUpdateUser}
-				mode="edit"
-				initialValues={editUserInitial}
+				open={openEditUser}
 			/>
-			{formError && <div className="text-red-500 text-sm p-2">{formError}</div>}
+			{formError && <div className="p-2 text-red-500 text-sm">{formError}</div>}
 		</>
 	);
 }

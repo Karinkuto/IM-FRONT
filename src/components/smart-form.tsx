@@ -126,11 +126,11 @@ export function SmartForm<T extends FieldValues>({
 				<CardContent className="p-6">
 					<div className="space-y-6">{children(form)}</div>
 
-					<div className="flex items-center justify-end pt-6 mt-6 border-t">
+					<div className="mt-6 flex items-center justify-end border-t pt-6">
 						<Button
-							type="submit"
-							disabled={mutation.isPending}
 							className="min-w-32"
+							disabled={mutation.isPending}
+							type="submit"
 						>
 							{mutation.isPending ? (
 								<>
@@ -180,35 +180,35 @@ export function SmartFormField<T extends FieldValues>({
 			case "password":
 				return (
 					<Input
-						type={type}
-						placeholder={placeholder}
 						disabled={disabled}
+						placeholder={placeholder}
+						type={type}
 						{...field}
-						value={field.value || ""}
 						id={id}
+						value={field.value || ""}
 					/>
 				);
 
 			case "number":
 				return (
 					<Input
-						type="number"
-						placeholder={placeholder}
 						disabled={disabled}
+						placeholder={placeholder}
+						type="number"
 						{...field}
-						value={field.value || ""}
 						onChange={(e) => {
 							const value = e.target.value;
 							field.onChange(value === "" ? undefined : Number(value));
 						}}
+						value={field.value || ""}
 					/>
 				);
 
 			case "textarea":
 				return (
 					<Textarea
-						placeholder={placeholder}
 						disabled={disabled}
+						placeholder={placeholder}
 						rows={3}
 						{...field}
 						value={field.value || ""}
@@ -218,9 +218,9 @@ export function SmartFormField<T extends FieldValues>({
 			case "select":
 				return (
 					<Select
-						onValueChange={field.onChange}
 						defaultValue={field.value}
 						disabled={disabled}
+						onValueChange={field.onChange}
 					>
 						<SelectTrigger>
 							<SelectValue placeholder={placeholder || `Select ${label}`} />
@@ -239,11 +239,11 @@ export function SmartFormField<T extends FieldValues>({
 				return (
 					<div className="flex items-center space-x-2">
 						<Checkbox
-							checked={field.value || false}
-							onCheckedChange={field.onChange}
+							checked={field.value}
 							disabled={disabled}
+							onCheckedChange={field.onChange}
 						/>
-						<label className="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+						<label className="font-normal text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
 							{label}
 						</label>
 					</div>
@@ -252,19 +252,19 @@ export function SmartFormField<T extends FieldValues>({
 			case "radio":
 				return (
 					<RadioGroup
-						onValueChange={field.onChange}
 						defaultValue={field.value}
 						disabled={disabled}
+						onValueChange={field.onChange}
 					>
 						{options.map((option) => (
-							<div key={option.value} className="flex items-center space-x-2">
+							<div className="flex items-center space-x-2" key={option.value}>
 								<RadioGroupItem
-									value={option.value}
 									id={`${name}-${option.value}`}
+									value={option.value}
 								/>
 								<label
+									className="cursor-pointer font-normal text-sm"
 									htmlFor={`${name}-${option.value}`}
-									className="text-sm font-normal cursor-pointer"
 								>
 									{option.label}
 								</label>
@@ -277,19 +277,19 @@ export function SmartFormField<T extends FieldValues>({
 				return (
 					<div className="flex items-center space-x-2">
 						<Input
-							type="color"
+							className="h-10 w-12 rounded border p-1"
 							disabled={disabled}
-							className="w-12 h-10 p-1 border rounded"
-							value={field.value || "#000000"}
 							onChange={(e) => field.onChange(e.target.value)}
+							type="color"
+							value={field.value || "#000000"}
 						/>
 						<Input
-							type="text"
-							placeholder="#000000"
-							disabled={disabled}
 							className="flex-1"
-							value={field.value || ""}
+							disabled={disabled}
 							onChange={(e) => field.onChange(e.target.value)}
+							placeholder="#000000"
+							type="text"
+							value={field.value || ""}
 						/>
 					</div>
 				);
@@ -349,9 +349,9 @@ export function FormSection({
 	return (
 		<div className={cn("space-y-4", className)}>
 			<div className="space-y-1">
-				<h3 className="text-lg font-medium">{title}</h3>
+				<h3 className="font-medium text-lg">{title}</h3>
 				{description && (
-					<p className="text-sm text-muted-foreground">{description}</p>
+					<p className="text-muted-foreground text-sm">{description}</p>
 				)}
 			</div>
 			<div className="space-y-4">{children}</div>

@@ -58,19 +58,19 @@ export function Rating({
 
 	return (
 		<div
+			aria-label={ariaLabel || `Rating: ${rating} out of ${maxRating} stars`}
 			className={cn("flex items-center gap-1", className)}
 			role="img"
-			aria-label={ariaLabel || `Rating: ${rating} out of ${maxRating} stars`}
 		>
 			<div className="flex items-center">
 				{ratingItems.map(({ key, filled, fillPercentage }) => (
-					<div key={key} className="relative">
+					<div className="relative" key={key}>
 						{/* Background (unfilled) icon */}
 						<Icon
 							className={cn(
 								sizeClasses[size],
 								inactiveColor,
-								"transition-colors duration-200",
+								"transition-colors duration-200"
 							)}
 						/>
 
@@ -86,7 +86,7 @@ export function Rating({
 									className={cn(
 										sizeClasses[size],
 										activeColor,
-										"transition-colors duration-200",
+										"transition-colors duration-200"
 									)}
 								/>
 							</div>
@@ -96,7 +96,7 @@ export function Rating({
 			</div>
 
 			{showValue && (
-				<span className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-200">
+				<span className="ml-2 font-medium text-gray-700 text-sm dark:text-gray-200">
 					{rating.toFixed(1)}
 				</span>
 			)}

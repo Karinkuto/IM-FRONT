@@ -34,8 +34,8 @@ export function LoginForm({
 			{...props}
 		>
 			<div className="flex flex-col items-center gap-2 text-center">
-				<h1 className="text-2xl font-bold">Login to your account</h1>
-				<p className="text-muted-foreground text-sm text-balance">
+				<h1 className="font-bold text-2xl">Login to your account</h1>
+				<p className="text-balance text-muted-foreground text-sm">
 					Enter your email below to login to your account
 				</p>
 			</div>
@@ -43,37 +43,37 @@ export function LoginForm({
 				<div className="grid gap-3">
 					<Label htmlFor={emailId}>Email</Label>
 					<Input
+						autoComplete="email"
+						className="mt-1 block w-full"
 						id={emailId}
 						name="email"
-						type="email"
-						autoComplete="email"
-						required
-						value={email}
 						onChange={(e) => setEmail(e.target.value)}
-						className="mt-1 block w-full"
+						required
+						type="email"
+						value={email}
 					/>
 				</div>
 				<div className="grid gap-3">
 					<div className="flex items-center">
 						<Label htmlFor={passwordId}>Password</Label>
 						<a
-							href="/forgot-password"
 							className="ml-auto text-sm underline-offset-4 hover:underline"
+							href="/forgot-password"
 						>
 							Forgot your password?
 						</a>
 					</div>
 					<PasswordInput
+						autoComplete="current-password"
+						className="mt-1 block w-full"
 						id={passwordId}
 						name="password"
-						autoComplete="current-password"
+						onChange={(e) => setPassword(e.target.value)}
 						required
 						value={password}
-						onChange={(e) => setPassword(e.target.value)}
-						className="mt-1 block w-full"
 					/>
 				</div>
-				<Button type="submit" className="w-full" disabled={isLoading}>
+				<Button className="w-full" disabled={isLoading} type="submit">
 					{isLoading ? "Logging in..." : "Login"}
 				</Button>
 			</div>

@@ -31,7 +31,7 @@ const columns = (
 	coverageTypesMap?: Record<
 		string,
 		{ coverageTypeName: string; insuranceTypeName: string }
-	>,
+	>
 ) => [
 	{
 		accessorKey: "name",
@@ -115,7 +115,7 @@ const columns = (
 				<div className="text-center">
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
-							<Button variant="ghost" className="h-8 w-8 p-0">
+							<Button className="h-8 w-8 p-0" variant="ghost">
 								<span className="sr-only">Open menu</span>
 								<MoreHorizontal className="h-4 w-4" />
 							</Button>
@@ -145,11 +145,11 @@ export const ProductsTable: FC<ProductsTableProps> = ({
 		<DataTable
 			columns={columns(onEditProduct, coverageTypesMap)}
 			data={products}
-			toolbarActionsPrefix={toolbarActionsPrefix}
 			meta={{
 				onEditProduct,
 				onDeleteProduct,
 			}}
+			toolbarActionsPrefix={toolbarActionsPrefix}
 		/>
 	);
 };

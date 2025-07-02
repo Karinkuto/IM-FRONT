@@ -46,7 +46,7 @@ export default function InsurerQuotations() {
 	};
 
 	const [currentFilters, setCurrentFilters] = useState<QuotationFiltersType>(
-		getFiltersFromParams(),
+		getFiltersFromParams()
 	);
 
 	// Update URL when filters change
@@ -118,7 +118,7 @@ export default function InsurerQuotations() {
 
 	const handleStatusChange = async (
 		quotationId: number,
-		newStatus: QuotationRequest["status"],
+		newStatus: QuotationRequest["status"]
 	) => {
 		try {
 			await updateQuotationStatus({
@@ -142,7 +142,7 @@ export default function InsurerQuotations() {
 
 	if (isLoading) {
 		return (
-			<div className="flex items-center justify-center h-[calc(100vh-200px)]">
+			<div className="flex h-[calc(100vh-200px)] items-center justify-center">
 				<LoadingSpinner />
 			</div>
 		);
@@ -152,12 +152,12 @@ export default function InsurerQuotations() {
 		const errorMessage =
 			(error as CustomError)?.error?.data || "An unexpected error occurred.";
 		return (
-			<div className="flex flex-col items-center justify-center h-[calc(100vh-200px)] text-center p-4">
-				<div className="text-red-500 mb-4">
+			<div className="flex h-[calc(100vh-200px)] flex-col items-center justify-center p-4 text-center">
+				<div className="mb-4 text-red-500">
 					<X className="h-12 w-12" />
 				</div>
-				<h2 className="text-xl font-semibold mb-2">Error Loading Quotations</h2>
-				<p className="text-muted-foreground mb-4">{errorMessage}</p>
+				<h2 className="mb-2 font-semibold text-xl">Error Loading Quotations</h2>
+				<p className="mb-4 text-muted-foreground">{errorMessage}</p>
 				<Button onClick={() => refetch()} variant="outline">
 					Retry
 				</Button>
@@ -168,7 +168,7 @@ export default function InsurerQuotations() {
 	return (
 		<div className="space-y-6">
 			<div>
-				<h1 className="text-2xl font-bold">Quotation Requests</h1>
+				<h1 className="font-bold text-2xl">Quotation Requests</h1>
 				<p className="text-muted-foreground text-sm">
 					View and manage all incoming insurance quotation requests
 					{quotationsData?.meta?.total_count
@@ -178,17 +178,17 @@ export default function InsurerQuotations() {
 			</div>
 
 			<QuotationRequestsTable
-				quotations={quotations}
-				onViewDetails={handleViewDetails}
 				onStatusChange={handleStatusChange}
+				onViewDetails={handleViewDetails}
+				quotations={quotations}
 				toolbarActionsPrefix={
 					<div className="flex items-center gap-2">
 						{hasActiveFilters && (
 							<Button
-								variant="ghost"
-								size="sm"
-								onClick={clearFilters}
 								className="text-muted-foreground hover:bg-transparent hover:text-foreground"
+								onClick={clearFilters}
+								size="sm"
+								variant="ghost"
 							>
 								Clear filters
 								<X className="ml-2 h-4 w-4" />
@@ -196,8 +196,8 @@ export default function InsurerQuotations() {
 						)}
 						<Button
 							onClick={() => setIsFilterDialogOpen(true)}
-							variant={hasActiveFilters ? "default" : "outline"}
 							size="sm"
+							variant={hasActiveFilters ? "default" : "outline"}
 						>
 							<Filter className="mr-2 h-4 w-4" />
 							{hasActiveFilters ? "Edit filters" : "Filter"}
@@ -212,10 +212,10 @@ export default function InsurerQuotations() {
 			/>
 
 			<QuotationFilterDialog
-				isOpen={isFilterDialogOpen}
-				onOpenChange={setIsFilterDialogOpen}
-				onApplyFilters={applyFilters}
 				currentFilters={currentFilters}
+				isOpen={isFilterDialogOpen}
+				onApplyFilters={applyFilters}
+				onOpenChange={setIsFilterDialogOpen}
 			/>
 		</div>
 	);

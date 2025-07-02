@@ -35,7 +35,7 @@ async function getCroppedImg(
 	imageSrc: string,
 	pixelCrop: { x: number; y: number; width: number; height: number },
 	outputWidth: number = pixelCrop.width,
-	outputHeight: number = pixelCrop.height,
+	outputHeight: number = pixelCrop.height
 ): Promise<Blob | null> {
 	try {
 		const image = await createImage(imageSrc);
@@ -53,7 +53,7 @@ async function getCroppedImg(
 			0,
 			0,
 			outputWidth,
-			outputHeight,
+			outputHeight
 		);
 		return new Promise((resolve) => {
 			canvas.toBlob((blob) => resolve(blob), "image/jpeg");
@@ -140,12 +140,12 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
 
 	// Handle crop apply
 	const handleApply = useCallback(async () => {
-		if (!previewUrl || !fileId || !croppedAreaPixels) return;
+		if (!(previewUrl && fileId && croppedAreaPixels)) return;
 		const croppedBlob = await getCroppedImg(
 			previewUrl,
 			croppedAreaPixels,
 			160,
-			160,
+			160
 		);
 		if (!croppedBlob) return;
 		if (preview) URL.revokeObjectURL(preview);
@@ -175,47 +175,47 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
 		: { minHeight: "120px" };
 
 	return (
-		<div className="flex flex-col items-center gap-2 h-full w-full">
-			<div className="w-full h-full flex-grow">
+		<div className="flex h-full w-full flex-col items-center gap-2">
+			<div className="h-full w-full flex-grow">
 				<button
-					type="button"
-					className={`relative flex flex-col items-center justify-center w-full h-full border-2 border-dashed border-input rounded-md transition-colors cursor-pointer bg-background hover:bg-accent/50 data-[dragging=true]:bg-accent/50 focus-visible:border-ring focus-visible:ring-ring/50 outline-none focus-visible:ring-[3px] ${isDragging ? "ring-2 ring-primary" : ""}`}
-					style={dropzoneStyle}
+					aria-label={preview ? "Change image" : "Upload image"}
+					className={`relative flex h-full w-full cursor-pointer flex-col items-center justify-center rounded-md border-2 border-input border-dashed bg-background outline-none transition-colors hover:bg-accent/50 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 data-[dragging=true]:bg-accent/50 ${isDragging ? "ring-2 ring-primary" : ""}`}
+					data-dragging={isDragging || undefined}
 					onClick={openFileDialog}
 					onDragEnter={handleDragEnter}
 					onDragLeave={handleDragLeave}
 					onDragOver={handleDragOver}
 					onDrop={handleDrop}
-					data-dragging={isDragging || undefined}
-					aria-label={preview ? "Change image" : "Upload image"}
+					style={dropzoneStyle}
+					type="button"
 				>
-					<div className="relative w-full h-full">
+					<div className="relative h-full w-full">
 						{preview ? (
-							<Avatar className={`w-20 h-20 ${avatarClass} mx-auto`}>
-								<AvatarImage src={preview} alt="Logo" />
+							<Avatar className={`h-20 w-20 ${avatarClass} mx-auto`}>
+								<AvatarImage alt="Logo" src={preview} />
 								<AvatarFallback>
-									<CircleUserRoundIcon className="w-8 h-8 opacity-60" />
+									<CircleUserRoundIcon className="h-8 w-8 opacity-60" />
 								</AvatarFallback>
 							</Avatar>
 						) : (
 							<div className="flex flex-col items-center justify-center py-4">
-								<CircleUserRoundIcon className="w-10 h-10 mb-2 opacity-60" />
-								<span className="text-sm text-muted-foreground">
+								<CircleUserRoundIcon className="mb-2 h-10 w-10 opacity-60" />
+								<span className="text-muted-foreground text-sm">
 									Drag & drop or click to upload
 								</span>
-								<span className="text-xs text-muted-foreground">
+								<span className="text-muted-foreground text-xs">
 									JPEG/PNG, max {maxSizeMB}MB
 								</span>
 							</div>
 						)}
 						{preview && (
 							<button
+								aria-label="Remove image"
+								className="-top-2 -right-2 absolute flex h-7 w-7 items-center justify-center rounded-full border-2 border-background bg-background shadow-sm transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 								onClick={(e) => {
 									e.stopPropagation();
 									handleRemove();
 								}}
-								className="absolute -top-2 -right-2 flex h-7 w-7 items-center justify-center rounded-full border-2 border-background bg-background shadow-sm transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-								aria-label="Remove image"
 								type="button"
 							>
 								<XIcon className="h-4 w-4" />
@@ -224,18 +224,18 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
 					</div>
 					<input
 						{...getInputProps()}
-						className="sr-only"
 						aria-label="Upload image file"
+						className="sr-only"
 						tabIndex={-1}
 					/>
 				</button>
 			</div>
 			{label && (
-				<span className="text-xs text-muted-foreground mt-1">{label}</span>
+				<span className="mt-1 text-muted-foreground text-xs">{label}</span>
 			)}
 			{errors.length > 0 && (
 				<div
-					className="text-destructive flex items-center gap-1 text-xs"
+					className="flex items-center gap-1 text-destructive text-xs"
 					role="alert"
 				>
 					<XIcon className="size-3 shrink-0" />
@@ -243,16 +243,16 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
 				</div>
 			)}
 			{/* Cropper Dialog */}
-			<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+			<Dialog onOpenChange={setIsDialogOpen} open={isDialogOpen}>
 				<DialogContent className="z-[10000] gap-0 p-0 sm:max-w-140 *:[button]:hidden">
 					<DialogHeader className="contents space-y-0 text-left">
 						<DialogTitle className="flex items-center justify-between border-b p-4 text-base">
 							<span>Crop image</span>
 							<Button
-								className="-my-1"
-								onClick={handleApply}
-								disabled={!previewUrl}
 								autoFocus
+								className="-my-1"
+								disabled={!previewUrl}
+								onClick={handleApply}
 							>
 								Apply
 							</Button>
@@ -261,40 +261,40 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
 					{previewUrl && (
 						<div className="relative h-72 w-full bg-black">
 							<Cropper
-								image={previewUrl}
-								crop={crop}
-								zoom={zoom}
 								aspect={1}
+								crop={crop}
 								cropShape={shape === "circle" ? "round" : "rect"}
-								showGrid={false}
+								image={previewUrl}
 								onCropChange={setCrop}
 								onCropComplete={(_, areaPixels) =>
 									setCroppedAreaPixels(areaPixels)
 								}
 								onZoomChange={setZoom}
+								showGrid={false}
+								zoom={zoom}
 							/>
 						</div>
 					)}
 					<DialogFooter className="border-t px-4 py-6">
 						<div className="mx-auto flex w-full max-w-80 items-center gap-4">
 							<ZoomOutIcon
+								aria-hidden="true"
 								className="shrink-0 opacity-60"
 								size={16}
-								aria-hidden="true"
 							/>
 							<Slider
-								defaultValue={[1]}
-								value={[zoom]}
-								min={1}
-								max={3}
-								step={0.1}
-								onValueChange={(value) => setZoom(value[0])}
 								aria-label="Zoom slider"
+								defaultValue={[1]}
+								max={3}
+								min={1}
+								onValueChange={(value) => setZoom(value[0])}
+								step={0.1}
+								value={[zoom]}
 							/>
 							<ZoomInIcon
+								aria-hidden="true"
 								className="shrink-0 opacity-60"
 								size={16}
-								aria-hidden="true"
 							/>
 						</div>
 					</DialogFooter>

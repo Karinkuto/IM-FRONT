@@ -66,7 +66,7 @@ export function SecuritySettings() {
 				</CardDescription>
 			</CardHeader>
 			<SmartForm
-				schema={passwordSchema}
+				card={false}
 				mutationFn={async (data) => {
 					return changePassword({
 						current_password: data.current_password,
@@ -74,78 +74,78 @@ export function SecuritySettings() {
 						new_password_confirmation: data.new_password_confirmation,
 					}).unwrap();
 				}}
+				schema={passwordSchema}
 				submitText="Update Password"
-				card={false}
 			>
 				{(form) => (
 					<>
 						<FormSection
-							title="Password"
 							description="Update your password to keep your account secure"
+							title="Password"
 						>
 							<div className="space-y-4">
 								<div className="space-y-2">
 									<SmartFormField
-										form={form}
-										name="current_password"
-										type="password"
-										label="Current Password"
-										placeholder="Enter current password"
 										className="relative"
+										form={form}
+										label="Current Password"
+										name="current_password"
+										placeholder="Enter current password"
 										render={({ field, id }) => (
 											<PasswordInput
 												{...field}
-												value={field.value || ""}
 												id={id}
+												value={field.value || ""}
 											/>
 										)}
+										type="password"
 									/>
 								</div>
 								<div className="space-y-2">
 									<SmartFormField
-										form={form}
-										name="new_password"
-										type="password"
-										label="New Password"
-										placeholder="Enter new password"
 										className="relative"
+										form={form}
+										label="New Password"
+										name="new_password"
+										placeholder="Enter new password"
 										render={({ field, id }) => (
 											<PasswordStrengthMeter
-												value={field.value || ""}
-												onValueChange={field.onChange}
 												id={id}
-												segments={passwordRequirements.length}
-												requirements={passwordRequirements}
-												showText
-												showRequirements={false}
-												showPasswordToggle
+												onValueChange={field.onChange}
 												placeholder="Enter new password"
+												requirements={passwordRequirements}
+												segments={passwordRequirements.length}
+												showPasswordToggle
+												showRequirements={false}
+												showText
+												value={field.value || ""}
 											/>
 										)}
+										type="password"
 									/>
 								</div>
 								<div className="space-y-2">
 									<SmartFormField
-										form={form}
-										name="new_password_confirmation"
-										type="password"
-										label="Confirm New Password"
-										placeholder="Confirm new password"
 										className="relative"
+										form={form}
+										label="Confirm New Password"
+										name="new_password_confirmation"
+										placeholder="Confirm new password"
 										render={({ field, id }) => (
 											<PasswordInput
 												{...field}
-												value={field.value || ""}
 												id={id}
+												value={field.value || ""}
 											/>
 										)}
+										type="password"
 									/>
 								</div>
-								<div className="bg-muted/50 p-4 rounded-lg">
-									<h4 className="font-medium text-sm mb-2">
+								<div className="rounded-lg bg-muted/50 p-4">
+									<h4 className="mb-2 font-medium text-sm">
 										Password Requirements:
 									</h4>
-									<ul className="text-sm text-muted-foreground space-y-1">
+									<ul className="space-y-1 text-muted-foreground text-sm">
 										<li>• At least 8 characters long</li>
 										<li>• Contains at least one uppercase letter</li>
 										<li>• Contains at least one lowercase letter</li>

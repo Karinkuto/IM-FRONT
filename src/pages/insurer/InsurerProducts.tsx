@@ -37,7 +37,7 @@ const AdminProducts: React.FC = () => {
 	} = useGetInsuranceTypesQuery();
 
 	const handleCreateProduct = async (
-		newProduct: Product | Omit<Product, "id">,
+		newProduct: Product | Omit<Product, "id">
 	) => {
 		try {
 			// Map the Product type to CreateInsuranceProductPayload
@@ -59,7 +59,7 @@ const AdminProducts: React.FC = () => {
 
 	// Add mapping function
 	function mapInsuranceProductToProduct(
-		p: InsuranceProduct,
+		p: InsuranceProduct
 	): Product & { status?: string; customer_rating?: number | null } {
 		return {
 			id: p.id,
@@ -87,7 +87,7 @@ const AdminProducts: React.FC = () => {
 	const handleProductUpdate = async (
 		product:
 			| (Product & { status?: string; customer_rating?: number | null })
-			| Omit<Product, "id">,
+			| Omit<Product, "id">
 	) => {
 		// If product has no id, do nothing (should not happen in edit mode)
 		if (!("id" in product)) return;
@@ -157,8 +157,8 @@ const AdminProducts: React.FC = () => {
 
 	if (error || insuranceTypesError) {
 		return (
-			<div className="flex justify-center items-center h-full min-h-[calc(100vh-80px)] text-red-500">
-				<p className="text-lg font-medium">
+			<div className="flex h-full min-h-[calc(100vh-80px)] items-center justify-center text-red-500">
+				<p className="font-medium text-lg">
 					{(() => {
 						const getErrorStatus = (err: unknown) => {
 							if (err && typeof err === "object") {
@@ -186,9 +186,9 @@ const AdminProducts: React.FC = () => {
 
 	return (
 		<div className="container mx-auto">
-			<div className="flex justify-between items-start mb-6">
+			<div className="mb-6 flex items-start justify-between">
 				<div>
-					<h1 className="text-3xl font-bold">Manage Products</h1>
+					<h1 className="font-bold text-3xl">Manage Products</h1>
 					<p className="text-muted-foreground text-sm">
 						Create, edit, and delete insurance products offered to customers.
 					</p>
@@ -196,10 +196,10 @@ const AdminProducts: React.FC = () => {
 			</div>
 
 			<ProductsTable
-				products={products}
-				onEditProduct={handleEditProduct}
-				onDeleteProduct={handleDeleteProduct}
 				coverageTypesMap={coverageTypesMap}
+				onDeleteProduct={handleDeleteProduct}
+				onEditProduct={handleEditProduct}
+				products={products}
 				toolbarActionsPrefix={
 					<Button onClick={() => setIsCreateDialogOpen(true)}>
 						<PlusCircle className="mr-2 h-4 w-4" /> Create Product
@@ -208,24 +208,24 @@ const AdminProducts: React.FC = () => {
 			/>
 
 			<ProductDialog
-				mode="create"
+				isLoading={isCreating}
 				isOpen={isCreateDialogOpen}
+				mode="create"
 				onOpenChange={setIsCreateDialogOpen}
 				onSubmit={handleCreateProduct}
-				isLoading={isCreating}
 			/>
 
 			<ProductDialog
-				mode="edit"
+				isLoading={isUpdating}
 				isOpen={isEditDialogOpen}
+				mode="edit"
 				onOpenChange={setIsEditDialogOpen}
 				onSubmit={handleProductUpdate}
 				product={selectedProductForEdit}
-				isLoading={isUpdating}
 			/>
 
 			{products.length === 0 && (
-				<p className="text-center text-gray-500 mt-4">
+				<p className="mt-4 text-center text-gray-500">
 					No products found. Click "Create Product" to add one.
 				</p>
 			)}

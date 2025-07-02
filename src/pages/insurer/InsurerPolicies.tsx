@@ -31,17 +31,17 @@ export default function AdminPolicies() {
 
 	if (error) {
 		return (
-			<div className="flex justify-center items-center h-full min-h-[calc(100vh-80px)] text-red-500">
-				<p className="text-lg font-medium">Error: {error.message}</p>
+			<div className="flex h-full min-h-[calc(100vh-80px)] items-center justify-center text-red-500">
+				<p className="font-medium text-lg">Error: {error.message}</p>
 			</div>
 		);
 	}
 
 	return (
 		<div className="space-y-6">
-			<div className="flex justify-between items-start">
+			<div className="flex items-start justify-between">
 				<div>
-					<h1 className="text-2xl font-bold">Insurance Policies</h1>
+					<h1 className="font-bold text-2xl">Insurance Policies</h1>
 					<p className="text-muted-foreground text-sm">
 						View and manage all active, expired, and cancelled insurance
 						policies.

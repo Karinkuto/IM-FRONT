@@ -29,43 +29,43 @@ export default function Component() {
 			<div className="relative">
 				{/* Drop area */}
 				<button
-					type="button"
+					className="relative flex min-h-52 w-full flex-col items-center justify-center overflow-hidden rounded-xl border border-input border-dashed p-4 transition-colors hover:bg-accent/50 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 has-disabled:pointer-events-none has-[input:focus]:border-ring has-[img]:border-none has-disabled:opacity-50 has-[input:focus]:ring-ring/50 data-[dragging=true]:bg-accent/50"
+					data-dragging={isDragging || undefined}
 					onClick={openFileDialog}
+					onDragEnter={handleDragEnter}
+					onDragLeave={handleDragLeave}
+					onDragOver={handleDragOver}
+					onDrop={handleDrop}
 					onKeyDown={(e) => {
 						if (e.key === "Enter" || e.key === " ") {
 							e.preventDefault();
 							openFileDialog();
 						}
 					}}
-					onDragEnter={handleDragEnter}
-					onDragLeave={handleDragLeave}
-					onDragOver={handleDragOver}
-					onDrop={handleDrop}
-					data-dragging={isDragging || undefined}
-					className="w-full border-input hover:bg-accent/50 data-[dragging=true]:bg-accent/50 has-[input:focus]:border-ring has-[input:focus]:ring-ring/50 relative flex min-h-52 flex-col items-center justify-center overflow-hidden rounded-xl border border-dashed p-4 transition-colors has-disabled:pointer-events-none has-disabled:opacity-50 has-[img]:border-none focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+					type="button"
 				>
 					<input
 						{...getInputProps()}
-						className="sr-only"
 						aria-label="Upload file"
+						className="sr-only"
 					/>
 					{previewUrl ? (
 						<div className="absolute inset-0">
 							<img
-								src={previewUrl}
 								alt={files[0]?.file?.name || "Uploaded image"}
 								className="size-full object-cover"
+								src={previewUrl}
 							/>
 						</div>
 					) : (
 						<div className="flex flex-col items-center justify-center px-4 py-3 text-center">
 							<div
-								className="bg-background mb-2 flex size-11 shrink-0 items-center justify-center rounded-full border"
 								aria-hidden="true"
+								className="mb-2 flex size-11 shrink-0 items-center justify-center rounded-full border bg-background"
 							>
 								<ImageUpIcon className="size-4 opacity-60" />
 							</div>
-							<p className="mb-1.5 text-sm font-medium">
+							<p className="mb-1.5 font-medium text-sm">
 								Drop your image here or click to browse
 							</p>
 							<p className="text-muted-foreground text-xs">
@@ -77,12 +77,12 @@ export default function Component() {
 				{previewUrl && (
 					<div className="absolute top-4 right-4">
 						<button
-							type="button"
-							className="focus-visible:border-ring focus-visible:ring-ring/50 z-50 flex size-8 cursor-pointer items-center justify-center rounded-full bg-black/60 text-white transition-[color,box-shadow] outline-none hover:bg-black/80 focus-visible:ring-[3px]"
-							onClick={() => removeFile(files[0]?.id)}
 							aria-label="Remove image"
+							className="z-50 flex size-8 cursor-pointer items-center justify-center rounded-full bg-black/60 text-white outline-none transition-[color,box-shadow] hover:bg-black/80 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+							onClick={() => removeFile(files[0]?.id)}
+							type="button"
 						>
-							<XIcon className="size-4" aria-hidden="true" />
+							<XIcon aria-hidden="true" className="size-4" />
 						</button>
 					</div>
 				)}
@@ -90,7 +90,7 @@ export default function Component() {
 
 			{errors.length > 0 && (
 				<div
-					className="text-destructive flex items-center gap-1 text-xs"
+					className="flex items-center gap-1 text-destructive text-xs"
 					role="alert"
 				>
 					<AlertCircleIcon className="size-3 shrink-0" />

@@ -25,8 +25,8 @@ export function StepChangePassword({
 	return (
 		<div className="space-y-4 py-4">
 			<Controller
-				name="newPassword"
 				control={form.control}
+				name="newPassword"
 				render={({ field, fieldState: { error } }) => (
 					<FormItem>
 						<FormLabel htmlFor={newPasswordId}>New Password</FormLabel>
@@ -38,14 +38,14 @@ export function StepChangePassword({
 							/>
 						</FormControl>
 						{error && (
-							<p className="text-red-500 text-xs mt-1">{error.message}</p>
+							<p className="mt-1 text-red-500 text-xs">{error.message}</p>
 						)}
 					</FormItem>
 				)}
 			/>
 			<Controller
-				name="confirmPassword"
 				control={form.control}
+				name="confirmPassword"
 				render={({ field, fieldState: { error } }) => (
 					<FormItem>
 						<FormLabel htmlFor={confirmPasswordId}>Confirm Password</FormLabel>
@@ -57,7 +57,7 @@ export function StepChangePassword({
 							/>
 						</FormControl>
 						{error && (
-							<p className="text-red-500 text-xs mt-1">{error.message}</p>
+							<p className="mt-1 text-red-500 text-xs">{error.message}</p>
 						)}
 					</FormItem>
 				)}
@@ -80,13 +80,13 @@ export function StepBasicInfo({ nameId, descId, form }: StepBasicInfoProps) {
 				<FormControl>
 					<Input
 						id={nameId}
-						type="text"
 						placeholder="Insurer Name"
+						type="text"
 						{...form.register("name")}
 					/>
 				</FormControl>
 				{form.formState.errors.name && (
-					<p className="text-red-500 text-xs mt-1">
+					<p className="mt-1 text-red-500 text-xs">
 						{form.formState.errors.name.message as string}
 					</p>
 				)}
@@ -101,7 +101,7 @@ export function StepBasicInfo({ nameId, descId, form }: StepBasicInfoProps) {
 					/>
 				</FormControl>
 				{form.formState.errors.description && (
-					<p className="text-red-500 text-xs mt-1">
+					<p className="mt-1 text-red-500 text-xs">
 						{form.formState.errors.description.message as string}
 					</p>
 				)}
@@ -123,25 +123,25 @@ export function StepContactInfo({ emailId, form }: StepContactInfoProps) {
 				<FormControl>
 					<Input
 						id={emailId}
-						type="email"
 						placeholder="Contact Email"
+						type="email"
 						{...form.register("email")}
 					/>
 				</FormControl>
 				{form.formState.errors.email && (
-					<p className="text-red-500 text-xs mt-1">
+					<p className="mt-1 text-red-500 text-xs">
 						{form.formState.errors.email.message as string}
 					</p>
 				)}
 			</FormItem>
 			<PhoneNumberInput
 				control={form.control}
-				name="phone"
 				label="Contact Phone *"
+				name="phone"
 				placeholder="Enter phone number"
 			/>
 			{form.formState.errors.phone && (
-				<p className="text-red-500 text-xs mt-1">
+				<p className="mt-1 text-red-500 text-xs">
 					{form.formState.errors.phone.message as string}
 				</p>
 			)}
@@ -167,13 +167,13 @@ export function StepApiIntegration({
 				<FormControl>
 					<Input
 						id={apiEndpointId}
-						type="text"
 						placeholder="https://api.example.com"
+						type="text"
 						{...form.register("apiEndpoint")}
 					/>
 				</FormControl>
 				{form.formState.errors.apiEndpoint && (
-					<p className="text-red-500 text-xs mt-1">
+					<p className="mt-1 text-red-500 text-xs">
 						{form.formState.errors.apiEndpoint.message}
 					</p>
 				)}
@@ -183,13 +183,13 @@ export function StepApiIntegration({
 				<FormControl>
 					<Input
 						id={apiKeyId}
-						type="text"
 						placeholder="API Key"
+						type="text"
 						{...form.register("apiKey")}
 					/>
 				</FormControl>
 				{form.formState.errors.apiKey && (
-					<p className="text-red-500 text-xs mt-1">
+					<p className="mt-1 text-red-500 text-xs">
 						{form.formState.errors.apiKey.message}
 					</p>
 				)}
@@ -224,10 +224,10 @@ export function StepLogoUpload({
 				<FormLabel htmlFor={logoId}>Company Logo</FormLabel>
 				<FormControl>
 					<AvatarUploader
-						value={form.watch("logo")}
-						onChange={handleFileChange}
 						maxSizeMB={5}
+						onChange={handleFileChange}
 						shape="rounded"
+						value={form.watch("logo")}
 					/>
 				</FormControl>
 			</FormItem>
@@ -253,45 +253,45 @@ export function StepConfirmation({ form, logoUrl }: StepConfirmationProps) {
 				<div className="flex items-center gap-4">
 					<Avatar className="h-16 w-16 rounded-lg">
 						<AvatarImage
-							src={logoUrl || undefined}
 							alt={values.name}
 							className="rounded-lg"
+							src={logoUrl || undefined}
 						/>
 						<AvatarFallback className="rounded-lg text-2xl">
 							{values.name.charAt(0).toUpperCase()}
 						</AvatarFallback>
 					</Avatar>
 					<div>
-						<h3 className="text-xl font-semibold">{values.name}</h3>
+						<h3 className="font-semibold text-xl">{values.name}</h3>
 						<p className="text-muted-foreground">{values.email}</p>
 					</div>
 				</div>
-				<div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+				<div className="grid grid-cols-1 gap-4 pt-4 md:grid-cols-2">
 					<div>
 						<Label>Password</Label>
-						<p className="text-sm text-muted-foreground">
+						<p className="text-muted-foreground text-sm">
 							{displayValue(values.newPassword)}
 						</p>
 					</div>
 					<div>
 						<Label>Description</Label>
-						<p className="text-sm text-muted-foreground">
+						<p className="text-muted-foreground text-sm">
 							{displayValue(values.description)}
 						</p>
 					</div>
 					<div>
 						<Label>Contact Phone</Label>
-						<p className="text-sm text-muted-foreground">{values.phone}</p>
+						<p className="text-muted-foreground text-sm">{values.phone}</p>
 					</div>
 					<div>
 						<Label>API Endpoint</Label>
-						<p className="text-sm text-muted-foreground">
+						<p className="text-muted-foreground text-sm">
 							{displayValue(values.apiEndpoint)}
 						</p>
 					</div>
 					<div>
 						<Label>API Key</Label>
-						<p className="text-sm text-muted-foreground">
+						<p className="text-muted-foreground text-sm">
 							{displayValue(values.apiKey)}
 						</p>
 					</div>

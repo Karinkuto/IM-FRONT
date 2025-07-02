@@ -71,18 +71,18 @@ function AppSidebar({
 					<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
 						{/* You can replace this with an actual SVG logo if you have one */}
 						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							viewBox="0 0 24 24"
-							fill="currentColor"
-							className="h-6 w-6"
 							aria-hidden="true"
+							className="h-6 w-6"
+							fill="currentColor"
+							viewBox="0 0 24 24"
+							xmlns="http://www.w3.org/2000/svg"
 						>
 							<path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
 						</svg>
 					</div>
 					<div>
 						<div className="font-semibold text-lg">Tila</div>
-						<div className="text-xs text-muted-foreground">
+						<div className="text-muted-foreground text-xs">
 							Insurance Platform
 						</div>
 					</div>
@@ -90,8 +90,8 @@ function AppSidebar({
 			</SidebarHeader>
 			<SidebarContent className="flex-1 px-3 py-4">
 				{navSections.map((section) => (
-					<SidebarGroup key={section.title} className="mb-4">
-						<SidebarGroupLabel className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+					<SidebarGroup className="mb-4" key={section.title}>
+						<SidebarGroupLabel className="px-3 py-2 font-semibold text-gray-500 text-xs uppercase tracking-wider dark:text-gray-400">
 							{section.title}
 						</SidebarGroupLabel>
 						<SidebarGroupContent>
@@ -100,8 +100,8 @@ function AppSidebar({
 									<SidebarMenuItem key={item.link}>
 										<SidebarMenuButton
 											asChild
+											className="flex items-center gap-3 rounded-lg px-4 py-3 font-medium text-muted-foreground text-sm"
 											isActive={currentPath.startsWith(item.link)}
-											className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-muted-foreground"
 										>
 											<Link to={item.link}>
 												<item.icon className="h-5 w-5" />
@@ -115,7 +115,7 @@ function AppSidebar({
 					</SidebarGroup>
 				))}
 			</SidebarContent>
-			<SidebarFooter className="p-4 mt-auto">
+			<SidebarFooter className="mt-auto p-4">
 				<SidebarMenu>
 					{footerNavigation.map((item) => {
 						let link = item.link;
@@ -126,7 +126,7 @@ function AppSidebar({
 							<SidebarMenuItem key={item.link}>
 								{item.link === "/logout" ? (
 									<SidebarMenuButton
-										className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-muted-foreground"
+										className="flex items-center gap-3 rounded-lg px-4 py-3 font-medium text-muted-foreground text-sm"
 										onClick={handleLogout}
 									>
 										<item.icon className="h-5 w-5" />
@@ -135,7 +135,7 @@ function AppSidebar({
 								) : (
 									<SidebarMenuButton
 										asChild
-										className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-muted-foreground"
+										className="flex items-center gap-3 rounded-lg px-4 py-3 font-medium text-muted-foreground text-sm"
 									>
 										<Link to={link}>
 											<item.icon className="h-5 w-5" />
@@ -184,8 +184,7 @@ export function DashboardLayout({ role }: DashboardLayoutProps) {
 	useEffect(() => {
 		// Show onboarding if the user has an insurer role AND (has a temporary password OR does not have an insurer profile)
 		setShowOnboarding(
-			role === "insurer" &&
-				(Boolean(isTemporaryPassword) || !hasInsurerProfile),
+			role === "insurer" && (Boolean(isTemporaryPassword) || !hasInsurerProfile)
 		);
 	}, [role, isTemporaryPassword, hasInsurerProfile]);
 
@@ -218,14 +217,14 @@ export function DashboardLayout({ role }: DashboardLayoutProps) {
 	return (
 		<SidebarProvider>
 			<AppSidebar
-				role={role}
-				currentUserData={currentUserData}
-				user={user}
-				logout={logout}
 				currentPath={location.pathname}
+				currentUserData={currentUserData}
+				logout={logout}
+				role={role}
+				user={user}
 			/>
 			<SidebarInset>
-				<header className="flex h-16 shrink-0 items-center gap-2 px-4 border-b">
+				<header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
 					<SidebarTrigger className="-ml-1" />
 					<Breadcrumb>
 						<BreadcrumbList>
@@ -246,14 +245,14 @@ export function DashboardLayout({ role }: DashboardLayoutProps) {
 						<ModeToggle />
 					</div>
 				</header>
-				<main className="flex flex-1 flex-col gap-4 py-4 px-8">
+				<main className="flex flex-1 flex-col gap-4 px-8 py-4">
 					<Outlet />
 					{showOnboarding && (
 						<InsurerOnboarding
-							role={role}
-							isTemporaryPassword={isTemporaryPassword}
 							hasInsurerProfile={hasInsurerProfile}
+							isTemporaryPassword={isTemporaryPassword}
 							onClose={handleCloseOnboarding}
+							role={role}
 						/>
 					)}
 				</main>

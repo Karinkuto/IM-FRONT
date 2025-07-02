@@ -27,7 +27,7 @@ function InsurerProfileForm({
 	refetch,
 }: any) {
 	const [logoFile, setLogoFile] = React.useState<File | Blob | undefined>(
-		undefined,
+		undefined
 	);
 	const formRef = React.useRef<any>(null);
 
@@ -58,8 +58,6 @@ function InsurerProfileForm({
 
 	const formContent = (
 		<SmartForm
-			schema={schema}
-			mutationFn={mutationFn}
 			defaultValues={{
 				name: insurer.name ?? "",
 				description: insurer.description ?? "",
@@ -69,11 +67,13 @@ function InsurerProfileForm({
 				api_key: insurer.api_key ?? "",
 				logo: undefined,
 			}}
-			submitText="Save Changes"
+			mutationFn={mutationFn}
 			onSuccess={async (data: any) => {
 				setProfileData(data);
 				await refetch();
 			}}
+			schema={schema}
+			submitText="Save Changes"
 		>
 			{(form: any) => {
 				formRef.current = form;
@@ -82,66 +82,66 @@ function InsurerProfileForm({
 						<div className="mb-2">
 							<Label className="mb-2">Company Logo</Label>
 							<AvatarUploader
-								value={logoFile}
-								onChange={handleLogoChange}
-								maxSizeMB={5}
-								shape="rounded"
-								label="PNG, JPG up to 5MB"
 								height={120}
+								label="PNG, JPG up to 5MB"
+								maxSizeMB={5}
+								onChange={handleLogoChange}
+								shape="rounded"
+								value={logoFile}
 							/>
 						</div>
 						{/* Second row: Company Name and Contact Email */}
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+						<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 							<SmartFormField
 								form={form}
-								name="name"
-								type="text"
 								label="Company Name"
+								name="name"
 								placeholder="Enter company name"
+								type="text"
 							/>
 							<SmartFormField
 								form={form}
-								name="contact_email"
-								type="email"
 								label="Contact Email"
+								name="contact_email"
 								placeholder="contact@company.com"
+								type="email"
 							/>
 						</div>
 						{/* Description */}
 						<div className="space-y-2">
 							<SmartFormField
 								form={form}
-								name="description"
-								type="textarea"
 								label="Description"
+								name="description"
 								placeholder="Brief description of your company"
+								type="textarea"
 							/>
 						</div>
 						{/* Contact Phone and API Endpoint */}
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+						<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 							<SmartFormField
 								form={form}
-								name="contact_phone"
-								type="text"
 								label="Contact Phone"
+								name="contact_phone"
 								placeholder="+1 (555) 123-4567"
+								type="text"
 							/>
 							<SmartFormField
 								form={form}
-								name="api_endpoint"
-								type="text"
 								label="API Endpoint"
+								name="api_endpoint"
 								placeholder="https://api.company.com/v1"
+								type="text"
 							/>
 						</div>
 						{/* API Key */}
 						<div className="space-y-2">
 							<SmartFormField
 								form={form}
-								name="api_key"
-								type="password"
 								label="API Key"
+								name="api_key"
 								placeholder="Enter your API key"
+								type="password"
 							/>
 						</div>
 					</>
@@ -260,10 +260,10 @@ export function ProfileSettings() {
 						<p>Error loading profile.</p>
 					) : insurer ? (
 						<div className="flex items-center gap-6">
-							<Avatar className="h-20 w-20 rounded-md flex-shrink-0">
+							<Avatar className="h-20 w-20 flex-shrink-0 rounded-md">
 								<AvatarImage
-									src={insurer.logo_url || "/placeholder.svg"}
 									alt={insurer.name}
+									src={insurer.logo_url || "/placeholder.svg"}
 								/>
 								<AvatarFallback className="text-lg">
 									{insurer.name
@@ -273,12 +273,12 @@ export function ProfileSettings() {
 										.slice(0, 2)}
 								</AvatarFallback>
 							</Avatar>
-							<div className="flex-1 min-w-0">
+							<div className="min-w-0 flex-1">
 								<h3 className="font-semibold text-lg">{insurer.name}</h3>
-								<p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+								<p className="mt-1 line-clamp-2 text-muted-foreground text-sm">
 									{insurer.description}
 								</p>
-								<div className="flex items-center gap-4 mt-3">
+								<div className="mt-3 flex items-center gap-4">
 									<div className="flex items-center gap-2 text-sm">
 										<span className="text-muted-foreground">Email:</span>
 										<span className="font-medium">{insurer.contact_email}</span>
@@ -288,11 +288,11 @@ export function ProfileSettings() {
 										<span className="font-medium">{insurer.contact_phone}</span>
 									</div>
 									{insurer.api_endpoint && insurer.api_key ? (
-										<Badge variant="secondary" className="text-xs">
+										<Badge className="text-xs" variant="secondary">
 											API Connected
 										</Badge>
 									) : (
-										<Badge variant="destructive" className="text-xs">
+										<Badge className="text-xs" variant="destructive">
 											API Not Connected
 										</Badge>
 									)}
@@ -307,10 +307,10 @@ export function ProfileSettings() {
 			{!isLoading && insurer && (
 				<InsurerProfileForm
 					insurer={insurer}
-					schema={schema}
 					mutationFn={mutationFn}
-					setProfileData={setProfileData}
 					refetch={refetch}
+					schema={schema}
+					setProfileData={setProfileData}
 				/>
 			)}
 		</div>

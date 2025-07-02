@@ -50,8 +50,6 @@ export function DatePicker({
 	return (
 		<div className={cn("relative flex gap-2", className)}>
 			<Input
-				value={value}
-				placeholder={placeholder}
 				className="bg-background pr-10"
 				onChange={(e) => {
 					const newDate = new Date(e.target.value);
@@ -66,25 +64,27 @@ export function DatePicker({
 						setOpen(true);
 					}
 				}}
+				placeholder={placeholder}
+				value={value}
 			/>
-			<Popover open={open} onOpenChange={setOpen}>
+			<Popover onOpenChange={setOpen} open={open}>
 				<PopoverTrigger asChild>
 					<Button
+						className="-translate-y-1/2 absolute top-1/2 right-2 size-6"
 						variant="ghost"
-						className="absolute top-1/2 right-2 size-6 -translate-y-1/2"
 					>
 						<CalendarIcon className="size-3.5" />
 						<span className="sr-only">Select date</span>
 					</Button>
 				</PopoverTrigger>
-				<PopoverContent className="w-auto overflow-hidden p-0" align="end">
+				<PopoverContent align="end" className="w-auto overflow-hidden p-0">
 					<Calendar
 						mode="single"
-						selected={date}
 						onSelect={(selectedDate) => {
 							onSelect(selectedDate);
 							setOpen(false);
 						}}
+						selected={date}
 					/>
 				</PopoverContent>
 			</Popover>

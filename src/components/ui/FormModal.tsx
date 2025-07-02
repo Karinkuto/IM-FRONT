@@ -69,10 +69,10 @@ export function FormModal<T extends FieldValues>({
 	});
 
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-[800px] max-h-[80vh] overflow-y-auto">
+		<Dialog onOpenChange={onOpenChange} open={open}>
+			<DialogContent className="max-h-[80vh] overflow-y-auto sm:max-w-[800px]">
 				<Form {...form}>
-					<form onSubmit={handleSubmit} className="space-y-6">
+					<form className="space-y-6" onSubmit={handleSubmit}>
 						<DialogHeader>
 							{title && <DialogTitle>{title}</DialogTitle>}
 							{description && (
@@ -92,17 +92,17 @@ export function FormModal<T extends FieldValues>({
 								{showFooter && (
 									<DialogFooter className="mt-6">
 										<Button
-											type="submit"
 											disabled={isLoading}
 											isLoading={isLoading}
+											type="submit"
 										>
 											{submitLabel || (mode === "edit" ? "Save" : "Create")}
 										</Button>
 										<Button
+											disabled={isLoading}
+											onClick={() => onOpenChange(false)}
 											type="button"
 											variant="outline"
-											onClick={() => onOpenChange(false)}
-											disabled={isLoading}
 										>
 											{cancelLabel}
 										</Button>
