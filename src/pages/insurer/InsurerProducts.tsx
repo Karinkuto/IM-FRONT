@@ -1,15 +1,14 @@
 import { PlusCircle } from "lucide-react";
 import type React from "react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { ProductDialog } from "@/components/insurer-components/products/modals/ProductDialog";
 import { ProductsTable } from "@/components/insurer-components/products/ProductsTable";
 import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { useInsuranceTypes } from "@/hooks/useInsuranceTypes";
 import {
 	useCreateProductMutation,
-	useDeleteProductMutation,
-	useGetInsuranceTypesQuery,
 	useGetProductsQuery,
 	useUpdateProductMutation,
 } from "@/redux/apis/productApi";
@@ -29,12 +28,8 @@ const AdminProducts: React.FC = () => {
 	const { data, isLoading, error, refetch } = useGetProductsQuery({});
 	const [createProduct, { isLoading: isCreating }] = useCreateProductMutation();
 	const [updateProduct, { isLoading: isUpdating }] = useUpdateProductMutation();
-	const [deleteProduct] = useDeleteProductMutation();
-	const {
-		data: insuranceTypesData,
-		isLoading: isLoadingInsuranceTypes,
-		error: insuranceTypesError,
-	} = useGetInsuranceTypesQuery();
+	const { isLoading: isLoadingInsuranceTypes, error: insuranceTypesError } =
+		useInsuranceTypes();
 
 	const handleCreateProduct = async (
 		newProduct: Product | Omit<Product, "id">
@@ -44,7 +39,7 @@ const AdminProducts: React.FC = () => {
 			const payload: CreateInsuranceProductPayload = {
 				name: newProduct.name,
 				description: newProduct.description || "",
-				estimated_price: Number(newProduct.pricing) || 0,
+				estimated_price: newProduct.estimated_price || 0,
 				customer_rating: 0, // Default value
 				status: "active", // Default value
 				coverage_type_id: newProduct.coverageType || "",
@@ -69,7 +64,7 @@ const AdminProducts: React.FC = () => {
 				: "",
 			coverageType: p.coverage_type?.id ? String(p.coverage_type.id) : "",
 			description: p.description || "",
-			pricing: Number(p.estimated_price) || 0, // Ensure pricing is always a number
+			estimated_price: Number(p.estimated_price) || 0, // Ensure estimated_price is always a number
 			status: p.status,
 			customer_rating: p.customer_rating,
 		};
@@ -90,7 +85,9 @@ const AdminProducts: React.FC = () => {
 			| Omit<Product, "id">
 	) => {
 		// If product has no id, do nothing (should not happen in edit mode)
-		if (!("id" in product)) return;
+		if (!("id" in product)) {
+			return;
+		}
 
 		// Find the original product data to get the status and rating
 		const originalProduct = data?.data.find((p) => p.id === product.id);
@@ -99,7 +96,7 @@ const AdminProducts: React.FC = () => {
 			id: product.id,
 			name: product.name,
 			description: product.description,
-			estimated_price: Number(product.pricing),
+			estimated_price: product.estimated_price,
 			// Use the original product's status and rating, or fallback to defaults
 			status: product.status || originalProduct?.status || "draft",
 			// Convert null to undefined to match the API's expected type
@@ -117,39 +114,6 @@ const AdminProducts: React.FC = () => {
 			toast.error("Failed to update product");
 		}
 	};
-
-	const handleDeleteProduct = async (productId: string) => {
-		try {
-			await deleteProduct(productId).unwrap();
-			refetch();
-		} catch {
-			toast.error("Failed to delete product");
-		}
-	};
-
-	// Build coverageTypeId -> { coverageTypeName, insuranceTypeName } map
-	const coverageTypesMap = useMemo(() => {
-		if (!insuranceTypesData?.data) return {};
-		const map: Record<
-			string,
-			{ coverageTypeName: string; insuranceTypeName: string }
-		> = {};
-		for (const insuranceType of insuranceTypesData.data) {
-			if (insuranceType.coverage_types) {
-				for (const coverageType of insuranceType.coverage_types) {
-					const coverageTypeId =
-						"id" in coverageType ? coverageType.id : String(coverageType);
-					const coverageTypeName =
-						"name" in coverageType ? coverageType.name : "Unknown";
-					map[coverageTypeId] = {
-						coverageTypeName,
-						insuranceTypeName: insuranceType.name,
-					};
-				}
-			}
-		}
-		return map;
-	}, [insuranceTypesData]);
 
 	if (isLoading || isLoadingInsuranceTypes) {
 		return <LoadingSpinner />;
@@ -196,9 +160,8 @@ const AdminProducts: React.FC = () => {
 			</div>
 
 			<ProductsTable
-				coverageTypesMap={coverageTypesMap}
-				onDeleteProduct={handleDeleteProduct}
 				onEditProduct={handleEditProduct}
+				onStatusChange={refetch}
 				products={products}
 				toolbarActionsPrefix={
 					<Button onClick={() => setIsCreateDialogOpen(true)}>

@@ -29,7 +29,7 @@ export interface Product {
 	insuranceType: string;
 	coverageType: string;
 	description: string;
-	pricing: number;
+	estimated_price: number;
 }
 
 export interface ComboboxOption {

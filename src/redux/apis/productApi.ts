@@ -78,13 +78,7 @@ export const productApi = createApi({
 			}),
 			invalidatesTags: (_result, _error, { id }) => [{ type: "Product", id }],
 		}),
-		deleteProduct: builder.mutation<void, string>({
-			query: (id: string) => ({
-				url: `/insurance_products/${id}`,
-				method: "DELETE",
-			}),
-			invalidatesTags: ["Product"],
-		}),
+
 		getInsuranceTypes: builder.query<InsuranceTypesResponse, void>({
 			query: () => ({
 				url: "/insurance_types",
@@ -105,7 +99,6 @@ export const {
 	useGetProductsQuery,
 	useGetProductByIdQuery,
 	useUpdateProductMutation,
-	useDeleteProductMutation,
 	useGetInsuranceTypesQuery,
 	useGetAllInsuranceTypesQuery,
 } = productApi;
