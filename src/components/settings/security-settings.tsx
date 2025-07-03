@@ -5,14 +5,17 @@ import {
 	SmartFormField,
 } from "@/components/smart-form";
 import { PasswordStrengthMeter } from "@/components/strength-meter";
-import {
-	Card,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { PasswordInput } from "@/components/ui/password-input";
 import { useChangePasswordMutation } from "@/redux/apis/authApi";
+
+// Password validation patterns
+const PASSWORD_PATTERNS = {
+	UPPERCASE: /[A-Z]/,
+	LOWERCASE: /[a-z]/,
+	NUMBER: /[0-9]/,
+	SPECIAL_CHAR: /[^A-Za-z0-9]/,
+} as const;
 
 const passwordSchema = z
 	.object({
@@ -20,10 +23,19 @@ const passwordSchema = z
 		new_password: z
 			.string()
 			.min(8, "Password must be at least 8 characters long")
-			.regex(/[A-Z]/, "Must contain at least one uppercase letter")
-			.regex(/[a-z]/, "Must contain at least one lowercase letter")
-			.regex(/[0-9]/, "Must contain at least one number")
-			.regex(/[^A-Za-z0-9]/, "Must contain at least one special character"),
+			.regex(
+				PASSWORD_PATTERNS.UPPERCASE,
+				"Must contain at least one uppercase letter"
+			)
+			.regex(
+				PASSWORD_PATTERNS.LOWERCASE,
+				"Must contain at least one lowercase letter"
+			)
+			.regex(PASSWORD_PATTERNS.NUMBER, "Must contain at least one number")
+			.regex(
+				PASSWORD_PATTERNS.SPECIAL_CHAR,
+				"Must contain at least one special character"
+			),
 		new_password_confirmation: z.string(),
 	})
 	.refine((data) => data.new_password === data.new_password_confirmation, {
@@ -38,19 +50,20 @@ const passwordRequirements = [
 	},
 	{
 		label: "At least one lowercase letter",
-		validator: (password: string) => /[a-z]/.test(password),
+		validator: (password: string) => PASSWORD_PATTERNS.LOWERCASE.test(password),
 	},
 	{
 		label: "At least one uppercase letter",
-		validator: (password: string) => /[A-Z]/.test(password),
+		validator: (password: string) => PASSWORD_PATTERNS.UPPERCASE.test(password),
 	},
 	{
 		label: "At least one number",
-		validator: (password: string) => /\d/.test(password),
+		validator: (password: string) => PASSWORD_PATTERNS.NUMBER.test(password),
 	},
 	{
 		label: "At least one special character",
-		validator: (password: string) => /[^A-Za-z0-9]/.test(password),
+		validator: (password: string) =>
+			PASSWORD_PATTERNS.SPECIAL_CHAR.test(password),
 	},
 ];
 
@@ -59,20 +72,15 @@ export function SecuritySettings() {
 
 	return (
 		<Card className="max-w-2xl">
-			<CardHeader>
-				<CardTitle className="text-lg">Change Password</CardTitle>
-				<CardDescription>
-					Update your password to keep your account secure
-				</CardDescription>
-			</CardHeader>
 			<SmartForm
 				card={false}
 				mutationFn={async (data) => {
-					return changePassword({
+					const response = await changePassword({
 						current_password: data.current_password,
 						new_password: data.new_password,
 						new_password_confirmation: data.new_password_confirmation,
 					}).unwrap();
+					return response;
 				}}
 				schema={passwordSchema}
 				submitText="Update Password"
@@ -81,7 +89,7 @@ export function SecuritySettings() {
 					<>
 						<FormSection
 							description="Update your password to keep your account secure"
-							title="Password"
+							title="Change Password"
 						>
 							<div className="space-y-4">
 								<div className="space-y-2">

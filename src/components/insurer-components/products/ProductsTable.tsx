@@ -65,7 +65,10 @@ const ActionCell: FC<{
 const columns = (
 	onEditProduct: (id: string) => void,
 	onStatusChange: (id: string, currentStatus: string) => void,
-	coverageTypesMap: Record<string, { coverageTypeName: string; insuranceTypeName: string }>
+	coverageTypesMap: Record<
+		string,
+		{ coverageTypeName: string; insuranceTypeName: string }
+	>
 ) => [
 	{
 		accessorKey: "name",
