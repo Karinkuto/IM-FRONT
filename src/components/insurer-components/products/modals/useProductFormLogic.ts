@@ -28,7 +28,10 @@ interface UseProductFormLogicProps {
 	product?: Product | null;
 }
 
-export function useProductFormLogic({ mode, product }: UseProductFormLogicProps) {
+export function useProductFormLogic({
+	mode,
+	product,
+}: UseProductFormLogicProps) {
 	const {
 		data: insuranceTypes,
 		isLoading: isTypesLoading,
@@ -61,8 +64,12 @@ export function useProductFormLogic({ mode, product }: UseProductFormLogicProps)
 					const coverageTypes =
 						"coverage_types" in type ? type.coverage_types : [];
 					return coverageTypes?.some((ct) => {
-						if (!ct) { return false; }
-						if (typeof ct === "string") { return ct === coverageType; }
+						if (!ct) {
+							return false;
+						}
+						if (typeof ct === "string") {
+							return ct === coverageType;
+						}
 						return String(ct.id) === coverageType;
 					});
 				});
@@ -106,11 +113,21 @@ export function useProductFormLogic({ mode, product }: UseProductFormLogicProps)
 	);
 	const formRef = useRef<UseFormReturn<ProductFormValues> | null>(null);
 
-	const findMatchingInsuranceType = useCallback((productItem: Product, types: CombinedInsuranceType[]): string | undefined => {
-		if (!(productItem?.insuranceType && types)) { return; }
-		const typeMatch = types.find((t) => String(t.id) === String(productItem.insuranceType));
-		return typeMatch ? String(typeMatch.id) : undefined;
-	}, []);
+	const findMatchingInsuranceType = useCallback(
+		(
+			productItem: Product,
+			types: CombinedInsuranceType[]
+		): string | undefined => {
+			if (!(productItem?.insuranceType && types)) {
+				return;
+			}
+			const typeMatch = types.find(
+				(t) => String(t.id) === String(productItem.insuranceType)
+			);
+			return typeMatch ? String(typeMatch.id) : undefined;
+		},
+		[]
+	);
 
 	const updateFormValues = useCallback((values: ProductFormValues) => {
 		setInitialValues(values);
@@ -123,19 +140,31 @@ export function useProductFormLogic({ mode, product }: UseProductFormLogicProps)
 		formRef.current.reset(values);
 
 		if (values.coverageType) {
-			formRef.current.setValue("coverageType", values.coverageType, { shouldValidate: true });
+			formRef.current.setValue("coverageType", values.coverageType, {
+				shouldValidate: true,
+			});
 		} else {
 			formRef.current.setValue("coverageType", "", { shouldValidate: false });
 		}
 	}, []);
 
 	const updateForm = useCallback(() => {
-		if (!(isTypesLoaded || isTypesLoading)) { return; }
+		if (!(isTypesLoaded || isTypesLoading)) {
+			return;
+		}
 
 		const newValues = getInitialValues();
 
-		if (mode === "edit" && product?.insuranceType && !newValues.insuranceType && insuranceTypes?.data) {
-			const matchedTypeId = findMatchingInsuranceType(product, insuranceTypes.data);
+		if (
+			mode === "edit" &&
+			product?.insuranceType &&
+			!newValues.insuranceType &&
+			insuranceTypes?.data
+		) {
+			const matchedTypeId = findMatchingInsuranceType(
+				product,
+				insuranceTypes.data
+			);
 			if (matchedTypeId) {
 				newValues.insuranceType = matchedTypeId;
 			}
@@ -150,7 +179,7 @@ export function useProductFormLogic({ mode, product }: UseProductFormLogicProps)
 		product,
 		insuranceTypes?.data,
 		findMatchingInsuranceType,
-		updateFormValues
+		updateFormValues,
 	]);
 
 	useEffect(() => {

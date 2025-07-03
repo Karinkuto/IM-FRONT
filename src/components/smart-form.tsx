@@ -4,6 +4,8 @@ import { AlertCircle, CheckCircle, Loader2 } from "lucide-react";
 import type React from "react";
 import { useId } from "react";
 import {
+	type ControllerRenderProps,
+	type DefaultValues,
 	type FieldPath,
 	type FieldValues,
 	type UseFormReturn,
@@ -39,13 +41,16 @@ export interface FormFieldOption {
 	label: string;
 }
 
-export interface SmartFormProps<T extends FieldValues = FieldValues> {
+export interface SmartFormProps<
+	T extends FieldValues = FieldValues,
+	R = unknown,
+> {
 	schema: z.ZodSchema<T>;
-	mutationFn: (data: T) => Promise<any>;
+	mutationFn: (data: T) => Promise<R>;
 	queryKey?: string[];
 	mode?: "create" | "edit";
 	defaultValues?: Partial<T>;
-	onSuccess?: (data: any) => void;
+	onSuccess?: (data: R) => void;
 	onError?: (error: Error) => void;
 	submitText?: string;
 	className?: string;
@@ -72,7 +77,11 @@ export interface SmartFormFieldProps<T extends FieldValues = FieldValues> {
 	options?: FormFieldOption[];
 	disabled?: boolean;
 	className?: string;
-	render?: (props: { field: any; id: string }) => React.ReactNode;
+	icon?: React.ReactNode;
+	render?: (props: {
+		field: ControllerRenderProps<T, FieldPath<T>>;
+		id: string;
+	}) => React.ReactNode;
 }
 
 export interface FormSectionProps {
@@ -80,6 +89,16 @@ export interface FormSectionProps {
 	description?: string;
 	children: React.ReactNode;
 	className?: string;
+}
+
+function getStatusIcon(mutation: { isSuccess: boolean; isError: boolean }) {
+	if (mutation.isSuccess) {
+		return <CheckCircle className="mr-2 h-4 w-4" />;
+	}
+	if (mutation.isError) {
+		return <AlertCircle className="mr-2 h-4 w-4" />;
+	}
+	return null;
 }
 
 export function SmartForm<T extends FieldValues>({
@@ -99,7 +118,7 @@ export function SmartForm<T extends FieldValues>({
 
 	const form = useForm<T>({
 		resolver: zodResolver(schema),
-		defaultValues: (defaultValues || {}) as any,
+		defaultValues: (defaultValues || {}) as DefaultValues<T>,
 	});
 
 	const mutation = useMutation({
@@ -139,11 +158,7 @@ export function SmartForm<T extends FieldValues>({
 								</>
 							) : (
 								<>
-									{mutation.isSuccess ? (
-										<CheckCircle className="mr-2 h-4 w-4" />
-									) : mutation.isError ? (
-										<AlertCircle className="mr-2 h-4 w-4" />
-									) : null}
+									{getStatusIcon(mutation)}
 									{submitText || (mode === "create" ? "Create" : "Update")}
 								</>
 							)}
@@ -170,10 +185,14 @@ export function SmartFormField<T extends FieldValues>({
 	options = [],
 	disabled,
 	className,
+	icon,
 	render,
 }: SmartFormFieldProps<T>) {
 	const generatedId = useId();
-	const renderField = (field: any, id?: string) => {
+	const renderField = (
+		field: ControllerRenderProps<T, FieldPath<T>>,
+		id: string = generatedId
+	) => {
 		switch (type) {
 			case "text":
 			case "email":
@@ -181,6 +200,7 @@ export function SmartFormField<T extends FieldValues>({
 				return (
 					<Input
 						disabled={disabled}
+						icon={icon}
 						placeholder={placeholder}
 						type={type}
 						{...field}
@@ -208,6 +228,7 @@ export function SmartFormField<T extends FieldValues>({
 				return (
 					<Textarea
 						disabled={disabled}
+						icon={icon}
 						placeholder={placeholder}
 						rows={3}
 						{...field}
@@ -237,16 +258,22 @@ export function SmartFormField<T extends FieldValues>({
 
 			case "checkbox":
 				return (
-					<div className="flex items-center space-x-2">
-						<Checkbox
-							checked={field.value}
-							disabled={disabled}
-							onCheckedChange={field.onChange}
-						/>
-						<label className="font-normal text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+					<FormItem className="flex items-center space-x-2">
+						<FormControl>
+							<Checkbox
+								checked={field.value}
+								disabled={disabled}
+								id={field.name}
+								onCheckedChange={field.onChange}
+							/>
+						</FormControl>
+						<FormLabel
+							className="font-normal text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+							htmlFor={field.name}
+						>
 							{label}
-						</label>
-					</div>
+						</FormLabel>
+					</FormItem>
 				);
 
 			case "radio":
@@ -359,7 +386,7 @@ export function FormSection({
 	);
 }
 
-export function ConditionalField<T extends FieldValues>({
+export function ConditionalField<T extends FieldValues, V = unknown>({
 	form,
 	when,
 	equals,
@@ -367,7 +394,7 @@ export function ConditionalField<T extends FieldValues>({
 }: {
 	form: UseFormReturn<T>;
 	when: FieldPath<T>;
-	equals: any;
+	equals: V;
 	children: React.ReactNode;
 }) {
 	const watchedValue = form.watch(when);

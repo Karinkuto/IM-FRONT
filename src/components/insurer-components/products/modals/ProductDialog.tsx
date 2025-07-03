@@ -9,7 +9,7 @@ interface ProductDialogProps {
 	mode: "create" | "edit";
 	isOpen: boolean;
 	onOpenChange: (open: boolean) => void;
-	onSubmit: (values: unknown) => Promise<void>;
+	onSubmit: (values: Product | Omit<Product, "id">) => Promise<void>;
 	isLoading: boolean;
 	product?: Product | null;
 }
@@ -74,18 +74,13 @@ export function ProductDialog({
 	// Unified submit handler
 	const handleSubmit = async (values: FormValues) => {
 		try {
-			const payload = {
+			const productData: Product | Omit<Product, "id"> = {
+				...(mode === "edit" && product ? { id: product.id } : {}),
 				name: values.name,
 				description: values.description,
 				estimated_price: Number.parseFloat(values.estimated_price),
-				coverage_type_id: values.coverageType,
-			};
-
-			const productData = {
-				...(mode === "edit" && product ? product : {}),
-				...payload,
-				insuranceType: values.insuranceType,
 				coverageType: values.coverageType,
+				insuranceType: values.insuranceType,
 			};
 
 			await onSubmit(productData);

@@ -31,11 +31,11 @@ export function buildInsurerOnboardingFormData(
 		api_endpoint: values.api_endpoint || "",
 		api_key: values.api_key || "",
 	};
-	Object.entries(payload).forEach(([key, value]) => {
+	for (const [key, value] of Object.entries(payload)) {
 		if (value !== undefined) {
 			formData.append(`payload[${key}]`, String(value));
 		}
-	});
+	}
 	if (values.logo) {
 		formData.append("payload[logo]", values.logo);
 	}
