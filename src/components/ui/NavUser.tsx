@@ -4,6 +4,7 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { useNavigate } from "react-router-dom";
 
 interface NavUserProps {
 	user: {
@@ -15,6 +16,10 @@ interface NavUserProps {
 }
 
 export function NavUser({ user }: NavUserProps) {
+	const navigate = useNavigate();
+	const handleClick = () => {
+		navigate(`/${user.role.toLowerCase()}/settings`);
+	}
 	const userInitials = user.name
 		.split(" ")
 		.map((n) => n[0])
@@ -26,17 +31,15 @@ export function NavUser({ user }: NavUserProps) {
 		<SidebarMenu className="mt-auto mb-4">
 			<SidebarMenuItem>
 				<SidebarMenuButton
-					className="hover:bg-transparent dark:hover:bg-transparent"
+					className="hover:bg-transparent dark:hover:bg-transparent cursor-pointer"
 					size="lg"
+					onClick={handleClick}
 				>
 					<Avatar className="h-10 w-10 rounded-md">
-						{user.avatar ? (
-							<AvatarImage alt={user.name} src={user.avatar} />
-						) : (
-							<AvatarFallback className="rounded-md bg-black text-white">
-								{userInitials}
-							</AvatarFallback>
-						)}
+						{user.avatar && user.avatar !== "null" && user.avatar !== ""
+							? <AvatarImage alt={user.name} src={user.avatar} />
+							: <AvatarFallback className="rounded-md bg-black text-white">{userInitials}</AvatarFallback>
+						}
 					</Avatar>
 					<div className="grid flex-1 text-left text-sm leading-tight">
 						<span className="truncate font-medium text-primary">

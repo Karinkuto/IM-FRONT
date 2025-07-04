@@ -1,4 +1,3 @@
-import { isValidPhoneNumber } from "react-phone-number-input";
 import { z } from "zod";
 
 export const onboardingSchema = z
@@ -8,9 +7,7 @@ export const onboardingSchema = z
 		name: z.string().min(1, "Name is required"),
 		description: z.string().nullable().optional(),
 		email: z.string().email("Invalid email address"),
-		phone: z.string().refine(isValidPhoneNumber, {
-			message: "Invalid phone number",
-		}),
+		contact_phone: z.string().min(1, "Phone number is required"),
 		apiEndpoint: z.string().nullable().optional(),
 		apiKey: z.string().nullable().optional(),
 		logo: z

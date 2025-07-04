@@ -1,3 +1,6 @@
+import { AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+
 interface VehicleImagesProps {
 	frontViewPhotoUrl: string | null;
 	backViewPhotoUrl: string | null;
@@ -63,14 +66,17 @@ export function VehicleImages({
 							className="group relative overflow-hidden rounded-lg"
 							key={img.label}
 						>
-							<img
+							<AvatarImage
 								alt={img.label}
-								className="h-80 w-full rounded-lg object-cover transition-transform duration-300 group-hover:scale-105"
+								className="h-80 w-full rounded-lg object-cover transition-transform duration-300"
 								src={img.url}
 							/>
-							<div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/30 opacity-0 backdrop-blur-sm transition-opacity duration-300 group-hover:opacity-100">
-								<p className="font-semibold text-lg text-white">{img.label}</p>
-							</div>
+							<Badge
+								className="absolute top-2 left-2 z-10 rounded bg-black/70 px-2 py-1 text-white text-xs"
+								variant="secondary"
+							>
+								{img.label}
+							</Badge>
 						</div>
 					) : (
 						<div

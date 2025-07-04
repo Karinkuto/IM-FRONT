@@ -37,9 +37,11 @@ function Badge({
 	className,
 	variant,
 	asChild = false,
+	icon,
+	children,
 	...props
 }: React.ComponentProps<"span"> &
-	VariantProps<typeof badgeVariants> & { asChild?: boolean }) {
+	VariantProps<typeof badgeVariants> & { asChild?: boolean; icon?: React.ReactNode; children?: React.ReactNode }) {
 	const Comp = asChild ? Slot : "span";
 
 	return (
@@ -47,7 +49,10 @@ function Badge({
 			className={cn(badgeVariants({ variant }), className)}
 			data-slot="badge"
 			{...props}
-		/>
+		>
+			{icon ? <span className="mr-1 flex items-center text-inherit">{icon}</span> : null}
+			{children}
+		</Comp>
 	);
 }
 

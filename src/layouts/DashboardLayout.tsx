@@ -122,6 +122,8 @@ function AppSidebar({
 						if (link.includes(":role")) {
 							link = link.replace(":role", role);
 						}
+						const isActive = currentPath.startsWith(link);
+
 						return (
 							<SidebarMenuItem key={item.link}>
 								{item.link === "/logout" ? (
@@ -136,6 +138,7 @@ function AppSidebar({
 									<SidebarMenuButton
 										asChild
 										className="flex items-center gap-3 rounded-lg px-4 py-3 font-medium text-muted-foreground text-sm"
+										isActive={isActive}
 									>
 										<Link to={link}>
 											<item.icon className="h-5 w-5" />
@@ -152,8 +155,11 @@ function AppSidebar({
 				{currentUserData && (
 					<NavUser
 						user={{
-							name: currentUserData.name,
-							email: user?.email || "", // Get email from the user object
+							name:
+								user?.role === "insurer"
+									? liveInsurer?.name || currentUserData.name
+									: currentUserData.name,
+							email: user?.email || "",
 							role: currentUserData.role,
 							avatar:
 								user?.role === "insurer"
@@ -171,6 +177,10 @@ function AppSidebar({
 export interface DashboardLayoutProps {
 	role: ValidRole;
 }
+
+// Move regex to top-level scope for performance
+const DASH_REGEX = /-/g;
+const DIGITS_REGEX = /^\d+$/;
 
 export function DashboardLayout({ role }: DashboardLayoutProps) {
 	const { logout, user, currentUserData } = useAuth();
@@ -198,15 +208,16 @@ export function DashboardLayout({ role }: DashboardLayoutProps) {
 	// Check if the path is a quotation details page (e.g., /admin/quotation-requests/123)
 	const isQuotationDetailsPage =
 		pathSegments.length >= 3 &&
-		pathSegments[pathSegments.length - 2] === "quotation-requests" &&
-		/^\d+$/.test(pathSegments[pathSegments.length - 1]);
+		pathSegments.at(-2) === "quotation-requests" &&
+		DIGITS_REGEX.test(pathSegments.at(-1) ?? "");
 
 	if (isQuotationDetailsPage) {
-		const quotationId = pathSegments[pathSegments.length - 1];
+		const quotationId = pathSegments.at(-1);
 		breadcrumbPageContent = `Request #${quotationId}`;
 	} else {
 		// Existing logic for other pages
-		breadcrumbPageContent = pathSegments.pop()?.replace(/-/g, " ") || "Home";
+		const lastSegment = pathSegments.pop() ?? "Home";
+		breadcrumbPageContent = lastSegment.replace(DASH_REGEX, " ") || "Home";
 	}
 
 	// Update document title when breadcrumbPageContent changes

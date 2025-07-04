@@ -65,7 +65,7 @@ async function getCroppedImg(
 }
 
 interface AvatarUploaderProps {
-	value?: Blob | null;
+	value?: Blob | string | null;
 	onChange: (file: Blob | null) => void;
 	maxSizeMB?: number;
 	shape?: "circle" | "rounded";
@@ -119,23 +119,42 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
 		previousFileId.current = fileId;
 	}, [fileId]);
 
-	// Clean up blob URLs
+	// Clean up blob URLs on unmount
 	useEffect(() => {
 		return () => {
-			if (preview?.startsWith("blob:")) {
+			if (preview && preview.startsWith("blob:")) {
 				URL.revokeObjectURL(preview);
 			}
 		};
-	}, [preview]);
+	}, []); // Empty dependency array ensures this runs only on unmount
 
 	// When value prop changes, update preview
 	useEffect(() => {
-		if (value) {
+		// Clear any existing preview URL
+		if (preview && preview.startsWith('blob:')) {
+			URL.revokeObjectURL(preview);
+		}
+
+		if (!value) {
+			setPreview(null);
+			return;
+		}
+
+		if (typeof value === 'string') {
+			// If value is a string URL, use it directly
+			setPreview(value);
+		} else if (value instanceof Blob) {
+			// If value is a Blob, create an object URL
 			const url = URL.createObjectURL(value);
 			setPreview(url);
-		} else {
-			setPreview(null);
 		}
+
+		// Cleanup function to revoke object URL when component unmounts or value changes
+		return () => {
+			if (preview && preview.startsWith('blob:')) {
+				URL.revokeObjectURL(preview);
+			}
+		};
 	}, [value]);
 
 	// Handle crop apply
@@ -157,9 +176,7 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
 
 	// Remove avatar
 	const handleRemove = () => {
-		if (preview) URL.revokeObjectURL(preview);
-		setPreview(null);
-		onChange(null);
+		onChange(null); // This will trigger the parent component to update the value prop
 		if (fileId) removeFile(fileId);
 	};
 
@@ -178,49 +195,65 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
 		<div className="flex h-full w-full flex-col items-center gap-2">
 			<div className="h-full w-full flex-grow">
 				<button
-					aria-label={preview ? "Change image" : "Upload image"}
-					className={`relative flex h-full w-full cursor-pointer flex-col items-center justify-center rounded-md border-2 border-input border-dashed bg-background outline-none transition-colors hover:bg-accent/50 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 data-[dragging=true]:bg-accent/50 ${isDragging ? "ring-2 ring-primary" : ""}`}
+					aria-label={preview ? "View image" : "Upload image"}
+					className={`relative flex h-full w-full cursor-pointer flex-col items-center justify-center rounded-md border-2 border-input border-dashed bg-background outline-none transition-colors hover:bg-accent/50 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 data-[dragging=true]:bg-accent/50 ${isDragging ? "ring-2 ring-primary" : ""} ${preview ? "border-solid cursor-default" : ""}`}
 					data-dragging={isDragging || undefined}
-					onClick={openFileDialog}
-					onDragEnter={handleDragEnter}
-					onDragLeave={handleDragLeave}
-					onDragOver={handleDragOver}
-					onDrop={handleDrop}
+					onClick={preview ? undefined : openFileDialog}
+					onDragEnter={preview ? undefined : handleDragEnter}
+					onDragLeave={preview ? undefined : handleDragLeave}
+					onDragOver={preview ? undefined : handleDragOver}
+					onDrop={preview ? undefined : handleDrop}
 					style={dropzoneStyle}
 					type="button"
 				>
-					<div className="relative h-full w-full">
+					<div className="relative h-full w-full flex items-center justify-center">
 						{preview ? (
-							<Avatar className={`h-20 w-20 ${avatarClass} mx-auto`}>
-								<AvatarImage alt="Logo" src={preview} />
-								<AvatarFallback>
-									<CircleUserRoundIcon className="h-8 w-8 opacity-60" />
-								</AvatarFallback>
-							</Avatar>
+							<div className="flex flex-col items-center gap-2">
+								<div className="relative">
+									<Avatar className={`h-20 w-20 ${avatarClass} mx-auto`}>
+										<AvatarImage alt="Logo" src={preview} />
+										<AvatarFallback>
+											<CircleUserRoundIcon className="h-8 w-8 opacity-60" />
+										</AvatarFallback>
+									</Avatar>
+									{preview && (
+										<button
+											aria-label="Remove image"
+											className="absolute -top-2 -right-2 flex h-7 w-7 items-center justify-center rounded-full border-2 border-destructive/20 bg-destructive text-white shadow-sm transition-colors hover:bg-destructive/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+											onClick={(e) => {
+												e.stopPropagation();
+												handleRemove();
+											}}
+											type="button"
+										>
+											<XIcon className="h-4 w-4 text-white" />
+										</button>
+									)}
+								</div>
+								<Button
+									type="button"
+									variant="outline"
+									size="sm"
+									onClick={(e) => {
+										e.stopPropagation();
+										openFileDialog();
+									}}
+								>
+									Change Image
+								</Button>
+							</div>
 						) : (
 							<div className="flex flex-col items-center justify-center py-4">
-								<CircleUserRoundIcon className="mb-2 h-10 w-10 opacity-60" />
-								<span className="text-muted-foreground text-sm">
-									Drag & drop or click to upload
-								</span>
+								<CircleUserRoundIcon className="h-8 w-8 opacity-60" />
+								<p className="mt-2 text-sm text-muted-foreground">
+									{label || "Click or drag to upload"}
+								</p>
 								<span className="text-muted-foreground text-xs">
 									JPEG/PNG, max {maxSizeMB}MB
 								</span>
 							</div>
 						)}
-						{preview && (
-							<button
-								aria-label="Remove image"
-								className="-top-2 -right-2 absolute flex h-7 w-7 items-center justify-center rounded-full border-2 border-background bg-background shadow-sm transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-								onClick={(e) => {
-									e.stopPropagation();
-									handleRemove();
-								}}
-								type="button"
-							>
-								<XIcon className="h-4 w-4" />
-							</button>
-						)}
+
 					</div>
 					<input
 						{...getInputProps()}

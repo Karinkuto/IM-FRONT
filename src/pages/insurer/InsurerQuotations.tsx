@@ -28,12 +28,21 @@ export default function InsurerQuotations() {
 		const params = Object.fromEntries(searchParams.entries());
 		const filters: QuotationFiltersType = {};
 
-		if (params.status)
+		if (params.status) {
 			filters.status = params.status as QuotationRequest["status"];
-		if (params.insuranceType) filters.insuranceType = params.insuranceType;
-		if (params.coverageType) filters.coverageType = params.coverageType;
-		if (params.vehicleType) filters.vehicleType = params.vehicleType;
-		if (params.region) filters.region = params.region;
+		}
+		if (params.insuranceType) {
+			filters.insuranceType = params.insuranceType;
+		}
+		if (params.coverageType) {
+			filters.coverageType = params.coverageType;
+		}
+		if (params.vehicleType) {
+			filters.vehicleType = params.vehicleType;
+		}
+		if (params.region) {
+			filters.region = params.region;
+		}
 
 		if (params.fromDate || params.toDate) {
 			filters.dateRange = {
@@ -53,15 +62,19 @@ export default function InsurerQuotations() {
 	useEffect(() => {
 		const params = new URLSearchParams();
 
-		Object.entries(currentFilters).forEach(([key, value]) => {
+		for (const [key, value] of Object.entries(currentFilters)) {
 			if (key === "dateRange" && value) {
 				const { from, to } = value as { from?: Date; to?: Date };
-				if (from) params.set("fromDate", from.toISOString().split("T")[0]);
-				if (to) params.set("toDate", to.toISOString().split("T")[0]);
+				if (from) {
+					params.set("fromDate", from.toISOString().split("T")[0]);
+				}
+				if (to) {
+					params.set("toDate", to.toISOString().split("T")[0]);
+				}
 			} else if (value) {
 				params.set(key, String(value));
 			}
-		});
+		}
 
 		setSearchParams(params);
 	}, [currentFilters, setSearchParams]);
@@ -168,7 +181,7 @@ export default function InsurerQuotations() {
 	return (
 		<div className="space-y-6">
 			<div>
-				<h1 className="font-bold text-2xl">Quotation Requests</h1>
+				<h1 className="font-bold text-3xl">Quotation Requests</h1>
 				<p className="text-muted-foreground text-sm">
 					View and manage all incoming insurance quotation requests
 					{quotationsData?.meta?.total_count

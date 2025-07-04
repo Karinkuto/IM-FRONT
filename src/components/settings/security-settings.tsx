@@ -118,7 +118,9 @@ export function SecuritySettings() {
 										placeholder="Enter new password"
 										render={({ field, id }) => (
 											<PasswordStrengthMeter
+												enableAutoGenerate={true}
 												id={id}
+												meterClassName="h-1"
 												onValueChange={field.onChange}
 												placeholder="Enter new password"
 												requirements={passwordRequirements}
@@ -126,6 +128,7 @@ export function SecuritySettings() {
 												showPasswordToggle
 												showRequirements={false}
 												showText
+												size="sm"
 												value={field.value || ""}
 											/>
 										)}

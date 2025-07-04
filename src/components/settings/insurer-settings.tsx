@@ -1,4 +1,4 @@
-import { Settings } from "lucide-react";
+import { Shield, User } from "lucide-react";
 import { ProfileSettings } from "./profile-settings";
 import { SettingsLayout } from "./SettingsLayout";
 import { SecuritySettings } from "./security-settings";
@@ -8,13 +8,13 @@ export function InsurerSettings() {
 		{
 			value: "profile",
 			label: "Profile",
-			icon: Settings,
+			icon: User,
 			content: <ProfileSettings />,
 		},
 		{
 			value: "security",
 			label: "Security",
-			icon: Settings,
+			icon: Shield,
 			content: <SecuritySettings />,
 		},
 	];

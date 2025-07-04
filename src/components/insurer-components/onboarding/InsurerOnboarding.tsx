@@ -9,7 +9,7 @@ import { Form } from "@/components/ui/form";
 import Stepper, { Step } from "@/components/ui/stepper";
 import type { ValidRole } from "@/config/routes";
 import { useAuth } from "@/hooks/useAuth";
-import { useChangePasswordMutation } from "@/redux/apis/authApi";
+import { useCreatePasswordMutation } from "@/redux/apis/authApi";
 import { useOnboardInsurerMutation } from "@/redux/apis/insurerApi";
 import { useGetUserByIdQuery } from "@/redux/apis/userApi";
 import { setCredentials } from "@/redux/slices/authSlice";
@@ -39,7 +39,7 @@ const stepFields: (keyof OnboardingFormValues)[][] = [
 	[], // Step 0 placeholder
 	["newPassword", "confirmPassword"], // Step 1
 	["name"], // Step 2
-	["email", "phone"], // Step 3
+	["email", "contact_phone"], // Step 3
 	[], // Step 4 is optional
 	[], // Step 5 is optional
 ];
@@ -58,7 +58,9 @@ const mapUserToAuthUser = (
 	const normalizeRoles = (
 		roles: unknown
 	): { id: number; name: "admin" | "customer" | "insurer" }[] | undefined => {
-		if (!roles) return;
+		if (!roles) {
+			return;
+		}
 
 		if (Array.isArray(roles)) {
 			return roles.map((role) => {
@@ -82,14 +84,18 @@ const mapUserToAuthUser = (
 
 	// Determine the user's role
 	const determineRole = (): "admin" | "customer" | "insurer" => {
-		if (user.role) return user.role;
+		if (user.role) {
+			return user.role;
+		}
 		if (user.roles && user.roles.length > 0) {
 			const firstRole = Array.isArray(user.roles) ? user.roles[0] : null;
 			if (firstRole) {
-				if (typeof firstRole === "string")
+				if (typeof firstRole === "string") {
 					return firstRole as "admin" | "customer" | "insurer";
-				if (firstRole.name)
+				}
+				if (firstRole.name) {
 					return firstRole.name as "admin" | "customer" | "insurer";
+				}
 			}
 		}
 		return "customer"; // Default role
@@ -109,7 +115,7 @@ const mapUserToAuthUser = (
 					last_name: user.customer.last_name,
 				}
 			: undefined,
-		insurer: user.insurer ? { name: user.insurer.name } : undefined,
+		insurer: user.insurer ? { id: user.insurer.id, name: user.insurer.name } : undefined,
 		roles: normalizeRoles(user.roles),
 	};
 };
@@ -169,7 +175,7 @@ export function InsurerOnboarding({
 			name: "",
 			description: "",
 			email: "",
-			phone: "",
+			contact_phone: "",
 			apiEndpoint: "",
 			apiKey: "",
 		},
@@ -185,13 +191,15 @@ export function InsurerOnboarding({
 	}, [logoPreview]);
 
 	const [changePassword, { isLoading: isChangingPassword }] =
-		useChangePasswordMutation();
+		useCreatePasswordMutation();
 	const [onboardInsurer, { isLoading: isOnboardingInsurer }] =
 		useOnboardInsurerMutation();
 
 	const triggerStepValidation = async (step: number) => {
 		const fields = stepFields[step];
-		if (!fields || fields.length === 0) return true;
+		if (!fields || fields.length === 0) {
+			return true;
+		}
 		const isValid = await form.trigger(fields);
 		return isValid;
 	};
@@ -238,7 +246,7 @@ export function InsurerOnboarding({
 				name: values.name,
 				description: values.description ?? undefined,
 				contact_email: values.email,
-				contact_phone: values.phone,
+				contact_phone: values.contact_phone,
 				api_endpoint: values.apiEndpoint ?? undefined,
 				api_key: values.apiKey ?? undefined,
 				logo: values.logo,
@@ -309,7 +317,9 @@ export function InsurerOnboarding({
 	};
 
 	// Exit early if not showing onboarding and overlay is not visible
-	if (!(showInsurerOnboarding || showWelcome || overlayVisible)) return null;
+	if (!(showInsurerOnboarding || showWelcome || overlayVisible)) {
+		return null;
+	}
 
 	return (
 		<AnimatePresence>

@@ -9,7 +9,8 @@ import {
 	useGetUsersQuery,
 	useUpdateUserMutation,
 } from "@/redux/apis/userApi";
-import type { User } from "@/types/user";
+import type { User, UserRole } from "@/types/user";
+import type { UserFormValues } from "./UserDialog";
 import UserDialog from "./UserDialog";
 
 const renderValue = (value: string | null | undefined | string[] | boolean) => {
@@ -28,35 +29,45 @@ export default function UsersTable() {
 	const { data: users, isLoading, error } = useGetUsersQuery();
 	const [openAddUser, setOpenAddUser] = useState(false);
 	const [openEditUser, setOpenEditUser] = useState(false);
-	const [editUserInitial, setEditUserInitial] = useState<any>(null);
+	const [editUserInitial, setEditUserInitial] =
+		useState<Partial<UserFormValues> | null>(null);
 	const [editUserId, setEditUserId] = useState<string | number | null>(null);
 	const [createUser] = useCreateUserMutation();
 	const [updateUser] = useUpdateUserMutation();
 	const [formError, setFormError] = useState<string | null>(null);
 
-	const handleAddUser = async (values: any) => {
+	const handleAddUser = async (values: UserFormValues) => {
 		setFormError(null);
 		try {
 			await createUser({
 				email: values.email,
 				phone_number: values.phone_number,
-				role: values.role,
+				role: values.role ?? "insurer",
 			}).unwrap();
 			setOpenAddUser(false);
-		} catch (err: any) {
-			setFormError(err?.data?.message || "Failed to create user");
+		} catch (err: unknown) {
+			setFormError(
+				(err as { data?: { message?: string } })?.data?.message ||
+					"Failed to create user"
+			);
 		}
 	};
 
-	const handleEditUser = (user: any) => {
-		setEditUserInitial({ email: user.email, phone_number: user.phone_number });
+	const handleEditUser = (user: User) => {
+		setEditUserInitial({
+			email: user.email ?? "",
+			phone_number: user.phone_number ?? undefined,
+			...(user.role ? { role: user.role } : {}),
+		});
 		setEditUserId(user.id);
 		setOpenEditUser(true);
 	};
 
-	const handleUpdateUser = async (values: any) => {
+	const handleUpdateUser = async (values: UserFormValues) => {
 		setFormError(null);
-		if (!editUserId) return;
+		if (!editUserId) {
+			return;
+		}
 		try {
 			await updateUser({
 				id: editUserId,
@@ -64,8 +75,11 @@ export default function UsersTable() {
 				phone_number: values.phone_number,
 			}).unwrap();
 			setOpenEditUser(false);
-		} catch (err: any) {
-			setFormError(err?.data?.message || "Failed to update user");
+		} catch (err: unknown) {
+			setFormError(
+				(err as { data?: { message?: string } })?.data?.message ||
+					"Failed to update user"
+			);
 		}
 	};
 
@@ -86,21 +100,29 @@ export default function UsersTable() {
 			cell: ({ row }) => {
 				const verified = row.getValue("verified");
 				return verified ? (
-					<Badge variant="outline">
-						<CheckCircle2
-							aria-hidden="true"
-							className="-ms-0.5 text-green-500 opacity-60"
-							size={12}
-						/>
+					<Badge
+						icon={
+							<CheckCircle2
+								aria-hidden="true"
+								className="text-green-500 opacity-60"
+								size={12}
+							/>
+						}
+						variant="outline"
+					>
 						Verified
 					</Badge>
 				) : (
-					<Badge variant="outline">
-						<XCircle
-							aria-hidden="true"
-							className="-ms-0.5 text-red-500 opacity-60"
-							size={12}
-						/>
+					<Badge
+						icon={
+							<XCircle
+								aria-hidden="true"
+								className="text-red-500 opacity-60"
+								size={12}
+							/>
+						}
+						variant="outline"
+					>
 						Not Verified
 					</Badge>
 				);
@@ -127,7 +149,15 @@ export default function UsersTable() {
 					return <span style={{ color: "#aaa" }}>-</span>;
 				}
 				if (Array.isArray(value)) {
-					return value.map((role: any) => role.name).join(", ");
+					return value
+						.map(
+							(
+								role:
+									| string
+									| { id: number; name: UserRole; [key: string]: unknown }
+							) => (typeof role === "string" ? role : role.name)
+						)
+						.join(", ");
 				}
 				return String(value);
 			},
@@ -137,7 +167,9 @@ export default function UsersTable() {
 			header: "Created At",
 			cell: ({ row }) => {
 				const value = row.getValue("created_at");
-				if (!value) return <span style={{ color: "#aaa" }}>-</span>;
+				if (!value) {
+					return <span style={{ color: "#aaa" }}>-</span>;
+				}
 				const date = new Date(value as string);
 				return (
 					<span className="font-mono text-muted-foreground text-sm dark:text-foreground">
@@ -164,8 +196,12 @@ export default function UsersTable() {
 		},
 	];
 
-	if (isLoading) return <div>Loading...</div>;
-	if (error) return <div>Error loading users</div>;
+	if (isLoading) {
+		return <div>Loading...</div>;
+	}
+	if (error) {
+		return <div>Error loading users</div>;
+	}
 
 	return (
 		<>
@@ -185,7 +221,7 @@ export default function UsersTable() {
 				open={openAddUser}
 			/>
 			<UserDialog
-				initialValues={editUserInitial}
+				initialValues={editUserInitial ?? undefined}
 				mode="edit"
 				onOpenChange={setOpenEditUser}
 				onSubmit={handleUpdateUser}

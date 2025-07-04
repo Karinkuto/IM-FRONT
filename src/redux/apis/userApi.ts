@@ -13,7 +13,13 @@ export const userApi = createApi({
 				method: "GET",
 			}),
 			transformResponse: (response: { data: User[] }) => response.data,
-			providesTags: ["User"],
+			providesTags: (result) =>
+				result
+					? [
+							...result.map(({ id }) => ({ type: "User" as const, id })),
+							{ type: "User", id: "LIST" },
+						]
+					: [{ type: "User", id: "LIST" }],
 		}),
 		getUserById: builder.query<User, string>({
 			query: (id) => ({
@@ -21,7 +27,7 @@ export const userApi = createApi({
 				method: "GET",
 			}),
 			transformResponse: (response: { data: User }) => response.data,
-			providesTags: ["User"],
+			providesTags: (_result, _error, id) => [{ type: "User", id }],
 		}),
 		createUser: builder.mutation<User, Partial<User> & { role: string }>({
 			query: (payload) => ({
@@ -40,7 +46,10 @@ export const userApi = createApi({
 				method: "PATCH",
 				data: { payload: patch },
 			}),
-			invalidatesTags: ["User"],
+			invalidatesTags: (_result, _error, { id }) => [
+				{ type: "User", id },
+				{ type: "User", id: "LIST" },
+			],
 		}),
 		// Add more endpoints (create, update, delete) as needed
 	}),

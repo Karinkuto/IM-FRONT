@@ -23,10 +23,10 @@ export function SettingsLayout({ tabs }: { tabs: SettingsTab[] }) {
 				defaultValue={tabs[0]?.value}
 				orientation="vertical"
 			>
-				<TabsList className="flex-col gap-1 rounded-none bg-transparent px-1 py-0 text-foreground">
+				<TabsList className="flex-col gap-1 rounded-none bg-transparent px-6 py-0 text-foreground">
 					{tabs.map((tab) => (
 						<TabsTrigger
-							className="after:-ms-1 relative w-full justify-start after:absolute after:inset-y-0 after:start-0 after:w-0.5 hover:bg-accent hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:hover:bg-accent data-[state=active]:after:bg-primary"
+							className="after:-ms-2 relative w-full justify-start pr-14 after:absolute after:inset-y-0 after:start-0 after:w-0.5 hover:bg-accent hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:hover:bg-accent data-[state=active]:after:bg-primary"
 							key={tab.value}
 							value={tab.value}
 						>

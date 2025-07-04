@@ -25,6 +25,7 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
 	Select,
@@ -196,7 +197,6 @@ export function SmartFormField<T extends FieldValues>({
 		switch (type) {
 			case "text":
 			case "email":
-			case "password":
 				return (
 					<Input
 						disabled={disabled}
@@ -205,6 +205,18 @@ export function SmartFormField<T extends FieldValues>({
 						type={type}
 						{...field}
 						id={id}
+						value={field.value || ""}
+					/>
+				);
+
+			case "password":
+				return (
+					<PasswordInput
+						disabled={disabled}
+						icon={icon}
+						id={id}
+						placeholder={placeholder}
+						{...field}
 						value={field.value || ""}
 					/>
 				);

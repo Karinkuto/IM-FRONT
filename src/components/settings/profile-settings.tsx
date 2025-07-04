@@ -21,8 +21,7 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import type { ProfileData } from "@/hooks/use-profile-data";
-import { useProfileData } from "@/hooks/use-profile-data";
+import { useAuth } from "@/hooks/useAuth";
 import {
 	useGetInsurerQuery,
 	usePatchInsurerMutation,
@@ -34,7 +33,6 @@ interface InsurerProfileFormProps {
 	insurer: Insurer;
 	schema: ZodType<Record<string, unknown>, ZodTypeDef, Record<string, unknown>>;
 	mutationFn: (data: Record<string, unknown>) => Promise<Insurer>;
-	setProfileData: (data: ProfileData) => void;
 	refetch: () => Promise<unknown>;
 }
 
@@ -42,16 +40,19 @@ function InsurerProfileForm({
 	insurer,
 	schema,
 	mutationFn,
-	setProfileData,
 	refetch,
 }: InsurerProfileFormProps) {
-	const [logoFile, setLogoFile] = React.useState<File | Blob | undefined>(
-		undefined
-	);
+	// Track the current logo file or URL
+	const [logoState, setLogoState] = React.useState<{
+		file: File | Blob | null;
+		url: string | null;
+	}>({ file: null, url: insurer.logo_url || null });
+
 	const formRef = React.useRef<
 		import("react-hook-form").UseFormReturn<Record<string, unknown>> | null
 	>(null);
 
+	// Initialize form with insurer data
 	React.useEffect(() => {
 		if (formRef.current) {
 			formRef.current.reset({
@@ -61,19 +62,33 @@ function InsurerProfileForm({
 				contact_phone: insurer.contact_phone ?? "",
 				api_endpoint: insurer.api_endpoint ?? "",
 				api_key: insurer.api_key ?? "",
-				logo: undefined,
+				logo: undefined, // Only set to null if user removes logo
 			});
-			setLogoFile(undefined);
+			// Update logo state when insurer data changes
+			setLogoState({
+				file: null,
+				url: insurer.logo_url || null,
+			});
 		}
 	}, [insurer]);
 
+	// Handle logo changes from the AvatarUploader
 	const handleLogoChange = (fileOrBlob: File | Blob | null) => {
 		if (formRef.current) {
-			formRef.current.setValue("logo", fileOrBlob || undefined, {
+			// Explicitly set to null when removing the logo
+			const value = fileOrBlob === null ? null : fileOrBlob;
+			formRef.current.setValue("logo", value, {
 				shouldValidate: true,
+				shouldDirty: true,
+				shouldTouch: true,
+			});
+
+			// Update the logo state
+			setLogoState({
+				file: fileOrBlob,
+				url: fileOrBlob ? URL.createObjectURL(fileOrBlob) : null,
 			});
 		}
-		setLogoFile(fileOrBlob || undefined);
 	};
 
 	return (
@@ -90,16 +105,7 @@ function InsurerProfileForm({
 			mutationFn={
 				mutationFn as (data: Record<string, unknown>) => Promise<Insurer>
 			}
-			onSuccess={async (data: unknown) => {
-				setProfileData({
-					name: (data as Insurer).name ?? "",
-					description: (data as Insurer).description ?? "",
-					contact_email: (data as Insurer).contact_email ?? "",
-					contact_phone: (data as Insurer).contact_phone ?? "",
-					api_endpoint: (data as Insurer).api_endpoint ?? "",
-					api_key: (data as Insurer).api_key ?? "",
-					logo: (data as Insurer).logo_url ?? "",
-				});
+			onSuccess={async () => {
 				await refetch();
 			}}
 			schema={schema}
@@ -114,12 +120,11 @@ function InsurerProfileForm({
 						<div className="mb-2">
 							<Label className="mb-2">Company Logo</Label>
 							<AvatarUploader
-								height={120}
-								label="PNG, JPG up to 5MB"
+								height={180}
 								maxSizeMB={5}
 								onChange={handleLogoChange}
 								shape="rounded"
-								value={logoFile}
+								value={logoState.url}
 							/>
 						</div>
 						{/* Second row: Company Name and Contact Email */}
@@ -189,15 +194,52 @@ function InsurerProfileForm({
 	);
 }
 
+// Helper to prepare the payload for the insurer form
+function prepareInsurerPayload(
+	data: Record<string, unknown>,
+	insurer: Insurer
+) {
+	return {
+		name: String(data.name ?? insurer.name ?? ""),
+		contact_email: String(data.contact_email ?? insurer.contact_email ?? ""),
+		contact_phone: String(data.contact_phone ?? insurer.contact_phone ?? ""),
+		description:
+			data.description !== undefined
+				? String(data.description)
+				: (insurer.description ?? undefined),
+		api_endpoint:
+			data.api_endpoint !== undefined
+				? String(data.api_endpoint)
+				: (insurer.api_endpoint ?? undefined),
+		api_key:
+			data.api_key !== undefined
+				? String(data.api_key)
+				: (insurer.api_key ?? undefined),
+	};
+}
+
+// Helper to extract the logo if changed or removed
+function extractLogo(data: Record<string, unknown>) {
+	if (
+		"logo" in data &&
+		(data.logo === null ||
+			data.logo instanceof File ||
+			data.logo instanceof Blob)
+	) {
+		return data.logo as File | Blob | null;
+	}
+	return;
+}
+
 export function ProfileSettings() {
-	const { profileData, setProfileData } = useProfileData();
-	const insurerId = (profileData && (profileData as { id?: number }).id) || 1;
+	const { user } = useAuth();
+	const insurerId = user?.insurer?.id;
 	const {
 		data: insurer,
 		isLoading,
 		isError,
 		refetch,
-	} = useGetInsurerQuery(insurerId);
+	} = useGetInsurerQuery(insurerId as string | number, { skip: !insurerId });
 	const [patchInsurer] = usePatchInsurerMutation();
 
 	// Zod schema for validation
@@ -205,12 +247,13 @@ export function ProfileSettings() {
 		logo: z
 			.instanceof(File, { message: "Logo must be a file" })
 			.or(z.instanceof(Blob, { message: "Logo must be a blob" }))
+			.or(z.null())
 			.optional(),
 		name: z.string().optional(),
 		description: z.string().optional(),
-		contact_email: z.string().optional(),
+		contact_email: z.string().email("Please enter a valid email").optional(),
 		contact_phone: z.string().optional(),
-		api_endpoint: z.string().optional(),
+		api_endpoint: z.string().url("Please enter a valid URL").optional(),
 		api_key: z.string().optional(),
 	});
 
@@ -220,73 +263,17 @@ export function ProfileSettings() {
 		if (!insurer) {
 			throw new Error("No insurer data available");
 		}
-		const allowedKeys = [
-			"name",
-			"description",
-			"contact_email",
-			"contact_phone",
-			"api_endpoint",
-			"api_key",
-			"logo",
-		] as const;
-		type AllowedKey = (typeof allowedKeys)[number];
-		const changedFields: Record<string, unknown> = {};
-		let onlyLogoChanged = true;
-		for (const key of allowedKeys) {
-			if (
-				key === "logo"
-					? data[key] !== undefined
-					: data[key] !== undefined &&
-						data[key] !==
-							(insurer as Record<Exclude<AllowedKey, "logo">, unknown>)[
-								key as Exclude<AllowedKey, "logo">
-							]
-			) {
-				changedFields[key] = data[key];
-				if (key !== "logo") {
-					onlyLogoChanged = false;
-				}
-			}
-		}
-		if (Object.keys(changedFields).length === 0) {
-			return insurer;
-		}
 
-		// Create a properly typed object with all required fields
-		const formData = buildInsurerOnboardingFormData({
-			name: onlyLogoChanged
-				? insurer.name
-				: (data.name as string) || insurer.name,
-			description: onlyLogoChanged
-				? (insurer.description ?? "")
-				: ((data.description as string) ?? insurer.description ?? ""),
-			contact_email: onlyLogoChanged
-				? insurer.contact_email
-				: (data.contact_email as string) || insurer.contact_email,
-			contact_phone: onlyLogoChanged
-				? insurer.contact_phone
-				: (data.contact_phone as string) || insurer.contact_phone,
-			api_endpoint: onlyLogoChanged
-				? (insurer.api_endpoint ?? "")
-				: ((data.api_endpoint as string) ?? insurer.api_endpoint ?? ""),
-			api_key: onlyLogoChanged
-				? (insurer.api_key ?? "")
-				: ((data.api_key as string) ?? insurer.api_key ?? ""),
-			logo: changedFields.logo as File | Blob | undefined,
-		});
+		const payload = prepareInsurerPayload(data, insurer);
+		const logo = extractLogo(data);
+		const formData = buildInsurerOnboardingFormData({ ...payload, logo });
+		if (!insurerId) {
+			throw new Error("No insurer ID available");
+		}
 		const updated = await patchInsurer({
 			id: insurerId,
 			data: formData,
 		}).unwrap();
-		setProfileData({
-			name: updated.name ?? "",
-			description: updated.description ?? "",
-			contact_email: updated.contact_email ?? "",
-			contact_phone: updated.contact_phone ?? "",
-			api_endpoint: updated.api_endpoint ?? "",
-			api_key: updated.api_key ?? "",
-			logo: updated.logo_url ?? "",
-		});
 		return updated;
 	};
 
@@ -300,11 +287,11 @@ export function ProfileSettings() {
 						How your company profile appears to others
 					</CardDescription>
 				</CardHeader>
-				<CardContent>
+				<CardContent className="relative">
 					{isLoading && <p>Loading...</p>}
 					{!isLoading && isError && <p>Error loading profile.</p>}
 					{!(isLoading || isError) && insurer && (
-						<div className="flex items-center gap-6">
+						<div className="flex items-start gap-6">
 							<Avatar className="h-20 w-20 flex-shrink-0 rounded-md">
 								<AvatarImage
 									alt={insurer.name}
@@ -323,10 +310,10 @@ export function ProfileSettings() {
 									<Building2 className="h-4 w-4 text-muted-foreground" />
 									{insurer.name}
 								</h3>
-								<p className="mt-1 line-clamp-2 flex items-center gap-2 text-muted-foreground text-sm">
-									<TextCursorInput className="h-4 w-4 text-muted-foreground" />
-									{insurer.description}
-								</p>
+								<div className="mt-1 line-clamp-2 flex items-start gap-2 text-muted-foreground text-sm">
+									<TextCursorInput className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+									<span>{insurer.description}</span>
+								</div>
 								<div className="mt-3 flex flex-wrap items-center gap-4">
 									<div className="flex items-center gap-2 text-sm">
 										<Mail className="h-4 w-4 text-muted-foreground" />
@@ -341,19 +328,29 @@ export function ProfileSettings() {
 									{insurer.api_endpoint && insurer.api_key ? (
 										<Badge
 											className="flex items-center gap-1 text-xs"
-											variant="secondary"
+											icon={
+												<LinkIcon
+													aria-hidden="true"
+													className="text-inherit opacity-60"
+													size={12}
+												/>
+											}
+											variant="status-approved"
 										>
-											<LinkIcon className="h-3 w-3 text-muted-foreground" />
-											<KeyRound className="h-3 w-3 text-muted-foreground" />
 											API Connected
 										</Badge>
 									) : (
 										<Badge
 											className="flex items-center gap-1 text-xs"
-											variant="destructive"
+											icon={
+												<LinkIcon
+													aria-hidden="true"
+													className="text-inherit opacity-60"
+													size={12}
+												/>
+											}
+											variant="status-rejected"
 										>
-											<LinkIcon className="h-3 w-3 text-muted-foreground" />
-											<KeyRound className="h-3 w-3 text-muted-foreground" />
 											API Not Connected
 										</Badge>
 									)}
@@ -370,7 +367,6 @@ export function ProfileSettings() {
 					mutationFn={mutationFn}
 					refetch={refetch}
 					schema={schema}
-					setProfileData={setProfileData}
 				/>
 			)}
 		</div>

@@ -12,6 +12,7 @@ export type User = {
 		last_name?: string;
 	};
 	insurer?: {
+		id: string | number;
 		name: string;
 	};
 	roles?: {
@@ -42,6 +43,7 @@ export type AuthContextType = {
 		role: string;
 		isTemporaryPassword?: boolean;
 		insurer?: {
+			id: string | number;
 			name: string;
 			logo_url?: string;
 		};

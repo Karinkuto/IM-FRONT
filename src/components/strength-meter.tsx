@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 const strengthMeterVariants = cva(
-	"mt-1 flex h-2 w-full gap-1 rounded-full bg-gray-200 transition-all dark:bg-gray-700",
+	"mt-1 flex h-2 w-full gap-1 rounded-full bg-transparent transition-all",
 	{
 		variants: {
 			size: {

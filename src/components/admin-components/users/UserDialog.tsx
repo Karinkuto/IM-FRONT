@@ -1,22 +1,23 @@
 import { Info } from "lucide-react";
-import * as z from "zod";
+import type { infer as zInfer } from "zod";
+import { object, string, enum as zEnum } from "zod";
 import { SmartForm, SmartFormField } from "@/components/smart-form";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
-const userFormSchema = z.object({
-	email: z.string().email("Invalid email address"),
-	phone_number: z.string().optional(),
-	role: z.enum(["admin", "customer", "insurer"]).optional(), // role only for create
+const userFormSchema = object({
+	email: string().email("Invalid email address"),
+	phone_number: string().optional(),
+	role: zEnum(["admin", "customer", "insurer"]).optional(), // role only for create
 });
 
-type UserFormValues = z.infer<typeof userFormSchema>;
+export type UserFormValues = zInfer<typeof userFormSchema>;
 
 type Mode = "create" | "edit";
 
 interface UserDialogProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	onSubmit: (values: UserFormValues) => Promise<any>;
+	onSubmit: (values: UserFormValues) => Promise<unknown>;
 	mode?: Mode;
 	initialValues?: Partial<UserFormValues>;
 	userId?: string | number;
@@ -69,7 +70,7 @@ export default function UserDialog({
 								initialValues || {
 									email: "",
 									phone_number: "",
-									role: "customer",
+									role: "insurer",
 								}
 							}
 							mode={mode}

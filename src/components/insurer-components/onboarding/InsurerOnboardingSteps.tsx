@@ -1,11 +1,13 @@
+import { Eye, EyeOff } from "lucide-react";
+import { useState } from "react";
 import { Controller, type UseFormReturn } from "react-hook-form";
-import { AvatarUploader } from "@/components/ui/AvatarUploader";
+import { PasswordStrengthMeter } from "@/components/strength-meter";
+import AvatarUploader from "@/components/ui/AvatarUploader";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { FormControl, FormItem, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/ui/password-input";
-import { PasswordStrengthInput } from "@/components/ui/password-strength-input";
 import { PhoneNumberInput } from "@/components/ui/phone-input";
 import { Textarea } from "@/components/ui/textarea";
 import type { OnboardingFormValues } from "@/types/onboarding";
@@ -31,10 +33,13 @@ export function StepChangePassword({
 					<FormItem>
 						<FormLabel htmlFor={newPasswordId}>New Password</FormLabel>
 						<FormControl>
-							<PasswordStrengthInput
-								id={newPasswordId}
+							<PasswordStrengthMeter
+								enableAutoGenerate={true}
+								meterClassName="h-1"
+								onValueChange={field.onChange}
 								placeholder="Enter new password"
-								{...field}
+								showRequirements={false}
+								value={field.value}
 							/>
 						</FormControl>
 						{error && (
@@ -136,13 +141,15 @@ export function StepContactInfo({ emailId, form }: StepContactInfoProps) {
 			</FormItem>
 			<PhoneNumberInput
 				control={form.control}
+				defaultCountry="ET"
 				label="Contact Phone *"
-				name="phone"
+				name="contact_phone"
 				placeholder="Enter phone number"
+				selectable={false}
 			/>
-			{form.formState.errors.phone && (
+			{form.formState.errors.contact_phone && (
 				<p className="mt-1 text-red-500 text-xs">
-					{form.formState.errors.phone.message as string}
+					{form.formState.errors.contact_phone.message as string}
 				</p>
 			)}
 		</div>
@@ -224,6 +231,7 @@ export function StepLogoUpload({
 				<FormLabel htmlFor={logoId}>Company Logo</FormLabel>
 				<FormControl>
 					<AvatarUploader
+						height={160}
 						maxSizeMB={5}
 						onChange={handleFileChange}
 						shape="rounded"
@@ -235,6 +243,9 @@ export function StepLogoUpload({
 	);
 }
 
+// Regex for detecting duplicate +251 prefixes
+const DUPLICATE_PREFIX_REGEX = /^\+251\+251/;
+
 // Step 6: Confirmation
 interface StepConfirmationProps {
 	form: UseFormReturn<OnboardingFormValues>;
@@ -245,6 +256,27 @@ export function StepConfirmation({ form, logoUrl }: StepConfirmationProps) {
 	const values = form.getValues();
 	const displayValue = (value: string | undefined | null) =>
 		value || "Not provided";
+
+	// State for toggling password/API key visibility
+	const [showPassword, setShowPassword] = useState(false);
+	const [showApiKey, setShowApiKey] = useState(false);
+
+	// Format phone number to ensure it has +251 prefix
+	const formatPhoneNumber = (phone: string | undefined | null) => {
+		if (!phone) {
+			return "Not provided";
+		}
+		if (phone.startsWith("+251")) {
+			return phone;
+		}
+		return `+251${phone}`.replace(DUPLICATE_PREFIX_REGEX, "+251");
+	};
+
+	// Mask sensitive information
+	const maskSensitive = (value: string | undefined | null, show = false) => {
+		if (!value) return "Not provided";
+		return show ? value : "•".repeat(8);
+	};
 
 	return (
 		<div className="space-y-4 py-4">
@@ -268,9 +300,23 @@ export function StepConfirmation({ form, logoUrl }: StepConfirmationProps) {
 				</div>
 				<div className="grid grid-cols-1 gap-4 pt-4 md:grid-cols-2">
 					<div>
-						<Label>Password</Label>
-						<p className="text-muted-foreground text-sm">
-							{displayValue(values.newPassword)}
+						<div className="flex items-center justify-between">
+							<Label>Password</Label>
+							<button
+								aria-label={showPassword ? "Hide password" : "Show password"}
+								className="inline-flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted"
+								onClick={() => setShowPassword(!showPassword)}
+								type="button"
+							>
+								{showPassword ? (
+									<EyeOff className="h-4 w-4" />
+								) : (
+									<Eye className="h-4 w-4" />
+								)}
+							</button>
+						</div>
+						<p className="mt-1 text-muted-foreground text-sm">
+							{maskSensitive(values.newPassword, showPassword)}
 						</p>
 					</div>
 					<div>
@@ -281,7 +327,9 @@ export function StepConfirmation({ form, logoUrl }: StepConfirmationProps) {
 					</div>
 					<div>
 						<Label>Contact Phone</Label>
-						<p className="text-muted-foreground text-sm">{values.phone}</p>
+						<p className="text-muted-foreground text-sm">
+							{formatPhoneNumber(values.contact_phone)}
+						</p>
 					</div>
 					<div>
 						<Label>API Endpoint</Label>
@@ -290,9 +338,23 @@ export function StepConfirmation({ form, logoUrl }: StepConfirmationProps) {
 						</p>
 					</div>
 					<div>
-						<Label>API Key</Label>
-						<p className="text-muted-foreground text-sm">
-							{displayValue(values.apiKey)}
+						<div className="flex items-center justify-between">
+							<Label>API Key</Label>
+							<button
+								aria-label={showApiKey ? "Hide API key" : "Show API key"}
+								className="inline-flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted"
+								onClick={() => setShowApiKey(!showApiKey)}
+								type="button"
+							>
+								{showApiKey ? (
+									<EyeOff className="h-4 w-4" />
+								) : (
+									<Eye className="h-4 w-4" />
+								)}
+							</button>
+						</div>
+						<p className="mt-1 text-muted-foreground text-sm">
+							{maskSensitive(values.apiKey, showApiKey)}
 						</p>
 					</div>
 				</div>
