@@ -115,7 +115,9 @@ const mapUserToAuthUser = (
 					last_name: user.customer.last_name,
 				}
 			: undefined,
-		insurer: user.insurer ? { id: user.insurer.id, name: user.insurer.name } : undefined,
+		insurer: user.insurer
+			? { id: user.insurer.id, name: user.insurer.name }
+			: undefined,
 		roles: normalizeRoles(user.roles),
 	};
 };

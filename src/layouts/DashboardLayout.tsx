@@ -192,11 +192,9 @@ export function DashboardLayout({ role }: DashboardLayoutProps) {
 	const [showOnboarding, setShowOnboarding] = useState(false);
 
 	useEffect(() => {
-		// Show onboarding if the user has an insurer role AND (has a temporary password OR does not have an insurer profile)
-		setShowOnboarding(
-			role === "insurer" && (Boolean(isTemporaryPassword) || !hasInsurerProfile)
-		);
-	}, [role, isTemporaryPassword, hasInsurerProfile]);
+		// Show onboarding if the user has an insurer role AND has a temporary password
+		setShowOnboarding(role === "insurer" && Boolean(isTemporaryPassword));
+	}, [role, isTemporaryPassword]);
 
 	const handleCloseOnboarding = () => {
 		setShowOnboarding(false);

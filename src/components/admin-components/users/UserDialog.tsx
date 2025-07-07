@@ -101,8 +101,12 @@ export default function UserDialog({
 											label="Role"
 											name="role"
 											options={[
-												{ value: "admin", label: "Admin" },
-												{ value: "customer", label: "Customer" },
+												{ value: "admin", label: "Admin", disabled: true },
+												{
+													value: "customer",
+													label: "Customer",
+													disabled: true,
+												},
 												{ value: "insurer", label: "Insurer" },
 											]}
 											placeholder="Select role"

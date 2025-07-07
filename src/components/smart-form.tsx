@@ -40,6 +40,7 @@ import { cn } from "@/lib/utils";
 export interface FormFieldOption {
 	value: string;
 	label: string;
+	disabled?: boolean;
 }
 
 export interface SmartFormProps<
@@ -260,7 +261,11 @@ export function SmartFormField<T extends FieldValues>({
 						</SelectTrigger>
 						<SelectContent>
 							{options.map((option) => (
-								<SelectItem key={option.value} value={option.value}>
+								<SelectItem
+									disabled={option.disabled}
+									key={option.value}
+									value={option.value}
+								>
 									{option.label}
 								</SelectItem>
 							))}

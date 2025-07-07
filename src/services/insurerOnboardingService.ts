@@ -1,17 +1,17 @@
 import { z } from "zod";
 
 export const insurerOnboardingPayloadSchema = z.object({
-  name: z.string(),
-  description: z.string().optional(),
-  contact_email: z.string().email(),
-  contact_phone: z.string(), // Validation is handled in the PhoneNumberInput component
-  api_endpoint: z.string().optional(),
-  api_key: z.string().optional(),
-  logo: z
-    .instanceof(File, { message: "Logo must be a file" })
-    .or(z.instanceof(Blob, { message: "Logo must be a blob" }))
-    .nullable()
-    .optional(),
+	name: z.string(),
+	description: z.string().optional(),
+	contact_email: z.string().email(),
+	contact_phone: z.string(), // Validation is handled in the PhoneNumberInput component
+	api_endpoint: z.string().optional(),
+	api_key: z.string().optional(),
+	logo: z
+		.instanceof(File, { message: "Logo must be a file" })
+		.or(z.instanceof(Blob, { message: "Logo must be a blob" }))
+		.nullable()
+		.optional(),
 });
 
 export type InsurerOnboardingFormValues = z.infer<
