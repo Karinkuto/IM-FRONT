@@ -2,10 +2,22 @@ import type { BaseQueryFn } from "@reduxjs/toolkit/query";
 import type { AxiosError, AxiosRequestConfig } from "axios";
 import axios from "axios";
 
-// Authentication is handled via localStorage and redirects
+// Authentication is handled via localStorage
+// - access_token: Short-lived token for API requests
+// - refresh_token: Long-lived token for refreshing access tokens
 
 // Create a custom axios instance with interceptors
 const api = axios.create({
+	baseURL: import.meta.env.VITE_BACKEND_URL,
+	headers: {
+		"Content-Type": "application/json",
+		Accept: "application/json",
+	},
+	withCredentials: true,
+});
+
+// Create a separate axios instance for refresh requests (without interceptors)
+const refreshApi = axios.create({
 	baseURL: import.meta.env.VITE_BACKEND_URL,
 	headers: {
 		"Content-Type": "application/json",
@@ -74,12 +86,26 @@ api.interceptors.response.use(
 			isRefreshing = true;
 
 			try {
-				// Try to refresh the token
-				const refreshResponse = await api.post("/auth/refresh");
-				const { access_token } = refreshResponse.data.data;
+				// Try to refresh the token using a separate axios instance
+				const refreshToken = localStorage.getItem("refresh_token");
+				if (!refreshToken) {
+					throw new Error("No refresh token available");
+				}
 
-				// Store the new token in localStorage
+				// Use the refresh axios instance with refresh token
+				const refreshResponse = await refreshApi.post("/auth/refresh", {}, {
+					headers: {
+						Authorization: `Bearer ${refreshToken}`,
+					},
+				});
+
+				const { access_token, refresh_token } = refreshResponse.data.data;
+
+				// Store the new tokens in localStorage
 				localStorage.setItem("access_token", access_token);
+				if (refresh_token) {
+					localStorage.setItem("refresh_token", refresh_token);
+				}
 
 				// Update the token for the original request
 				if (originalRequest.headers) {
@@ -95,6 +121,7 @@ api.interceptors.response.use(
 				// If refresh fails, clear the queue and log the user out
 				processQueue(refreshError, null);
 				localStorage.removeItem("access_token");
+				localStorage.removeItem("refresh_token");
 				window.location.href = "/login";
 				return Promise.reject(refreshError);
 			} finally {
