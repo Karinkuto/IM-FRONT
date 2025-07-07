@@ -3,7 +3,6 @@ export type User = {
 	id: string;
 	name?: string;
 	email?: string;
-	phone_number?: string;
 	fin?: string;
 	temporary_password?: boolean;
 	customer?: {
@@ -23,8 +22,7 @@ export type User = {
 };
 
 export type LoginCredentials = {
-	email?: string;
-	phone_number?: string;
+	email: string;
 	password: string;
 };
 
@@ -32,6 +30,7 @@ export type AuthResponse = {
 	success: boolean;
 	data: {
 		access_token: string;
+		refresh_token?: string;
 		user: User;
 	};
 };
