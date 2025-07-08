@@ -12,7 +12,7 @@ export interface Address {
 	subcity?: string;
 	woreda?: string;
 	zone?: string;
-	house_number: string;
+	house_number?: string;
 	kebele?: string;
 }
 
@@ -62,7 +62,6 @@ export interface InsuranceProduct {
 	estimated_price: string;
 	customer_rating: number | null;
 	status: string;
-	insurer: Insurer;
 	coverage_type: CoverageType;
 }
 
@@ -84,14 +83,23 @@ export interface Customer {
 	total_addresses: number;
 }
 
+export interface Role {
+	id: number;
+	name: string;
+	created_at: string;
+	updated_at: string;
+}
+
 export interface User {
 	id: number;
 	email: string | null;
 	phone_number: string;
 	verified: boolean;
-	roles: Array<{ id: number; name: string }> | string[];
-	temporary_password?: boolean;
+	fin: string;
+	roles: Role[];
+	temporary_password: boolean;
 	created_at: string;
+	updated_at: string;
 	customer: Customer;
 }
 
@@ -147,14 +155,33 @@ export interface Policy {
 	updated_at: string;
 }
 
+export interface VehicleEntity {
+	id: number;
+	plate_number: string;
+	chassis_number: string;
+	engine_number: string;
+	year_of_manufacture: number;
+	make: string;
+	model: string;
+	estimated_value: string;
+	front_view_photo_url: string | null;
+	back_view_photo_url: string | null;
+	left_view_photo_url: string | null;
+	right_view_photo_url: string | null;
+	engine_photo_url: string | null;
+	chassis_number_photo_url: string | null;
+	libre_photo_url: string | null;
+}
+
+export interface EntityData {
+	type: "vehicle";
+	vehicle: VehicleEntity;
+}
+
 export interface InsuredEntity {
 	id: number;
 	insurance_type: InsuranceType;
-	entity_type: EntityType;
-	entity: Vehicle;
-	has_active_policy: boolean;
-	active_policy: Policy | null;
-	policy_history: PolicyHistory;
+	entity: EntityData;
 }
 
 export interface QuotationFormData {
@@ -179,8 +206,6 @@ export interface QuotationRequest {
 	coverage_type: CoverageType;
 	user: User;
 	insured_entity: InsuredEntity;
-	insured_entity_data: Vehicle;
-	residence_address?: Address;
 }
 
 // For filtering
