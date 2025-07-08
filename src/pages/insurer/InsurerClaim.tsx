@@ -1,16 +1,9 @@
 import { useState, useMemo } from "react";
+import { type ColumnDef } from "@tanstack/react-table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { DataTable } from "@/components/ui/data-table";
 import {
   Select,
   SelectContent,
@@ -19,7 +12,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Search,
   Download,
   Eye,
   FileText,
@@ -117,7 +109,6 @@ const mockClaims: Claim[] = [
 ];
 
 export default function InsurerClaim() {
-  const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [claimTypeFilter, setClaimTypeFilter] = useState("all");
 
@@ -167,20 +158,87 @@ export default function InsurerClaim() {
       day: "numeric",
     });
 
+  // Define columns for the DataTable
+  const columns: ColumnDef<Claim>[] = [
+    {
+      accessorKey: "claimNumber",
+      header: "Claim #",
+      cell: ({ row }) => (
+        <div className="font-medium">{row.getValue("claimNumber")}</div>
+      ),
+    },
+    {
+      accessorKey: "policyNumber",
+      header: "Policy #",
+    },
+    {
+      accessorKey: "claimantName",
+      header: "Claimant",
+    },
+    {
+      accessorKey: "claimType",
+      header: "Type",
+      cell: ({ row }) => (
+        <Badge variant="outline">{row.getValue("claimType")}</Badge>
+      ),
+    },
+    {
+      accessorKey: "incidentDate",
+      header: "Incident Date",
+      cell: ({ row }) => formatDate(row.getValue("incidentDate")),
+    },
+    {
+      accessorKey: "amount",
+      header: "Amount",
+      cell: ({ row }) => (
+        <div className="font-medium">
+          {formatCurrency(row.getValue("amount"))}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "status",
+      header: "Status",
+      cell: ({ row }) => {
+        const status = row.getValue("status") as string;
+        return (
+          <Badge variant={getStatusBadgeVariant(status)}>
+            <div className="flex items-center gap-1">
+              {getStatusIcon(status)}
+              {status.replace("_", " ").toLowerCase()}
+            </div>
+          </Badge>
+        );
+      },
+    },
+    {
+      id: "actions",
+      header: "Actions",
+      cell: ({ row }) => (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            console.log("View claim:", row.original.id);
+            // Navigate to claim details
+          }}
+        >
+          <Eye className="h-4 w-4" />
+        </Button>
+      ),
+    },
+  ];
+
+  // Filter data based on status and claim type filters
   const filteredClaims = useMemo(() => {
     return mockClaims.filter((claim) => {
-      const matchesSearch =
-        claim.claimNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        claim.policyNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        claim.claimantName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        claim.description.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus =
         statusFilter === "all" || claim.status === statusFilter;
       const matchesType =
         claimTypeFilter === "all" || claim.claimType === claimTypeFilter;
-      return matchesSearch && matchesStatus && matchesType;
+      return matchesStatus && matchesType;
     });
-  }, [searchTerm, statusFilter, claimTypeFilter]);
+  }, [statusFilter, claimTypeFilter]);
 
   const stats = useMemo(() => {
     const total = mockClaims.length;
@@ -190,6 +248,52 @@ export default function InsurerClaim() {
     const totalAmount = mockClaims.reduce((sum, c) => sum + c.amount, 0);
     return { total, pending, approved, settled, totalAmount };
   }, []);
+
+  // Toolbar actions for DataTable
+  const toolbarActions = (
+    <div className="flex items-center gap-2">
+      <Select value={statusFilter} onValueChange={setStatusFilter}>
+        <SelectTrigger className="w-[180px]">
+          <SelectValue placeholder="Filter by Status" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">All Statuses</SelectItem>
+          <SelectItem value="pending">Pending</SelectItem>
+          <SelectItem value="under_review">Under Review</SelectItem>
+          <SelectItem value="approved">Approved</SelectItem>
+          <SelectItem value="settled">Settled</SelectItem>
+          <SelectItem value="rejected">Rejected</SelectItem>
+        </SelectContent>
+      </Select>
+
+      <Select value={claimTypeFilter} onValueChange={setClaimTypeFilter}>
+        <SelectTrigger className="w-[180px]">
+          <SelectValue placeholder="Filter by Type" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">All Types</SelectItem>
+          <SelectItem value="Collision/Accident">Collision/Accident</SelectItem>
+          <SelectItem value="Theft">Theft</SelectItem>
+          <SelectItem value="Fire">Fire</SelectItem>
+          <SelectItem value="Natural Disaster">Natural Disaster</SelectItem>
+          <SelectItem value="Vandalism">Vandalism</SelectItem>
+          <SelectItem value="Other">Other</SelectItem>
+        </SelectContent>
+      </Select>
+
+      {(statusFilter !== "all" || claimTypeFilter !== "all") && (
+        <Button
+          variant="outline"
+          onClick={() => {
+            setStatusFilter("all");
+            setClaimTypeFilter("all");
+          }}
+        >
+          Clear Filters
+        </Button>
+      )}
+    </div>
+  );
 
   return (
     <div className="space-y-6 p-6">
@@ -254,140 +358,17 @@ export default function InsurerClaim() {
         ))}
       </div>
 
-      {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Search & Filter</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-4">
-            <div className="relative flex-1 min-w-[250px]">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                className="pl-10"
-                placeholder="Search by claim #, policy # or name"
-                value={searchTerm}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setSearchTerm(e.target.value)
-                }
-              />
-            </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                {[
-                  "all",
-                  "pending",
-                  "under_review",
-                  "approved",
-                  "settled",
-                  "rejected",
-                ].map((status) => (
-                  <SelectItem key={status} value={status}>
-                    {status.replace("_", " ").toUpperCase()}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={claimTypeFilter} onValueChange={setClaimTypeFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="Claim Type" />
-              </SelectTrigger>
-              <SelectContent>
-                {[
-                  "all",
-                  "Collision/Accident",
-                  "Theft",
-                  "Fire",
-                  "Natural Disaster",
-                  "Vandalism",
-                  "Other",
-                ].map((type) => (
-                  <SelectItem key={type} value={type}>
-                    {type}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {(searchTerm ||
-              statusFilter !== "all" ||
-              claimTypeFilter !== "all") && (
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setSearchTerm("");
-                  setStatusFilter("all");
-                  setClaimTypeFilter("all");
-                }}
-              >
-                Clear Filters
-              </Button>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Claims Table */}
+      {/* Claims Table with DataTable */}
       <Card>
         <CardHeader>
           <CardTitle>Claims ({filteredClaims.length})</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Claim #</TableHead>
-                  <TableHead>Policy #</TableHead>
-                  <TableHead>Claimant</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Incident Date</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredClaims.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={8} className="text-center py-6">
-                      <div className="text-muted-foreground">
-                        No claims found.
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredClaims.map((claim) => (
-                    <TableRow key={claim.id}>
-                      <TableCell>{claim.claimNumber}</TableCell>
-                      <TableCell>{claim.policyNumber}</TableCell>
-                      <TableCell>{claim.claimantName}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{claim.claimType}</Badge>
-                      </TableCell>
-                      <TableCell>{formatDate(claim.incidentDate)}</TableCell>
-                      <TableCell>{formatCurrency(claim.amount)}</TableCell>
-                      <TableCell>
-                        <Badge variant={getStatusBadgeVariant(claim.status)}>
-                          <div className="flex items-center gap-1">
-                            {getStatusIcon(claim.status)}
-                            {claim.status.replace("_", " ").toLowerCase()}
-                          </div>
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Button variant="ghost" size="sm">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
+          <DataTable
+            columns={columns}
+            data={filteredClaims}
+            toolbarActionsPrefix={toolbarActions}
+          />
         </CardContent>
       </Card>
     </div>
