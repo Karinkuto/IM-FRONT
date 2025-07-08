@@ -10,37 +10,37 @@ export const VALID_ROLES = ["admin", "customer", "insurer"] as const;
 export type ValidRole = (typeof VALID_ROLES)[number];
 
 interface RouteConfig {
-	path: string;
-	element: ReactNode;
-	isIndex?: boolean;
+  path: string;
+  element: ReactNode;
+  isIndex?: boolean;
 }
 
 export const roleSpecificRoutes: Record<ValidRole, RouteConfig[]> = {
-	insurer: [
-		// Define admin routes here. Example:
-		// { path: "dashboard", element: <AdminDashboardPage />, isIndex: true },
-		{ path: "products", element: <InsurerProducts />, isIndex: true },
-		{
-			path: "quotation-requests",
-			element: <InsurerQuotations />,
-		},
-		{ path: "claims", element: <InsurerClaim /> },
-		{ path: "policies", element: <InsurerPolicies /> },
-		{ path: "settings", element: <SettingsPage /> },
-	],
-	customer: [],
-	admin: [
-		// Define insurer routes here. Example:
-		// { path: "home", element: <AdminHome />, isIndex: true },
-		// { path: "listings", element: <AdminUserManagement /> },
-		{ path: "users", element: <UserManagementPage />, isIndex: true },
-	],
+  insurer: [
+    // Define admin routes here. Example:
+    // { path: "dashboard", element: <AdminDashboardPage />, isIndex: true },
+    { path: "products", element: <InsurerProducts />, isIndex: true },
+    {
+      path: "quotation-requests",
+      element: <InsurerQuotations />,
+    },
+    { path: "claims", element: <InsurerClaim /> },
+    { path: "policies", element: <InsurerPolicies /> },
+    { path: "settings", element: <SettingsPage /> },
+  ],
+  customer: [],
+  admin: [
+    // Define insurer routes here. Example:
+    // { path: "home", element: <AdminHome />, isIndex: true },
+    // { path: "listings", element: <AdminUserManagement /> },
+    { path: "users", element: <UserManagementPage />, isIndex: true },
+  ],
 };
 
 export const defaultRoleRedirects: Record<ValidRole, string> = {
-	admin: "/admin/users", // Adjusted to redirect to the user management page
-	customer: "/customer", // Adjusted to match a potential "home" path for customer
-	insurer: "/insurer",
+  admin: "/admin/users", // Adjusted to redirect to the user management page
+  customer: "/customer", // Adjusted to match a potential "home" path for customer
+  insurer: "/insurer",
 };
 
 // This can be dynamic based on logged-in user's role in a real app
