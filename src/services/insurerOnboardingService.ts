@@ -21,7 +21,8 @@ export type InsurerOnboardingFormValues = z.infer<
 type InsurerOnboardingPayload = Omit<InsurerOnboardingFormValues, "logo">;
 
 export function buildInsurerOnboardingFormData(
-	values: InsurerOnboardingFormValues
+	values: InsurerOnboardingFormValues,
+	userId?: string // Add optional user ID parameter
 ): FormData {
 	const formData = new FormData();
 	const payload: InsurerOnboardingPayload = {
@@ -32,6 +33,11 @@ export function buildInsurerOnboardingFormData(
 		api_endpoint: values.api_endpoint || "",
 		api_key: values.api_key || "",
 	};
+
+	// Add user_id if provided to ensure profile is created for correct user
+	if (userId) {
+		formData.append("payload[user_id]", userId);
+	}
 
 	// Add all payload fields to form data
 	for (const [key, value] of Object.entries(payload)) {

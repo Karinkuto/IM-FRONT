@@ -251,7 +251,7 @@ export function InsurerOnboarding({
         api_endpoint: values.apiEndpoint ?? undefined,
         api_key: values.apiKey ?? undefined,
         logo: values.logo,
-      });
+      }, userId); // Pass the current user ID
       const profilePromise = onboardInsurer(formData).unwrap();
 
       // 2. Send both requests in parallel
