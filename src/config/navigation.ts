@@ -1,4 +1,4 @@
-import { Columns, LogOut, Settings, ShieldCheck, Users } from "lucide-react";
+import { Columns, LogOut, Settings, ShieldCheck, Users, FileText } from "lucide-react";
 
 export type NavItem = {
 	link: string;
@@ -23,6 +23,7 @@ export const navigationData: Record<string, NavItemGroup[]> = {
 					label: "Quotations",
 					icon: ShieldCheck,
 				},
+				{ link: "/insurer/claims", label: "Claims", icon: FileText },
 			],
 		},
 	],

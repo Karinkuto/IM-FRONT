@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import UserManagementPage from "@/pages/admin/UserManagementPage";
+import InsurerClaim from "@/pages/insurer/InsurerClaim";
 import InsurerPolicies from "@/pages/insurer/InsurerPolicies";
 import InsurerProducts from "@/pages/insurer/InsurerProducts";
 import InsurerQuotations from "@/pages/insurer/InsurerQuotations";
@@ -23,6 +24,7 @@ export const roleSpecificRoutes: Record<ValidRole, RouteConfig[]> = {
 			path: "quotation-requests",
 			element: <InsurerQuotations />,
 		},
+		{ path: "claims", element: <InsurerClaim /> },
 		{ path: "policies", element: <InsurerPolicies /> },
 		{ path: "settings", element: <SettingsPage /> },
 	],
