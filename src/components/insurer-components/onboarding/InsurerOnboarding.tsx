@@ -243,15 +243,18 @@ export function InsurerOnboarding({
         new_password_confirmation: values.confirmPassword,
       }).unwrap();
 
-      const formData = buildInsurerOnboardingFormData({
-        name: values.name,
-        description: values.description ?? undefined,
-        contact_email: values.email,
-        contact_phone: values.contact_phone,
-        api_endpoint: values.apiEndpoint ?? undefined,
-        api_key: values.apiKey ?? undefined,
-        logo: values.logo,
-      }, userId); // Pass the current user ID
+      const formData = buildInsurerOnboardingFormData(
+        {
+          name: values.name,
+          description: values.description ?? undefined,
+          contact_email: values.email,
+          contact_phone: values.contact_phone,
+          api_endpoint: values.apiEndpoint ?? undefined,
+          api_key: values.apiKey ?? undefined,
+          logo: values.logo,
+        },
+        userId
+      ); // Pass the current user ID
       const profilePromise = onboardInsurer(formData).unwrap();
 
       // 2. Send both requests in parallel
