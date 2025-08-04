@@ -28,6 +28,7 @@ const refreshApi = axios.create({
 
 // Queue for requests that need to wait for token refresh
 let isRefreshing = false;
+let isRedirecting = false; // Add flag to prevent multiple redirects
 let failedQueue: Array<{
 	resolve: (token: string) => void;
 	reject: (error: unknown) => void;
@@ -122,7 +123,25 @@ api.interceptors.response.use(
 				processQueue(refreshError, null);
 				localStorage.removeItem("access_token");
 				localStorage.removeItem("refresh_token");
-				window.location.href = "/login";
+				
+				// Prevent multiple redirects
+				if (!isRedirecting) {
+					isRedirecting = true;
+					console.log("Token refresh failed, redirecting to login...");
+					
+					// Clear session storage as well
+					try {
+						sessionStorage.removeItem("auth");
+					} catch (e) {
+						console.error("Error clearing session storage:", e);
+					}
+					
+					// Redirect to login with a small delay to prevent race conditions
+					setTimeout(() => {
+						window.location.href = "/login";
+					}, 100);
+				}
+				
 				return Promise.reject(refreshError);
 			} finally {
 				isRefreshing = false;

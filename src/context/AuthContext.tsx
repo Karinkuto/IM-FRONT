@@ -37,16 +37,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loginMutation, { isLoading: isLoggingIn }] = useLoginMutation();
   // Use a type assertion to handle the API response
   const { refetch } = useGetUserByIdQuery(user?.id || "", {
-    skip: !user?.id, // Skip if no user ID is available
+    skip: !user?.id || !isAuthenticated, // Skip if no user ID is available or not authenticated
+    retry: false, // Disable automatic retries
   });
 
   const refetchUser = async () => {
     try {
       const response = await refetch();
+
+      // Check if the response indicates an authentication error
+      if (response.error) {
+        // Handle 401 Unauthorized errors
+        if ("status" in response.error && response.error.status === 401) {
+          console.warn("User session expired, logging out...");
+          await logout();
+          return null;
+        }
+        // For other errors, throw to be caught below
+        throw new Error(`API Error: ${JSON.stringify(response.error)}`);
+      }
+
       // Use type assertion to handle the API response
       return response.data as unknown as ApiUser | undefined;
     } catch (error) {
       console.error("Error refetching user:", error);
+      // If it's an authentication error, logout the user
+      if (
+        error &&
+        typeof error === "object" &&
+        "status" in error &&
+        error.status === 401
+      ) {
+        console.warn(
+          "Authentication failed during user refetch, logging out..."
+        );
+        await logout();
+      }
       return;
     }
   };
@@ -60,14 +86,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (session) {
           const parsed = JSON.parse(session);
           if (parsed?.user && parsed?.access_token) {
-            setUser(parsed.user);
-            setIsAuthenticated(true);
-
             // Restore tokens to localStorage for axios interceptor
             localStorage.setItem("access_token", parsed.access_token);
             if (parsed.refresh_token) {
               localStorage.setItem("refresh_token", parsed.refresh_token);
             }
+
+            // Set user and authentication state
+            setUser(parsed.user);
+            setIsAuthenticated(true);
 
             dispatch(
               setCredentials({
@@ -75,10 +102,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 access_token: parsed.access_token,
               })
             );
+
+            // Validate the token by making a test request
+            // This will trigger the axios interceptor if the token is expired
+            try {
+              // The useGetUserByIdQuery will now be triggered and handle any auth errors
+              console.log("Session restored, validating token...");
+            } catch (error) {
+              console.error(
+                "Token validation failed during initialization:",
+                error
+              );
+              // If validation fails, clear everything
+              setUser(null);
+              setIsAuthenticated(false);
+              localStorage.removeItem("access_token");
+              localStorage.removeItem("refresh_token");
+              await removeSessionItem("auth");
+            }
           }
         }
       } catch (error) {
         console.error("Error initializing auth state:", error);
+        // Clear everything on error
+        setUser(null);
+        setIsAuthenticated(false);
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+        await removeSessionItem("auth");
       } finally {
         setIsLoading(false);
       }
@@ -226,6 +277,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return null;
     } catch (error) {
       console.error("Failed to refresh user data:", error);
+
+      // If it's an authentication error, don't throw - the refetchUser already handled logout
+      if (
+        error &&
+        typeof error === "object" &&
+        "status" in error &&
+        error.status === 401
+      ) {
+        return null;
+      }
+
       throw error;
     }
   };

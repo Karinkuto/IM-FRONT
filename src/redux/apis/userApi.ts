@@ -28,6 +28,10 @@ export const userApi = createApi({
 			}),
 			transformResponse: (response: { data: User }) => response.data,
 			providesTags: (_result, _error, id) => [{ type: "User", id }],
+			// Add retry configuration to prevent infinite retries on auth errors
+			extraOptions: {
+				maxRetries: 0, // Disable automatic retries
+			},
 		}),
 		createUser: builder.mutation<User, Partial<User> & { role: string }>({
 			query: (payload) => ({

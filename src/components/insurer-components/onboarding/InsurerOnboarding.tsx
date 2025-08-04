@@ -151,6 +151,7 @@ export function InsurerOnboarding({
 
   const { refetch: refetchUser } = useGetUserByIdQuery(userId || "", {
     skip: !userId,
+    retry: false, // Disable automatic retries
   });
 
   // useId hooks for all form fields (one per field)
